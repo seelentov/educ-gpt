@@ -1,0 +1,48 @@
+services:
+  app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./app:/app
+    depends_on:
+      - db
+      - redis
+    ports:
+      - ${PORT}:${PORT}
+    expose:
+      - ${PORT}
+    networks:
+      - app
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    volumes:
+      - ./docker/data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+    ports:
+      - ${DB_PORT}:${DB_PORT}
+    expose:
+      - ${DB_PORT}
+    networks:
+      - app
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: unless-stopped
+    volumes:
+      - ./docker/redis:/data
+    ports:
+      - ${REDIS_PORT}:${REDIS_PORT}
+    expose:
+      - ${REDIS_PORT}
+    networks:
+      - app
+
+networks:
+  app:
+    name: app
