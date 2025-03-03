@@ -1,10 +1,14 @@
 package dic
 
 import (
+	"educ-gpt/data"
 	"educ-gpt/http/middlewares"
 	"educ-gpt/logger"
 	"github.com/gin-gonic/gin"
+	"log"
 	"os"
+	"strconv"
+	"time"
 )
 
 var authMiddleware gin.HandlerFunc
@@ -37,5 +41,24 @@ func RequiredRoleMiddleware(roleNames []string) gin.HandlerFunc {
 		roleNames,
 		logger.Logger(),
 		RoleService(),
+	)
+}
+
+func CacheMiddleware(d time.Duration, onSession bool) gin.HandlerFunc {
+	cacheDefaultDuration, err := strconv.Atoi(os.Getenv("JWT_REFRESH_EXP"))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if d == 0 {
+		d = time.Duration(cacheDefaultDuration) * time.Second
+	}
+
+	return middlewares.CacheMiddleware(
+		logger.Logger(),
+		data.Cache(),
+		d,
+		onSession,
 	)
 }

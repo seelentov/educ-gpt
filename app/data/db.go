@@ -18,6 +18,9 @@ var (
 var ms = []interface{}{
 	&models.User{},
 	&models.Role{},
+	&models.Topic{},
+	&models.Theme{},
+	&models.UserTheme{},
 }
 
 var db *gorm.DB

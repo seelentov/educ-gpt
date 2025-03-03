@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"educ-gpt/http/dtos"
+	"educ-gpt/http/httputils"
 	"educ-gpt/http/validator"
 	"educ-gpt/models"
 	"educ-gpt/services"
@@ -24,11 +25,20 @@ func (c *AuthController) Register(ctx *gin.Context) {
 		return
 	}
 
+	token := req.ChatGptModel
+
+	if token == "" {
+		token = "gpt-4o-mini"
+	}
+
 	user := &models.User{
-		Name:     req.Name,
-		Email:    req.Email,
-		Number:   req.Number,
-		Password: req.Password,
+		ID:           0,
+		Name:         req.Name,
+		Email:        req.Email,
+		Number:       req.Number,
+		Password:     req.Password,
+		ChatGptModel: req.ChatGptModel,
+		ChatGptToken: req.ChatGptToken,
 	}
 
 	err := c.userService.Create(user)
@@ -64,21 +74,14 @@ func (c *AuthController) Register(ctx *gin.Context) {
 }
 
 func (c *AuthController) Me(ctx *gin.Context) {
-	anyId, ok := ctx.Get("user_id")
+	id, err := httputils.GetUserId(ctx)
 
-	if !ok {
+	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
-	id, ok := anyId.(float64)
-
-	if !ok {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
-		return
-	}
-
-	user, err := c.userService.GetById(uint(id))
+	user, err := c.userService.GetById(id)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return

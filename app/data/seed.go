@@ -8,20 +8,63 @@ import (
 
 func Seed() {
 	rolesSeed()
+	topicsSeed()
 }
 
 func rolesSeed() {
-	sRoles := []*models.Role{
-		{Name: "ADMIN"},
-		{Name: "USER"},
+	sRoleNames := []string{
+		"ADMIN",
+		"USER",
 	}
 
-	for _, role := range sRoles {
-		result := db.FirstOrCreate(role, models.Role{Name: role.Name})
+	for _, roleName := range sRoleNames {
+		result := db.FirstOrCreate(&models.Role{}, &models.Role{Name: roleName})
 		if result.Error != nil {
-			log.Fatalf("Failed to create or find role %s: %v", role.Name, result.Error)
+			log.Fatalf("Failed to create role %s: %v", sRoleNames, result.Error)
 		}
 	}
 
 	logger.Logger().Debug("Roles seed completed")
+}
+
+func topicsSeed() {
+	sTopicThemes := []string{
+		"Frontend Developer",
+		"Backend Developer",
+		"DevOps Engineer",
+		"Android Developer",
+		"QA Engineer",
+		"React Developer",
+		"Angular Developer",
+		"Vue.js Developer",
+		"Node.js Developer",
+		"Go Developer",
+		"Java Developer",
+		"PHP Developer",
+		"Python Developer",
+		".NET Developer",
+		"Flutter Developer",
+		"Swift Developer",
+		"DBA",
+		"Blockchain Developer",
+		"Cyber Security",
+		"Software Architect",
+		"Software Design & Architecture",
+		"Computer Science",
+		"System Design",
+		"AI Engineer",
+		"Data Engineer",
+		"Machine Learning Engineer",
+		"Data Scientist",
+		"Rust Developer",
+	}
+
+	for _, topicTheme := range sTopicThemes {
+		result := db.FirstOrCreate(&models.Topic{}, &models.Topic{Title: topicTheme})
+		if result.Error != nil {
+			log.Fatalf("Failed to create theme %s: %v", topicTheme, result.Error)
+		}
+	}
+
+	logger.Logger().Debug("Topics seed completed")
 }

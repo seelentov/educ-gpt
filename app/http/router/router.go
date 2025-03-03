@@ -19,6 +19,18 @@ func NewRouter() *gin.Engine {
 			authGroup.POST("/login", dic.AuthController().Login)
 			authGroup.POST("/refresh", dic.AuthController().Refresh)
 		}
+
+		testGroup := apiGroup.Group("/test")
+		{
+			testGroup.GET("", dic.TestController().Test)
+		}
+
+		roadmapGroup := apiGroup.Group("/roadmap")
+		{
+			roadmapGroup.GET("", dic.RoadmapController().GetThemes)
+			roadmapGroup.GET("/:id", dic.RoadmapController().GetThemes)
+			roadmapGroup.GET("/theme/:id", dic.RoadmapController().GetTheme)
+		}
 	}
 
 	return router

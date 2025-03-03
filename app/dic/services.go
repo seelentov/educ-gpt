@@ -33,10 +33,35 @@ func RoleService() services.RoleService {
 			logger.Logger(),
 			os.Getenv("AUTH_DEFAULT_ROLE"),
 		)
-		logger.Logger().Debug("UserService initialized")
+		logger.Logger().Debug("RoleService initialized")
 	}
 
 	return roleService
+}
+
+var roadmapService services.RoadmapService
+
+func RoadmapService() services.RoadmapService {
+	if roadmapService == nil {
+		roadmapService = services.NewRoadmapServiceImpl(
+			data.DB(),
+			logger.Logger(),
+		)
+		logger.Logger().Debug("RoadmapService initialized")
+	}
+
+	return roadmapService
+}
+
+var promptService services.PromptService
+
+func PromptService() services.PromptService {
+	if promptService == nil {
+		promptService = services.NewPromptServiceImpl()
+		logger.Logger().Debug("PromptService initialized")
+	}
+
+	return promptService
 }
 
 var jwtService services.JwtService
@@ -67,4 +92,17 @@ func JwtService() services.JwtService {
 	}
 
 	return jwtService
+}
+
+var gptService services.GptService
+
+func GptService() services.GptService {
+	if gptService == nil {
+		gptService = services.NewGptService(
+			logger.Logger(),
+		)
+		logger.Logger().Debug("GptService initialized")
+	}
+
+	return gptService
 }
