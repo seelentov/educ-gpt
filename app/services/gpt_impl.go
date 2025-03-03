@@ -25,14 +25,10 @@ func (g GptServiceImpl) GetAnswer(token string, model string, dialog []*DialogIt
 			role = "user"
 		}
 
-		dialogStrings[i] = fmt.Sprintf("{\"role\": \"%s\", \"content\": \"%s\"}", role, dialog[i].Text)
+		dialogStrings[i] = fmt.Sprintf(`{"role": "%s", "content": "%s"}`, role, dialog[i].Text)
 	}
 
-	body := fmt.Sprintf(`{
-     "model": "%s",
-     "messages": [%s],
-     "temperature": 0.7
-   	}`, model, strings.Join(dialogStrings, ","))
+	body := fmt.Sprintf(`{"model": "%s","messages": [%s],"temperature": 0.1}`, model, strings.Join(dialogStrings, ","))
 
 	req, err := http.NewRequest("POST", "https://api.openai.com/v1/chat/completions", bytes.NewBuffer([]byte(body)))
 	if err != nil {
@@ -60,6 +56,7 @@ func (g GptServiceImpl) GetAnswer(token string, model string, dialog []*DialogIt
 	}
 
 	if resp.StatusCode != http.StatusOK {
+		g.logger.Error("failed to send request", zap.Error(err))
 		return fmt.Errorf("%w:%v:%s", ErrRequestFailed, resp.StatusCode, bodyBytes)
 	}
 
@@ -72,6 +69,9 @@ func (g GptServiceImpl) GetAnswer(token string, model string, dialog []*DialogIt
 	}
 
 	msg := tempTarget.Choices[len(tempTarget.Choices)-1].Message.Content
+
+	msg = strings.ReplaceAll(msg, "```json", "")
+	msg = strings.ReplaceAll(msg, "```", "")
 
 	if reflect.TypeOf(target).String() == "*string" {
 		reflect.ValueOf(target).Elem().Set(reflect.ValueOf(msg))

@@ -31,6 +31,10 @@ func (u UserServiceImpl) Create(user *models.User) error {
 
 	user.Password = string(hashedPassword)
 
+	if user.ChatGptModel == "" {
+		user.ChatGptModel = "gpt-4o-mini"
+	}
+
 	tx := u.db.Begin()
 
 	result := tx.Create(user)

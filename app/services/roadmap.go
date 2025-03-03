@@ -17,4 +17,5 @@ type RoadmapService interface {
 	GetTopic(userID uint, topicID uint) (*models.Topic, error)
 	CreateThemes(theme []*models.Theme) error
 	IncrementUserScore(userID uint, themeID uint, score uint) error
+	UpdateUserResolvedProblems(userID uint, themeID uint, newProblem string) error
 }

@@ -66,7 +66,7 @@ func (r RoadmapController) GetThemes(ctx *gin.Context) {
 		}
 	}
 
-	prompt, err := r.promptSrv.GetThemes("", topic.Themes, userStats)
+	prompt, err := r.promptSrv.GetThemes(topic.Title, topic.Themes, userStats)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
@@ -106,10 +106,12 @@ func (r RoadmapController) GetThemes(ctx *gin.Context) {
 
 	}
 
-	err = r.roadmapSrv.CreateThemes(newThemes)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
-		return
+	if len(newThemes) > 0 {
+		err = r.roadmapSrv.CreateThemes(newThemes)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			return
+		}
 	}
 
 	ctx.JSON(http.StatusOK, sortedThemes)

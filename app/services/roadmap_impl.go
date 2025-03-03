@@ -2,6 +2,7 @@ package services
 
 import (
 	"educ-gpt/models"
+	"errors"
 	"fmt"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -10,6 +11,27 @@ import (
 type RoadmapServiceImpl struct {
 	db     *gorm.DB
 	logger *zap.Logger
+}
+
+func (r RoadmapServiceImpl) UpdateUserResolvedProblems(userID uint, themeID uint, newProblem string) error {
+	userTheme := models.UserTheme{UserID: userID, ThemeID: themeID}
+
+	result := r.db.Model(&models.UserTheme{}).FirstOrCreate(userTheme)
+	if result.Error != nil {
+		r.logger.Error("Cant get or create user_theme", zap.Error(result.Error))
+		return fmt.Errorf("%w:%w", ErrGetOrCreateEntity, result.Error)
+	}
+
+	userTheme.ResolvedProblems += "; " + newProblem
+
+	result = r.db.Save(&userTheme)
+	if result.Error != nil {
+		r.logger.Error("Cant update user_theme", zap.Error(result.Error))
+		return fmt.Errorf("%w:%w", ErrUpdateEntity, result.Error)
+	}
+
+	return nil
+
 }
 
 func (r RoadmapServiceImpl) IncrementUserScore(userID uint, themeID uint, score uint) error {
@@ -56,8 +78,13 @@ func (r RoadmapServiceImpl) GetTopics(userID uint) ([]*models.Topic, error) {
 			themeIds[j] = topics[i].Themes[j].ID
 		}
 
-		var themes []*models.Theme
-		result := r.db.Model(&models.UserTheme{}).Where("user_id = ? AND theme_id in (?)", userID, themeIds).Find(&themes)
+		var userThemes []*models.UserTheme
+		result := r.db.Model(&models.UserTheme{}).Where("user_id = ? AND theme_id in (?)", userID, themeIds).Preload("Theme").Find(&userThemes)
+
+		themes := make([]*models.Theme, len(userThemes))
+		for j := range userThemes {
+			themes[j] = userThemes[j].Theme
+		}
 
 		if result.Error != nil {
 			r.logger.Error("Cant get topics", zap.Error(result.Error))
@@ -85,6 +112,10 @@ func (r RoadmapServiceImpl) GetTopic(userID uint, topicID uint) (*models.Topic, 
 		var userTheme *models.UserTheme
 		result := r.db.Model(&models.UserTheme{}).Where("user_id = ? AND theme_id = ?", userID, topic.Themes[i].ID).First(&userTheme)
 		if result.Error != nil {
+			if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+				continue
+			}
+
 			r.logger.Error("Cant get topic", zap.Error(result.Error))
 			return nil, fmt.Errorf("%w:%w", ErrGetEntities, result.Error)
 		}
