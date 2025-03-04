@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"educ-gpt/http/dtos"
 	"educ-gpt/http/httputils"
+	"educ-gpt/http/validator"
 	"educ-gpt/models"
 	"educ-gpt/services"
 	"github.com/gin-gonic/gin"
@@ -24,14 +26,13 @@ func (r RoadmapController) GetTopics(ctx *gin.Context) {
 		return
 	}
 
-	topics, err := r.roadmapSrv.GetTopics(userid)
+	topics, err := r.roadmapSrv.GetTopics(userid, true)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
 	ctx.JSON(http.StatusOK, topics)
-	return
 }
 
 func (r RoadmapController) GetThemes(ctx *gin.Context) {
@@ -47,13 +48,13 @@ func (r RoadmapController) GetThemes(ctx *gin.Context) {
 		return
 	}
 
-	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
+	topicId, err := strconv.ParseUint(ctx.Param("topic_id"), 10, 32)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
-	topic, err := r.roadmapSrv.GetTopic(userid, uint(id))
+	topic, err := r.roadmapSrv.GetTopic(userid, uint(topicId), true)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
@@ -115,12 +116,123 @@ func (r RoadmapController) GetThemes(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, sortedThemes)
-
-	return
 }
 
 func (r RoadmapController) GetTheme(ctx *gin.Context) {
+	userId, err := httputils.GetUserId(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
 
+	user, err := r.userSrv.GetById(userId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
+	topicId, err := strconv.ParseUint(ctx.Param("topic_id"), 10, 32)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
+	topic, err := r.roadmapSrv.GetTopic(0, uint(topicId), false)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
+	themeId, err := strconv.ParseUint(ctx.Param("theme_id"), 10, 32)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
+	theme, err := r.roadmapSrv.GetTheme(userId, uint(themeId))
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
+	prompt, err := r.promptSrv.GetTheme(topic.Title, theme.Title, theme)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
+	var target services.PromptThemeRequest
+
+	err = r.gptSrv.GetAnswer(user.ChatGptToken, user.ChatGptModel, []*services.DialogItem{{Text: prompt, IsUser: true}}, &target)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
+	err = r.roadmapSrv.CreateProblems(target.Problems)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, target)
+}
+
+func (r RoadmapController) IncrementUserScoreAndAddAnswer(ctx *gin.Context) {
+	var req dtos.IncreaseUserScoreAndAddAnswerRequest
+
+	userId, err := httputils.GetUserId(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	user, err := r.userSrv.GetById(userId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": validator.ParseValidationErrors(err)})
+		return
+	}
+
+	themeId, err := strconv.ParseUint(ctx.Param("theme_id"), 10, 32)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
+	problem, err := r.roadmapSrv.GetProblem(req.ProblemId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
+	prompt, err := r.promptSrv.VerifyAnswer(problem, req.Answer)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
+	var target services.PromptProblemRequest
+
+	err = r.gptSrv.GetAnswer(user.ChatGptToken, user.ChatGptModel, []*services.DialogItem{{Text: prompt, IsUser: true}}, &target)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
+	if target.Ok {
+		err = r.roadmapSrv.IncrementUserScoreAndAddAnswer(userId, uint(themeId), req.Answer, 1)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			return
+		}
+	}
+
+	ctx.JSON(http.StatusOK, target)
 }
 
 func NewRoadmapController(

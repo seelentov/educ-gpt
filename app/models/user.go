@@ -8,6 +8,6 @@ type User struct {
 	Password     string  `gorm:"not null" json:"-"`
 	Roles        []*Role `gorm:"many2many:user_roles"`
 	AvatarUrl    string  `json:"avatarUrl"`
-	ChatGptModel string  `gorm:"not null" json:"chat-gpt-model"`
-	ChatGptToken string  `gorm:"not null" json:"chat-gpt-token"`
+	ChatGptModel string  `gorm:"not null" json:"-"`
+	ChatGptToken string  `gorm:"not null" json:"-"`
 }

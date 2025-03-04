@@ -57,16 +57,11 @@ func (p PromptServiceImpl) GetThemes(topic string, existedThemes []*models.Theme
 	return sb.String(), nil
 }
 
-func (p PromptServiceImpl) GetTheme(topic string, theme string, userStats []*models.Theme) (string, error) {
+func (p PromptServiceImpl) GetTheme(topic string, theme string, userStats *models.Theme) (string, error) {
 	getThemesPrompt1 := "Расскажи подробно по теме: "
 	getThemesPrompt2 := ". Твой ответ должен всключать в себя примеры кода и теории не менее 10000 символов"
 	getThemesPrompt3 := ". Учитывай прогресс пользователя. Вот список тем, которые он уже изучил, и количество решенных задач по каждой теме: "
-	getThemesPrompt4 := ". Подготовь 10 задач по этой теме. Ответ должен быть json в виде {\"text\": <теоретический текст>, \"problems\":[<задача 1>, <задача 2>, ...]}. В ответе должен быть только json!"
-
-	stats := make([]string, len(userStats))
-	for i := range userStats {
-		stats[i] = fmt.Sprintf("[%s,%v]", userStats[i].Title, userStats[i].Score)
-	}
+	getThemesPrompt4 := `. Подготовь 10 задач по этой теме. Ответ должен быть json в виде {\"text\": \"<теоретический текст>\", \"problems\":[\"<задача 1>\", \"<задача 2>\", ...]}. В ответе должен быть только JSON объект с text, который будет включать основной ответ и problems с задачами в виде строк!`
 
 	sb := strings.Builder{}
 
@@ -75,9 +70,29 @@ func (p PromptServiceImpl) GetTheme(topic string, theme string, userStats []*mod
 	sb.WriteRune('.')
 	sb.WriteString(theme)
 	sb.WriteString(getThemesPrompt2)
-	sb.WriteString(getThemesPrompt3)
-	sb.WriteString(strings.Join(stats, ", "))
+
+	if userStats.ResolvedProblems != "" {
+		sb.WriteString(getThemesPrompt3)
+		sb.WriteString(userStats.ResolvedProblems)
+	}
+
 	sb.WriteString(getThemesPrompt4)
+
+	return sb.String(), nil
+}
+
+func (p PromptServiceImpl) VerifyAnswer(problem string, answer string) (string, error) {
+	getThemesPrompt1 := "Я получил от тебя задачу: "
+	getThemesPrompt2 := ". Вот мое решение: "
+	getThemesPrompt3 := `. Соответствует ли мой ответ требованиям задачи? Я жду от тебя ответ в формате JSON : {\"ok\": <Булево значение, соответствует ли решение задаче>, \"message\":"<Если ok==false, то тут должно быть короткое пояснение в виде строки с неболшой подсказкой к решению>"}. В ответе должен быть только JSON в описанным мной ранее формате!`
+
+	sb := strings.Builder{}
+
+	sb.WriteString(getThemesPrompt1)
+	sb.WriteString(problem)
+	sb.WriteString(getThemesPrompt2)
+	sb.WriteString(answer)
+	sb.WriteString(getThemesPrompt3)
 
 	return sb.String(), nil
 }

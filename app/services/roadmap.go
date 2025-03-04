@@ -7,15 +7,19 @@ import (
 
 var (
 	ErrGetEntities       = errors.New("cannot get entites")
+	ErrDeleteEntities    = errors.New("cannot get delete")
 	ErrUpdateEntity      = errors.New("cannot get entites")
 	ErrCreateEntity      = errors.New("cannot create entity")
 	ErrGetOrCreateEntity = errors.New("cannot get or create entity")
 )
 
 type RoadmapService interface {
-	GetTopics(userID uint) ([]*models.Topic, error)
-	GetTopic(userID uint, topicID uint) (*models.Topic, error)
+	IncrementUserScoreAndAddAnswer(userID uint, themeID uint, newProblem string, score uint) error
 	CreateThemes(theme []*models.Theme) error
-	IncrementUserScore(userID uint, themeID uint, score uint) error
-	UpdateUserResolvedProblems(userID uint, themeID uint, newProblem string) error
+	GetTopics(userID uint, prThemes bool) ([]*models.Topic, error)
+	GetTopic(userID uint, topicID uint, prThemes bool) (*models.Topic, error)
+	GetTheme(userID uint, themeID uint) (*models.Theme, error)
+	GetProblem(problemID uint) (string, error)
+	CreateProblems(problems []string) error
+	DeleteProblem(problemID uint) error
 }

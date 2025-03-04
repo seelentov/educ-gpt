@@ -28,8 +28,8 @@ func NewRouter() *gin.Engine {
 		roadmapGroup := apiGroup.Group("/roadmap")
 		{
 			roadmapGroup.GET("", dic.RoadmapController().GetTopics)
-			roadmapGroup.GET("/:id", dic.RoadmapController().GetThemes)
-			roadmapGroup.GET("/theme/:id", dic.RoadmapController().GetTheme)
+			roadmapGroup.GET("/:topic_id", dic.RoadmapController().GetThemes)
+			roadmapGroup.GET("/:topic_id/:theme_id", dic.RoadmapController().GetTheme)
 		}
 	}
 
