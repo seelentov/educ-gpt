@@ -3,10 +3,12 @@ package controllers
 import (
 	"educ-gpt/http/dtos"
 	"educ-gpt/http/httputils"
-	"educ-gpt/http/validator"
+	"educ-gpt/http/httputils/valid"
 	"educ-gpt/models"
 	"educ-gpt/services"
+	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"net/http"
 	"strconv"
 )
@@ -26,7 +28,7 @@ func (r RoadmapController) GetTopics(ctx *gin.Context) {
 		return
 	}
 
-	topics, err := r.roadmapSrv.GetTopics(userid, true)
+	topics, err := r.roadmapSrv.GetTopics(userid, false)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
@@ -169,13 +171,16 @@ func (r RoadmapController) GetTheme(ctx *gin.Context) {
 		return
 	}
 
-	err = r.roadmapSrv.CreateProblems(target.Problems)
+	problems, err := r.roadmapSrv.CreateProblems(target.Problems, uint(themeId))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, target)
+	ctx.JSON(http.StatusOK, gin.H{
+		"text":     target.Text,
+		"problems": problems,
+	})
 }
 
 func (r RoadmapController) IncrementUserScoreAndAddAnswer(ctx *gin.Context) {
@@ -194,12 +199,14 @@ func (r RoadmapController) IncrementUserScoreAndAddAnswer(ctx *gin.Context) {
 	}
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": validator.ParseValidationErrors(err)})
-		return
-	}
+		var valErr validator.ValidationErrors
+		ok := errors.As(err, &valErr)
 
-	themeId, err := strconv.ParseUint(ctx.Param("theme_id"), 10, 32)
-	if err != nil {
+		if ok {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": valid.ParseValidationErrors(err)})
+			return
+		}
+
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
@@ -210,7 +217,7 @@ func (r RoadmapController) IncrementUserScoreAndAddAnswer(ctx *gin.Context) {
 		return
 	}
 
-	prompt, err := r.promptSrv.VerifyAnswer(problem, req.Answer)
+	prompt, err := r.promptSrv.VerifyAnswer(problem.Question, req.Answer)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
@@ -225,7 +232,7 @@ func (r RoadmapController) IncrementUserScoreAndAddAnswer(ctx *gin.Context) {
 	}
 
 	if target.Ok {
-		err = r.roadmapSrv.IncrementUserScoreAndAddAnswer(userId, uint(themeId), req.Answer, 1)
+		err = r.roadmapSrv.IncrementUserScoreAndAddAnswer(userId, problem.ThemeID, req.Answer, 1)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 			return

@@ -13,15 +13,15 @@ type RoadmapServiceImpl struct {
 	logger *zap.Logger
 }
 
-func (r RoadmapServiceImpl) GetProblem(problemID uint) (string, error) {
+func (r RoadmapServiceImpl) GetProblem(problemID uint) (*models.Problem, error) {
 	var problem *models.Problem
 	result := r.db.Model(&models.Problem{}).Where("id = ?", problemID).First(&problem)
 	if result.Error != nil {
 		r.logger.Error("Cant get problem", zap.Error(result.Error))
-		return "", fmt.Errorf("%w:%w", ErrGetEntities, result.Error)
+		return nil, fmt.Errorf("%w:%w", ErrGetEntities, result.Error)
 	}
 
-	return problem.Question, nil
+	return problem, nil
 }
 
 func (r RoadmapServiceImpl) GetTheme(userID uint, themeID uint) (*models.Theme, error) {
@@ -78,7 +78,7 @@ func (r RoadmapServiceImpl) GetTopics(userID uint, prThemes bool) ([]*models.Top
 	var topics []*models.Topic
 	result := r.db.Model(&models.Topic{}).Preload("Themes")
 
-	if prThemes {
+	if prThemes || userID != 0 {
 		result = result.Preload("Themes")
 	}
 
@@ -89,7 +89,7 @@ func (r RoadmapServiceImpl) GetTopics(userID uint, prThemes bool) ([]*models.Top
 		return nil, fmt.Errorf("%w:%w", ErrGetEntities, result.Error)
 	}
 
-	if userID != 0 && prThemes {
+	if userID != 0 {
 		for i := range topics {
 			for j := range topics[i].Themes {
 				var userTheme *models.UserTheme
@@ -106,6 +106,12 @@ func (r RoadmapServiceImpl) GetTopics(userID uint, prThemes bool) ([]*models.Top
 				topics[i].Themes[j].Score = userTheme.Score
 				topics[i].Themes[j].ResolvedProblems = userTheme.ResolvedProblems
 			}
+		}
+	}
+
+	if !prThemes && userID != 0 {
+		for i := range topics {
+			topics[i].Themes = nil
 		}
 	}
 
@@ -149,19 +155,19 @@ func (r RoadmapServiceImpl) GetTopic(userID uint, topicID uint, prThemes bool) (
 	return topic, nil
 }
 
-func (r RoadmapServiceImpl) CreateProblems(problems []string) error {
+func (r RoadmapServiceImpl) CreateProblems(problems []string, themeID uint) ([]*models.Problem, error) {
 	problemsStrs := make([]*models.Problem, len(problems))
 
 	for i := range problems {
-		problemsStrs[i] = &models.Problem{Question: problems[i]}
+		problemsStrs[i] = &models.Problem{Question: problems[i], ThemeID: themeID}
 	}
 
 	if err := r.db.Save(&problemsStrs).Error; err != nil {
 		r.logger.Error("Cant create topics", zap.Error(err))
-		return fmt.Errorf("%w:%w", ErrCreateEntity, err)
+		return nil, fmt.Errorf("%w:%w", ErrCreateEntity, err)
 	}
 
-	return nil
+	return problemsStrs, nil
 }
 
 func (r RoadmapServiceImpl) DeleteProblem(problemID uint) error {

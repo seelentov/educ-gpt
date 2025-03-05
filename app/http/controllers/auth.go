@@ -3,11 +3,12 @@ package controllers
 import (
 	"educ-gpt/http/dtos"
 	"educ-gpt/http/httputils"
-	"educ-gpt/http/validator"
+	"educ-gpt/http/httputils/valid"
 	"educ-gpt/models"
 	"educ-gpt/services"
 	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"net/http"
 )
 
@@ -21,7 +22,15 @@ func (c *AuthController) Register(ctx *gin.Context) {
 	var req dtos.RegisterRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": validator.ParseValidationErrors(err)})
+		var valErr validator.ValidationErrors
+		ok := errors.As(err, &valErr)
+
+		if ok {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": valid.ParseValidationErrors(err)})
+			return
+		}
+
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
@@ -94,8 +103,17 @@ func (c *AuthController) Me(ctx *gin.Context) {
 
 func (c *AuthController) Login(ctx *gin.Context) {
 	var req dtos.LoginRequest
+
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": validator.ParseValidationErrors(err)})
+		var valErr validator.ValidationErrors
+		ok := errors.As(err, &valErr)
+
+		if ok {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": valid.ParseValidationErrors(err)})
+			return
+		}
+
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
@@ -133,7 +151,15 @@ func (c *AuthController) Login(ctx *gin.Context) {
 func (c *AuthController) Refresh(ctx *gin.Context) {
 	var req dtos.RefreshTokenRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": validator.ParseValidationErrors(err)})
+		var valErr validator.ValidationErrors
+		ok := errors.As(err, &valErr)
+
+		if ok {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": valid.ParseValidationErrors(err)})
+			return
+		}
+
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 

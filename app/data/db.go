@@ -20,6 +20,7 @@ var ms = []interface{}{
 	&models.Role{},
 	&models.Topic{},
 	&models.Theme{},
+	&models.Problem{},
 	&models.UserTheme{},
 }
 

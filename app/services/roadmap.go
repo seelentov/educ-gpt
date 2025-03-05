@@ -19,7 +19,7 @@ type RoadmapService interface {
 	GetTopics(userID uint, prThemes bool) ([]*models.Topic, error)
 	GetTopic(userID uint, topicID uint, prThemes bool) (*models.Topic, error)
 	GetTheme(userID uint, themeID uint) (*models.Theme, error)
-	GetProblem(problemID uint) (string, error)
-	CreateProblems(problems []string) error
+	GetProblem(problemID uint) (*models.Problem, error)
+	CreateProblems(problems []string, themeID uint) ([]*models.Problem, error)
 	DeleteProblem(problemID uint) error
 }
