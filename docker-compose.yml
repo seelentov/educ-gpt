@@ -14,7 +14,8 @@ services:
     expose:
       - ${PORT}
     networks:
-      - app
+      - api
+      - client
   db:
     image: postgres:15
     restart: unless-stopped
@@ -29,7 +30,7 @@ services:
     expose:
       - ${DB_PORT}
     networks:
-      - app
+      - api
   redis:
     image: redis:alpine
     container_name: redis
@@ -41,8 +42,10 @@ services:
     expose:
       - ${REDIS_PORT}
     networks:
-      - app
+      - api
 
 networks:
-  app:
-    name: app
+  api:
+    name: api
+  client:
+    name: client

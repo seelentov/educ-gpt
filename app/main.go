@@ -2,6 +2,7 @@ package main
 
 import (
 	"educ-gpt/data"
+	"educ-gpt/dic"
 	"educ-gpt/http/router"
 	"errors"
 	"fmt"
@@ -35,6 +36,8 @@ func main() {
 		Addr:    fmt.Sprintf("%s:%v", addr, port),
 		Handler: r,
 	}
+
+	dic.InitDaemons()
 
 	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Fatalf("ERR: ListenAndServe: %s\n", err)

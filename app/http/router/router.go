@@ -19,17 +19,12 @@ func NewRouter() *gin.Engine {
 			authGroup.POST("/login", dic.AuthController().Login)
 			authGroup.POST("/refresh", dic.AuthController().Refresh)
 		}
-
-		testGroup := apiGroup.Group("/test")
-		{
-			testGroup.GET("", dic.TestController().Test)
-		}
-
 		roadmapGroup := apiGroup.Group("/roadmap")
 		{
 			roadmapGroup.GET("", dic.RoadmapController().GetTopics)
 			roadmapGroup.GET("/:topic_id", dic.RoadmapController().GetThemes)
 			roadmapGroup.GET("/:topic_id/:theme_id", dic.RoadmapController().GetTheme)
+			roadmapGroup.GET("/problems/:topic_id/:theme_id", dic.RoadmapController().GetProblems)
 			roadmapGroup.POST("/resolve", dic.RoadmapController().IncrementUserScoreAndAddAnswer)
 		}
 	}

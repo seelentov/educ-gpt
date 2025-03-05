@@ -20,17 +20,6 @@ func AuthController() *controllers.AuthController {
 	return authController
 }
 
-var testController *controllers.TestController
-
-func TestController() *controllers.TestController {
-	if testController == nil {
-		testController = controllers.NewTestController()
-		logger.Logger().Debug("TestController initialized")
-	}
-
-	return testController
-}
-
 var roadmapController *controllers.RoadmapController
 
 func RoadmapController() *controllers.RoadmapController {

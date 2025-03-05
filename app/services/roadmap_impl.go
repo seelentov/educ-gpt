@@ -13,6 +13,15 @@ type RoadmapServiceImpl struct {
 	logger *zap.Logger
 }
 
+func (r RoadmapServiceImpl) ClearProblems() error {
+	result := r.db.Where("1 = 1").Delete(&models.Problem{})
+	if result.Error != nil {
+		r.logger.Error("Cant remove problem", zap.Error(result.Error))
+		return fmt.Errorf("%w:%w", ErrDeleteEntities, result.Error)
+	}
+	return nil
+}
+
 func (r RoadmapServiceImpl) GetProblem(problemID uint) (*models.Problem, error) {
 	var problem *models.Problem
 	result := r.db.Model(&models.Problem{}).Where("id = ?", problemID).First(&problem)
@@ -45,23 +54,41 @@ func (r RoadmapServiceImpl) GetTheme(userID uint, themeID uint) (*models.Theme, 
 	return theme, nil
 }
 
-func (r RoadmapServiceImpl) IncrementUserScoreAndAddAnswer(userID uint, themeID uint, newProblem string, score uint) error {
-	userTheme := models.UserTheme{UserID: userID, ThemeID: themeID}
+func (r RoadmapServiceImpl) IncrementUserScoreAndAddAnswer(userID uint, problemID uint, score uint) error {
+	problem, err := r.GetProblem(problemID)
+	if err != nil {
+		r.logger.Error("Cant get or create user_theme", zap.Error(err))
+		return fmt.Errorf("%w:%w", ErrGetOrCreateEntity, err)
+	}
 
-	result := r.db.Model(&models.UserTheme{}).FirstOrCreate(userTheme)
+	userTheme := &models.UserTheme{UserID: userID, ThemeID: problem.ThemeID}
+
+	result := r.db.Model(userTheme).FirstOrCreate(userTheme)
 	if result.Error != nil {
 		r.logger.Error("Cant get or create user_theme", zap.Error(result.Error))
 		return fmt.Errorf("%w:%w", ErrGetOrCreateEntity, result.Error)
 	}
 
-	userTheme.ResolvedProblems += "; " + newProblem
+	userTheme.ResolvedProblems += "; " + problem.Question
 	userTheme.Score += score
 
-	result = r.db.Save(&userTheme)
+	tx := r.db.Begin()
+
+	result = tx.Save(&userTheme)
 	if result.Error != nil {
-		r.logger.Error("Cant update user_theme", zap.Error(result.Error))
-		return fmt.Errorf("%w:%w", ErrUpdateEntity, result.Error)
+		tx.Rollback()
+		r.logger.Error("Cant get or create user_theme", zap.Error(result.Error))
+		return fmt.Errorf("%w:%w", ErrGetOrCreateEntity, result.Error)
 	}
+
+	result = tx.Delete(&models.Problem{}, problemID)
+	if result.Error != nil {
+		tx.Rollback()
+		r.logger.Error("Cant get or create user_theme", zap.Error(result.Error))
+		return fmt.Errorf("%w:%w", ErrGetOrCreateEntity, result.Error)
+	}
+
+	tx.Commit()
 
 	return nil
 }
@@ -103,8 +130,7 @@ func (r RoadmapServiceImpl) GetTopics(userID uint, prThemes bool) ([]*models.Top
 					return nil, fmt.Errorf("%w:%w", ErrGetEntities, result.Error)
 				}
 
-				topics[i].Themes[j].Score = userTheme.Score
-				topics[i].Themes[j].ResolvedProblems = userTheme.ResolvedProblems
+				topics[i].Score += userTheme.Score
 			}
 		}
 	}
@@ -163,7 +189,7 @@ func (r RoadmapServiceImpl) CreateProblems(problems []string, themeID uint) ([]*
 	}
 
 	if err := r.db.Save(&problemsStrs).Error; err != nil {
-		r.logger.Error("Cant create topics", zap.Error(err))
+		r.logger.Error("Cant create problems", zap.Error(err))
 		return nil, fmt.Errorf("%w:%w", ErrCreateEntity, err)
 	}
 

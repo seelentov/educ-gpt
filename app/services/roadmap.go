@@ -14,7 +14,7 @@ var (
 )
 
 type RoadmapService interface {
-	IncrementUserScoreAndAddAnswer(userID uint, themeID uint, newProblem string, score uint) error
+	IncrementUserScoreAndAddAnswer(userID uint, problemID uint, score uint) error
 	CreateThemes(theme []*models.Theme) error
 	GetTopics(userID uint, prThemes bool) ([]*models.Topic, error)
 	GetTopic(userID uint, topicID uint, prThemes bool) (*models.Topic, error)
@@ -22,4 +22,5 @@ type RoadmapService interface {
 	GetProblem(problemID uint) (*models.Problem, error)
 	CreateProblems(problems []string, themeID uint) ([]*models.Problem, error)
 	DeleteProblem(problemID uint) error
+	ClearProblems() error
 }
