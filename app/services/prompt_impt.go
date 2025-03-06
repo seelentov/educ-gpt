@@ -105,8 +105,8 @@ func (p PromptServiceImpl) GetTheme(topic string, theme string, userThemeStats *
 	return sb.String(), nil
 }
 
-func (p PromptServiceImpl) GetProblems(topic string, theme string, userThemeStats *models.Theme, userAllStats []*models.Theme) (string, error) {
-	prompt1 := "Подготовь 10 задач по теме: "
+func (p PromptServiceImpl) GetProblems(count int, topic string, theme string, userThemeStats *models.Theme, userAllStats []*models.Theme) (string, error) {
+	prompt1 := fmt.Sprintf("Подготовь 10 задачи в количестве %v по теме: ", count)
 	prompt2 := ". Учитывай прогресс пользователя. Вот список тем, которые он уже изучил, и количество решенных задач по каждой теме: "
 	prompt3 := ". Вот список задач, которые уже выполнил пользователь, их не должно быть в списке задач от тебя:"
 	prompt4 := `Ответ должен быть json в виде {\"text\": \"<теоретический текст>\", \"problems\":[\"<задача 1>\", \"<задача 2>\", ...]}. Если тема не связанна с конкретной технологией или языком программирования, то технология или язык программирования может быть любым. В ответе должен быть только JSON объект с text, который будет включать основной ответ и problems с задачами в виде строк!`

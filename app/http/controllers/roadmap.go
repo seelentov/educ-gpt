@@ -261,7 +261,7 @@ func (r RoadmapController) GetProblems(ctx *gin.Context) {
 		return
 	}
 
-	prompt, err := r.promptSrv.GetProblems(topic.Title, theme.Title, theme, topic.Themes)
+	prompt, err := r.promptSrv.GetProblems(10, topic.Title, theme.Title, theme, topic.Themes)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
@@ -352,6 +352,10 @@ func (r RoadmapController) IncrementUserScoreAndAddAnswer(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, target)
+}
+
+func (r RoadmapController) GetDailyChallenge(ctx *gin.Context) {
+
 }
 
 func NewRoadmapController(
