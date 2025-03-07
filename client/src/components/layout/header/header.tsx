@@ -1,11 +1,14 @@
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+'use client'
 
-export async function Header() {
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useMemo } from 'react'
+
+export function Header() {
 
     const pathname = usePathname()
 
-    const routes = [
+    const routes = useMemo(() => [
         {
             link: "/topics",
             title: "Список тем"
@@ -19,7 +22,7 @@ export async function Header() {
             title: "Поддержкать проект"
         },
 
-    ]
+    ], [])
     return (
         <div className="container">
             <header className="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
