@@ -1,5 +1,5 @@
 import 'bootstrap/dist/css/bootstrap.css';
-import '@/styles/styles.css'
+import '@/styles/styles.scss'
 
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";

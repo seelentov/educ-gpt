@@ -24,3 +24,24 @@
     width: 100%;
     background-color: white;
 }
+
+.wrapper {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    padding-top: 59px;
+
+    @media (max-width: 992px) {
+        padding-top: 40px
+    }
+
+    >main {
+        flex: 1 1 auto;
+    }
+
+    >* {
+        min-width: 0;
+    }
+}

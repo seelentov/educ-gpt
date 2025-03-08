@@ -10,6 +10,8 @@ func NewRouter() *gin.Engine {
 
 	router.Use(dic.AuthMiddleware())
 
+	router.Static("/storage", "./storage")
+
 	apiGroup := router.Group("/api")
 	{
 		authGroup := apiGroup.Group("/auth")
