@@ -24,11 +24,6 @@ type RoadmapController struct {
 func (r RoadmapController) GetTopics(ctx *gin.Context) {
 	userid, err := httputils.GetUserId(ctx)
 
-	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
-
 	topics, err := r.roadmapSrv.GetTopics(userid, false)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
