@@ -2,9 +2,10 @@
 
 import { useWidth } from '@/core/hooks/useWidth'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useMemo } from 'react'
 import Image from "next/image";
+import { useLocalStorage } from '@/core/hooks/useLocalStorage'
 
 export function Header() {
 
@@ -30,6 +31,16 @@ export function Header() {
     ], [])
 
     const width = useWidth()
+    const router = useRouter()
+
+    const [token, setToken] = useLocalStorage("token", "")
+
+    const logout = (e: any) => {
+        e.preventDefault()
+
+        setToken("")
+        router.push("/")
+    }
 
     return (
         <div className='header'>
@@ -44,10 +55,15 @@ export function Header() {
                             </Link></li>
                         )}
                     </ul>
-                    {(pathname != "/login" && pathname != "/signup") &&
+                    {(pathname != "/login" && pathname != "/signup" && token === "") &&
                         <div className="col-md-3 text-end col-5">
-                            <Link href="/login" type="button" className="btn btn-outline-primary btn-sm me-2">Login</Link>
-                            <Link href="/signup" type="button" className="btn btn-primary btn-sm">SignUp</Link>
+                            <Link href="/login" type="button" className="btn btn-outline-primary btn-sm me-2">Войти</Link>
+                            <Link href="/signup" type="button" className="btn btn-primary btn-sm">Присоединиться</Link>
+                        </div>
+                    }
+                    {token !== "" &&
+                        <div className="col-md-3 text-end col-5">
+                            <button onClick={logout} type="button" className="btn btn-outline-primary btn-sm me-2">Выйти</button>
                         </div>
                     }
                 </header>

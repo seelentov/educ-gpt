@@ -1,3 +1,5 @@
+@import './forms.scss';
+
 .disabled {
     pointer-events: none
 }
@@ -11,7 +13,7 @@
 }
 
 .full-height {
-    height: 100vh;
+    height: 80vh;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -23,15 +25,21 @@
     left: 0;
     width: 100%;
     background-color: white;
+    z-index: 999;
 }
 
 .wrapper {
+    @media (max-width:573px) {
+        margin-top: 55px;
+    }
+
+    margin-top: 73px;
     min-height: 100%;
     display: flex;
     flex-direction: column;
     overflow: hidden;
 
-    padding-top: 59px;
+    flex: 1;
 
     @media (max-width: 992px) {
         padding-top: 40px
@@ -43,5 +51,196 @@
 
     >* {
         min-width: 0;
+    }
+}
+
+//=======================================================================
+
+::-webkit-scrollbar {
+    width: 20px;
+}
+
+::-webkit-scrollbar-track {
+    background: white;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgb(105, 105, 105);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgb(54, 54, 54);
+}
+
+//=======================================================================
+* {
+    padding: 0px;
+    margin: 0px;
+    border: 0px;
+}
+
+*,
+*:before,
+*:after {
+    box-sizing: border-box;
+}
+
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    line-height: 1;
+    font-family: Inter, sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    //text-rendering: optimizeLegibility;
+    -ms-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color: #4D4D4D;
+
+    @media (max-width: 992px) {
+        font-size: 14px;
+    }
+}
+
+input,
+button,
+textarea {
+    font-family: Inter, sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+}
+
+button {
+    cursor: pointer;
+    color: #4D4D4D;
+    background-color: inherit;
+    font-family: Inter, sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+}
+
+address {
+    display: block;
+    font-style: italic;
+}
+
+a {
+    color: inherit;
+}
+
+a:link,
+a:visited {
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
+:focus,
+:active {
+    outline: none;
+}
+
+a:focus,
+a:active {
+    outline: none;
+}
+
+ul li {
+    list-style: none;
+}
+
+img {
+    vertical-align: top;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-weight: inherit;
+    font-size: inherit;
+}
+
+
+.text {
+
+    line-height: 1.5;
+
+    h1 {
+        font-weight: 700;
+        margin-bottom: 20px;
+
+        font-size: 30px;
+
+
+        @media (max-width: 768px) {
+            font-size: 24px;
+
+        }
+    }
+
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-weight: 700;
+        margin-bottom: 20px;
+
+        font-size: 24px;
+
+
+        @media (max-width: 768px) {
+            font-size: 16px;
+
+        }
+    }
+
+    p {
+        margin-bottom: 10px;
+    }
+
+    ul {
+        list-style-type: disc;
+        list-style-position: inside;
+    }
+
+    ol {
+        list-style-type: decimal;
+        list-style-position: inside;
+    }
+
+    ul ul,
+    ol ul {
+        list-style-type: circle;
+        list-style-position: inside;
+        margin-left: 15px;
+    }
+
+    ol ol,
+    ul ol {
+        list-style-type: lower-latin;
+        list-style-position: inside;
+        margin-left: 15px;
+    }
+
+    ul,
+    ol {
+        margin-left: 15px;
+    }
+
+    li {
+        list-style: disc;
     }
 }

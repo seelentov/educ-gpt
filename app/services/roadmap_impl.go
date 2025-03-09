@@ -103,7 +103,7 @@ func (r RoadmapServiceImpl) CreateThemes(theme []*models.Theme) error {
 
 func (r RoadmapServiceImpl) GetTopics(userID uint, prThemes bool) ([]*models.Topic, error) {
 	var topics []*models.Topic
-	result := r.db.Model(&models.Topic{}).Preload("Themes")
+	result := r.db.Model(&models.Topic{})
 
 	if prThemes || userID != 0 {
 		result = result.Preload("Themes")
