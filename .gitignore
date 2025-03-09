@@ -5,3 +5,5 @@ docker/
 .idea
 
 /bin
+
+*.log
