@@ -1,9 +1,6 @@
 package services
 
-import (
-	"educ-gpt/models"
-	"errors"
-)
+import "errors"
 
 var (
 	ErrGetEntities       = errors.New("cannot get entites")
@@ -14,13 +11,7 @@ var (
 )
 
 type RoadmapService interface {
-	IncrementUserScoreAndAddAnswer(userID uint, problemID uint, score uint) error
-	CreateThemes(theme []*models.Theme) error
-	GetTopics(userID uint, prThemes bool) ([]*models.Topic, error)
-	GetTopic(userID uint, topicID uint, prThemes bool) (*models.Topic, error)
-	GetTheme(userID uint, themeID uint) (*models.Theme, error)
-	GetProblem(problemID uint) (*models.Problem, error)
-	CreateProblems(problems []string, themeID uint) ([]*models.Problem, error)
-	DeleteProblem(problemID uint) error
-	ClearProblems() error
+	TopicService
+	ProblemService
+	ThemeService
 }

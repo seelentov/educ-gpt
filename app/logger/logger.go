@@ -1,14 +1,10 @@
 package logger
 
 import (
-	"errors"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"log"
-)
-
-var (
-	ErrFailedInit = errors.New("failed to initialize logger")
+	"os"
 )
 
 var logger *zap.Logger
@@ -16,16 +12,38 @@ var logger *zap.Logger
 func Logger() *zap.Logger {
 	if logger == nil {
 		config := zap.NewProductionConfig()
-		config.Encoding = "json"
-		config.Level = zap.NewAtomicLevelAt(zapcore.DebugLevel)
 
-		l, err := config.Build()
-		if err != nil {
-			log.Fatalf("%v: %v", ErrFailedInit, err)
+		if os.Getenv("ENV") == "development" {
+			config = zap.NewDevelopmentConfig()
 		}
 
-		logger = l
-		l.Debug("Logger initialized")
+		if os.Getenv("DEBUG") == "true" {
+			config.Level = zap.NewAtomicLevelAt(zapcore.DebugLevel)
+		} else {
+			config.Level = zap.NewAtomicLevelAt(zapcore.InfoLevel)
+		}
+
+		config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+		config.Encoding = "console"
+
+		file, err := os.OpenFile("app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("failed to open log file: %v", err)
+		}
+
+		fileSyncer := zapcore.AddSync(file)
+
+		multiSyncer := zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout), fileSyncer)
+
+		core := zapcore.NewCore(
+			zapcore.NewConsoleEncoder(config.EncoderConfig),
+			multiSyncer,
+			config.Level,
+		)
+
+		logger = zap.New(core, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel))
+
+		logger.Debug("Logger initialized")
 	}
 	return logger
 }

@@ -17,6 +17,22 @@ type UserServiceImpl struct {
 	defaultRole string
 }
 
+func (u UserServiceImpl) ChangePassword(userId uint, password string) error {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+
+	if err != nil {
+		u.logger.Error("Error hash password", zap.Error(err))
+		return fmt.Errorf("%w: %w", ErrHashingPassword, err)
+	}
+
+	if err := u.db.Model(&models.User{}).Where("id = ?", userId).Update("password", hashedPassword).Error; err != nil {
+		u.logger.Error("Update password failed", zap.Error(err))
+		return fmt.Errorf("%w:%w", ErrUpdateUser, err)
+	}
+
+	return nil
+}
+
 func (u UserServiceImpl) Activate(key string) error {
 	var user *models.User
 	if err := u.db.Model(&models.User{}).Where("activation_key = ?", key).Find(&user).Error; err != nil {
@@ -39,18 +55,18 @@ func (u UserServiceImpl) Activate(key string) error {
 func (u UserServiceImpl) Create(user *models.User) (string, error) {
 	err := u.checkUnique(user)
 	if err != nil {
-		u.logger.Error("User duplicate", zap.Error(err))
+		u.logger.Warn("User duplicate", zap.Error(err))
 		return "", fmt.Errorf("%w: %w", ErrDuplicate, err)
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 
-	key := securityutils.GenerateKey(200)
-
 	if err != nil {
-		u.logger.Error("Error create key", zap.Error(err))
-		return "", fmt.Errorf("%w: %w", ErrGenerateKey, err)
+		u.logger.Error("Error hash password", zap.Error(err))
+		return "", fmt.Errorf("%w: %w", ErrHashingPassword, err)
 	}
+
+	key := securityutils.GenerateKey(200)
 
 	user.ActivationKey = key
 
@@ -163,7 +179,7 @@ func (u UserServiceImpl) checkUnique(user *models.User) error {
 	var existingUser models.User
 	result := u.db.Where("name = ?", user.Name).First(&existingUser)
 	if result.Error == nil {
-		u.logger.Error("Duplicate name", zap.String("name", user.Name))
+		u.logger.Warn("Duplicate name", zap.String("name", user.Name))
 		return ErrDuplicateName
 	} else if !errors.Is(result.Error, gorm.ErrRecordNotFound) { // Some other database error occurred
 		u.logger.Error("Error checking for duplicate name", zap.Error(result.Error))
@@ -172,7 +188,7 @@ func (u UserServiceImpl) checkUnique(user *models.User) error {
 
 	result = u.db.Where("email = ?", user.Email).First(&existingUser)
 	if result.Error == nil {
-		u.logger.Error("Duplicate email", zap.String("email", user.Email))
+		u.logger.Warn("Duplicate email", zap.String("email", user.Email))
 		return ErrDuplicateEmail
 	} else if !errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		u.logger.Error("Error checking for duplicate email", zap.Error(result.Error))
@@ -181,7 +197,7 @@ func (u UserServiceImpl) checkUnique(user *models.User) error {
 
 	result = u.db.Where("number = ?", user.Number).First(&existingUser)
 	if result.Error == nil {
-		u.logger.Error("Duplicate number", zap.String("number", user.Number))
+		u.logger.Warn("Duplicate number", zap.String("number", user.Number))
 		return ErrDuplicateNumber
 	} else if !errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		u.logger.Error("Error checking for duplicate number", zap.Error(result.Error))

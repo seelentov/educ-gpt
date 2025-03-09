@@ -14,4 +14,5 @@ type Mail struct {
 
 type MailService interface {
 	ActivateMail(name, activationKey string) (*Mail, error)
+	ResetMail(name, activationKey string) (*Mail, error)
 }

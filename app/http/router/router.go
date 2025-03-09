@@ -21,6 +21,9 @@ func NewRouter() *gin.Engine {
 			authGroup.POST("/login", dic.AuthController().Login)
 			authGroup.POST("/refresh", dic.AuthController().Refresh)
 			authGroup.POST("/activate/:key", dic.AuthController().Activate)
+			authGroup.POST("/change_password", dic.AuthController().ChangePassword)
+			authGroup.POST("/reset/:key", dic.AuthController().ResetPassword)
+			authGroup.POST("/reset/task", dic.AuthController().ResetPasswordTask)
 		}
 		roadmapGroup := apiGroup.Group("/roadmap")
 		{

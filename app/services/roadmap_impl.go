@@ -6,31 +6,12 @@ import (
 	"fmt"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
+	"time"
 )
 
 type RoadmapServiceImpl struct {
 	db     *gorm.DB
 	logger *zap.Logger
-}
-
-func (r RoadmapServiceImpl) ClearProblems() error {
-	result := r.db.Where("1 = 1").Delete(&models.Problem{})
-	if result.Error != nil {
-		r.logger.Error("Cant remove problem", zap.Error(result.Error))
-		return fmt.Errorf("%w:%w", ErrDeleteEntities, result.Error)
-	}
-	return nil
-}
-
-func (r RoadmapServiceImpl) GetProblem(problemID uint) (*models.Problem, error) {
-	var problem *models.Problem
-	result := r.db.Model(&models.Problem{}).Where("id = ?", problemID).First(&problem)
-	if result.Error != nil {
-		r.logger.Error("Cant get problem", zap.Error(result.Error))
-		return nil, fmt.Errorf("%w:%w", ErrGetEntities, result.Error)
-	}
-
-	return problem, nil
 }
 
 func (r RoadmapServiceImpl) GetTheme(userID uint, themeID uint) (*models.Theme, error) {
@@ -202,6 +183,28 @@ func (r RoadmapServiceImpl) DeleteProblem(problemID uint) error {
 		return fmt.Errorf("%w:%w", ErrDeleteEntities, err)
 	}
 	return nil
+}
+
+func (r RoadmapServiceImpl) ClearProblems() error {
+	ago := time.Now().Add(-24 * time.Hour)
+
+	result := r.db.Where("created_at < ?", ago).Delete(&models.Problem{})
+	if result.Error != nil {
+		r.logger.Error("Cant remove problem", zap.Error(result.Error))
+		return fmt.Errorf("%w:%w", ErrDeleteEntities, result.Error)
+	}
+	return nil
+}
+
+func (r RoadmapServiceImpl) GetProblem(problemID uint) (*models.Problem, error) {
+	var problem *models.Problem
+	result := r.db.Model(&models.Problem{}).Where("id = ?", problemID).First(&problem)
+	if result.Error != nil {
+		r.logger.Error("Cant get problem", zap.Error(result.Error))
+		return nil, fmt.Errorf("%w:%w", ErrGetEntities, result.Error)
+	}
+
+	return problem, nil
 }
 
 func NewRoadmapServiceImpl(db *gorm.DB, logger *zap.Logger) RoadmapService {

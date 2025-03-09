@@ -22,14 +22,27 @@ func clearProblems() {
 	daemon, ctx, cancel := daemons.NewClearProblemsDaemon(
 		RoadmapService(),
 		logger.Logger(),
-		time.Hour*24,
+		time.Hour*12,
 	)
 	daemonsSlice = append(daemonsSlice, daemon)
 	ClearProblemsDaemon = &DaemonController{ctx, cancel}
 }
 
+var ClearResetTokensDaemon *DaemonController
+
+func clearResetTokens() {
+	daemon, ctx, cancel := daemons.NewClearResetTokens(
+		ResetTokenService(),
+		logger.Logger(),
+		time.Hour*2,
+	)
+	daemonsSlice = append(daemonsSlice, daemon)
+	ClearResetTokensDaemon = &DaemonController{ctx, cancel}
+}
+
 func initServices() {
 	clearProblems()
+	clearResetTokens()
 }
 
 func InitDaemons() {

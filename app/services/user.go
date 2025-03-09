@@ -32,4 +32,5 @@ type UserService interface {
 	Verify(input string, credential string) error
 	VerifyPassword(input string, password string) error
 	Activate(key string) error
+	ChangePassword(userId uint, password string) error
 }

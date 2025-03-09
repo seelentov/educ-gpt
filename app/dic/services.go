@@ -138,10 +138,25 @@ func MailService() services.MailService {
 			os.Getenv("PROTOCOL"),
 			os.Getenv("FULL_HOST"),
 			"activate",
+			"reset",
 			logger.Logger(),
 		)
 		logger.Logger().Debug("MailService initialized")
 	}
 
 	return mailService
+}
+
+var resetTokenService services.ResetTokenService
+
+func ResetTokenService() services.ResetTokenService {
+	if resetTokenService == nil {
+		resetTokenService = services.NewResetTokenServiceImpl(
+			data.DB(),
+			logger.Logger(),
+		)
+		logger.Logger().Debug("MailService initialized")
+	}
+
+	return resetTokenService
 }

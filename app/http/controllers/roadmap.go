@@ -16,7 +16,7 @@ import (
 
 type RoadmapController struct {
 	userSrv    services.UserService
-	nlSrv      services.NaturalLanguageService
+	aiSrv      services.AIService
 	promptSrv  services.PromptService
 	roadmapSrv services.RoadmapService
 }
@@ -83,7 +83,7 @@ func (r RoadmapController) GetThemes(ctx *gin.Context) {
 
 	var target []string
 
-	err = r.nlSrv.GetAnswer(user.ChatGptToken, user.ChatGptModel, []*services.DialogItem{{Text: prompt, IsUser: true}}, &target)
+	err = r.aiSrv.GetAnswer(user.ChatGptToken, user.ChatGptModel, []*services.DialogItem{{Text: prompt, IsUser: true}}, &target)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
@@ -186,7 +186,7 @@ func (r RoadmapController) GetTheme(ctx *gin.Context) {
 
 	var target services.PromptThemeRequest
 
-	err = r.nlSrv.GetAnswer(user.ChatGptToken, user.ChatGptModel, []*services.DialogItem{{Text: prompt, IsUser: true}}, &target)
+	err = r.aiSrv.GetAnswer(user.ChatGptToken, user.ChatGptModel, []*services.DialogItem{{Text: prompt, IsUser: true}}, &target)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
@@ -264,7 +264,7 @@ func (r RoadmapController) GetProblems(ctx *gin.Context) {
 
 	var target services.PromptProblemsRequest
 
-	err = r.nlSrv.GetAnswer(user.ChatGptToken, user.ChatGptModel, []*services.DialogItem{{Text: prompt, IsUser: true}}, &target)
+	err = r.aiSrv.GetAnswer(user.ChatGptToken, user.ChatGptModel, []*services.DialogItem{{Text: prompt, IsUser: true}}, &target)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
@@ -332,7 +332,7 @@ func (r RoadmapController) IncrementUserScoreAndAddAnswer(ctx *gin.Context) {
 
 	var target services.PromptProblemRequest
 
-	err = r.nlSrv.GetAnswer(user.ChatGptToken, user.ChatGptModel, []*services.DialogItem{{Text: prompt, IsUser: true}}, &target)
+	err = r.aiSrv.GetAnswer(user.ChatGptToken, user.ChatGptModel, []*services.DialogItem{{Text: prompt, IsUser: true}}, &target)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
@@ -347,10 +347,6 @@ func (r RoadmapController) IncrementUserScoreAndAddAnswer(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, target)
-}
-
-func (r RoadmapController) GetDailyChallenge(ctx *gin.Context) {
-
 }
 
 func NewRoadmapController(

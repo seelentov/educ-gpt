@@ -3,7 +3,7 @@
 import { useWidth } from '@/core/hooks/useWidth'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Image from "next/image";
 import { useLocalStorage } from '@/core/hooks/useLocalStorage'
 
@@ -34,11 +34,33 @@ export function Header() {
     const router = useRouter()
 
     const [token, setToken] = useLocalStorage("token", "")
+    const [__, setRefreshToken] = useLocalStorage("refresh_token", "")
+
+    const [isLogged, setIsLogged] = useState<boolean>(false)
+
+    useEffect(() => {
+        try {
+            const value = window.localStorage.getItem("token")
+
+            const v = value ? JSON.parse(value) : ""
+
+            if (v !== "") {
+                setIsLogged(true)
+            } else {
+                setIsLogged(false)
+            }
+
+        } catch (error) {
+            console.log(error)
+        }
+
+    }, [pathname, token])
 
     const logout = (e: any) => {
         e.preventDefault()
 
         setToken("")
+        setRefreshToken("")
         router.push("/")
     }
 
@@ -55,15 +77,18 @@ export function Header() {
                             </Link></li>
                         )}
                     </ul>
-                    {(pathname != "/login" && pathname != "/signup" && token === "") &&
+                    {(pathname != "/login" && pathname != "/signup" && !isLogged) &&
                         <div className="col-md-3 text-end col-5">
-                            <Link href="/login" type="button" className="btn btn-outline-primary btn-sm me-2">Войти</Link>
+                            <Link href="/login" type="button" className="btn btn-outline-primary btn-sm me-2 d-none d-sm-inline-block">Войти</Link>
                             <Link href="/signup" type="button" className="btn btn-primary btn-sm">Присоединиться</Link>
                         </div>
                     }
-                    {token !== "" &&
+                    {isLogged &&
                         <div className="col-md-3 text-end col-5">
-                            <button onClick={logout} type="button" className="btn btn-outline-primary btn-sm me-2">Выйти</button>
+                            <Link href="/profile" type="button" className="btn-sm me-2">
+                                <Image src="" alt="" width={32} height={32} className="rounded-circle" />
+                            </Link>
+                            <button onClick={logout} type="button" className="btn btn-outline-primary btn-sm">Выйти</button>
                         </div>
                     }
                 </header>

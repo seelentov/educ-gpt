@@ -7,7 +7,7 @@ var (
 	ErrParseFailed   = errors.New("request failed")
 )
 
-type NaturalLanguageService interface {
+type AIService interface {
 	GetAnswer(token string, model string, dialog []*DialogItem, target interface{}) error
 }
 

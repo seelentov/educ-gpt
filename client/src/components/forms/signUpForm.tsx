@@ -157,11 +157,15 @@ export function SignUpForm() {
                         </div>
                     </div>
 
+                    <hr />
+
                     <p className="text-danger">{errors?.authorization}</p>
 
                     <button type="submit" className="btn btn-primary btn-block mb-4" disabled={loading}>
                         {loading ? "Регистрация..." : "Присоединиться"}
                     </button>
+
+                    <hr />
 
                     <div className="text-center">
                         <p>Есть аккаунт? <Link className="link-primary" href="/login">Войти</Link></p>

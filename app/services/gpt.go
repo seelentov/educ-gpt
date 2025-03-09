@@ -1,7 +1,7 @@
 package services
 
 type GptService interface {
-	NaturalLanguageService
+	AIService
 }
 
 type GptResponse struct {

@@ -12,7 +12,7 @@ export function LoginForm() {
     const [error, setError] = useState('');
     const [token, setToken] = useLocalStorage("token", "")
     const [refreshToken, setRefreshToken] = useLocalStorage("refresh_token", "")
-    const [loading, setLoading] = useLocalStorage("refresh_token", "")
+    const [loading, setLoading] = useState(false)
 
     const router = useRouter()
 
@@ -34,7 +34,7 @@ export function LoginForm() {
                 setError(data?.error)
             }
             else {
-                router.push("/topics")
+                console.log(data)
 
                 if (data?.token) {
                     setToken(data.token)
@@ -42,6 +42,8 @@ export function LoginForm() {
                 if (data?.refresh_token) {
                     setRefreshToken(data.refresh_token)
                 }
+
+                router.replace("/topics");
             }
 
 
@@ -85,15 +87,16 @@ export function LoginForm() {
 
             {error && <div className="text-danger mb-4">{error}</div>}
 
-            <div className="row mb-4">
-                <div className="col">
-                    <a href="#!">Забыли пароль?</a>
-                </div>
+            <hr />
+
+            <div className="d-flex flex-wrap-wrap col-12 justify-content-between align-items-center">
+                <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
+                    {loading ? "Вход..." : "Войти"}
+                </button>
+                <Link href="/" className='link-primary'>Забыли пароль?</Link>
             </div>
 
-            <button type="submit" className="btn btn-primary btn-block mb-4" disabled={loading}>
-                {loading ? "Вход..." : "Войти"}
-            </button>
+            <hr />
 
             <div className="text-center">
                 <p>Нет аккаунта? <Link className="link-primary" href="/signup">Регистрация</Link></p>
