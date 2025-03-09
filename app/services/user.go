@@ -17,10 +17,12 @@ var (
 	ErrDuplicateEmail     = errors.New("duplicate email")
 	ErrDuplicateNumber    = errors.New("duplicate number")
 	ErrDuplicate          = errors.New("duplicate")
+	ErrActivate           = errors.New("error activate user")
+	ErrGenerateKey        = errors.New("error generating key")
 )
 
 type UserService interface {
-	Create(*models.User) error
+	Create(*models.User) (string, error)
 	Update(id uint, data map[string]interface{}) error
 	GetById(uint) (*models.User, error)
 	GetByName(string) (*models.User, error)
@@ -29,4 +31,5 @@ type UserService interface {
 	GetByCredential(string) (*models.User, error)
 	Verify(input string, credential string) error
 	VerifyPassword(input string, password string) error
+	Activate(key string) error
 }

@@ -2,10 +2,10 @@ package controllers
 
 import (
 	"educ-gpt/http/dtos"
-	"educ-gpt/http/httputils"
-	"educ-gpt/http/httputils/valid"
 	"educ-gpt/models"
 	"educ-gpt/services"
+	"educ-gpt/utils/httputils"
+	"educ-gpt/utils/httputils/valid"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"

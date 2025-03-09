@@ -2,10 +2,10 @@ package controllers
 
 import (
 	"educ-gpt/http/dtos"
-	"educ-gpt/http/httputils"
-	"educ-gpt/http/httputils/valid"
 	"educ-gpt/models"
 	"educ-gpt/services"
+	"educ-gpt/utils/httputils"
+	"educ-gpt/utils/httputils/valid"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -16,6 +16,8 @@ type AuthController struct {
 	userService services.UserService
 	jwtService  services.JwtService
 	roleService services.RoleService
+	senderSrv   services.SenderService
+	mailSrv     services.MailService
 }
 
 func (c *AuthController) Register(ctx *gin.Context) {
@@ -50,7 +52,7 @@ func (c *AuthController) Register(ctx *gin.Context) {
 		ChatGptToken: req.ChatGptToken,
 	}
 
-	err := c.userService.Create(user)
+	key, err := c.userService.Create(user)
 
 	if err != nil {
 		if errors.Is(err, services.ErrAlreadyExist) {
@@ -79,7 +81,29 @@ func (c *AuthController) Register(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Status(http.StatusCreated)
+	mail, err := c.mailSrv.ActivateMail(user.Name, key)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
+	if err := c.senderSrv.SendMessage(user.Email, mail.Subject, mail.Body); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, gin.H{"status": "Письмо для активации аккаунта отправлено на " + user.Email})
+}
+
+func (c *AuthController) Activate(ctx *gin.Context) {
+	key := ctx.Param("key")
+
+	if err := c.userService.Activate(key); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, gin.H{"status": "Аккаунт успешно активирован"})
 }
 
 func (c *AuthController) Me(ctx *gin.Context) {
@@ -123,19 +147,23 @@ func (c *AuthController) Login(ctx *gin.Context) {
 		return
 	}
 
+	if user.ActivateAt == nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Not verified"})
+		return
+	}
+
 	err = c.userService.VerifyPassword(req.Password, user.Password)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Wrong login or password"})
 		return
 	}
 
-	token, err := c.jwtService.GenerateToken(user.ID)
+	token, err := c.jwtService.GenerateToken(user.ID, req.Ttl)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
-	// Generate refresh token
 	refreshToken, err := c.jwtService.GenerateRefreshToken(user.ID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate refresh token"})
@@ -173,7 +201,7 @@ func (c *AuthController) Refresh(ctx *gin.Context) {
 
 	userID := uint(claims["user_id"].(float64))
 
-	newToken, err := c.jwtService.GenerateToken(userID)
+	newToken, err := c.jwtService.GenerateToken(userID, 0)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate new token"})
 		return
@@ -191,6 +219,12 @@ func (c *AuthController) Refresh(ctx *gin.Context) {
 	})
 }
 
-func NewAuthController(userService services.UserService, jwtService services.JwtService, roleService services.RoleService) *AuthController {
-	return &AuthController{userService, jwtService, roleService}
+func NewAuthController(
+	userService services.UserService,
+	jwtService services.JwtService,
+	roleService services.RoleService,
+	senderSrv services.SenderService,
+	mailSrv services.MailService,
+) *AuthController {
+	return &AuthController{userService, jwtService, roleService, senderSrv, mailSrv}
 }

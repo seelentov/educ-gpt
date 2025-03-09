@@ -2,7 +2,7 @@ package middlewares
 
 import (
 	"bytes"
-	"educ-gpt/http/httputils"
+	"educ-gpt/utils/httputils"
 	"encoding/json"
 	"fmt"
 	"github.com/redis/go-redis/v9"

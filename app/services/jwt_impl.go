@@ -16,8 +16,12 @@ type JwtServiceImpl struct {
 	logger *zap.Logger
 }
 
-func (j JwtServiceImpl) GenerateToken(userID uint) (string, error) {
-	expirationTime := time.Now().Add(time.Duration(j.jwtExpiration) * time.Second)
+func (j JwtServiceImpl) GenerateToken(userID uint, ttl int) (string, error) {
+	if ttl == 0 {
+		ttl = j.jwtExpiration
+	}
+
+	expirationTime := time.Now().Add(time.Duration(ttl) * time.Second)
 
 	claims := jwt.MapClaims{
 		"user_id": userID,

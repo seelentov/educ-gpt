@@ -1,0 +1,30 @@
+package services
+
+import (
+	"fmt"
+	"go.uber.org/zap"
+)
+
+type MailServiceImpl struct {
+	protocol       string
+	host           string
+	activationLink string
+	logger         *zap.Logger
+}
+
+func (s *MailServiceImpl) ActivateMail(name, activationKey string) (*Mail, error) {
+	activationLink := s.protocol + "://" + s.host + "/" + s.activationLink + "/" + activationKey
+
+	emailTemplate := fmt.Sprintf(`<html><body><h1>Привет, %s!</h1><p>Спасибо за регистрацию на EDUC GPT. Пожалуйста, активируйте ваш аккаунт, перейдя по ссылке ниже:</p><a href="%s">Активировать аккаунт</a></body></html>`, name, activationLink)
+
+	mail := &Mail{
+		Subject: "Активация аккаунта EDUC GPT",
+		Body:    emailTemplate,
+	}
+
+	return mail, nil
+}
+
+func NewMailServiceImpl(protocol, host, activationLink string, logger *zap.Logger) MailService {
+	return &MailServiceImpl{protocol, host, activationLink, logger}
+}

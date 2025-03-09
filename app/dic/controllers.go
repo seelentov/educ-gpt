@@ -13,6 +13,8 @@ func AuthController() *controllers.AuthController {
 			UserService(),
 			JwtService(),
 			RoleService(),
+			SenderService(),
+			MailService(),
 		)
 		logger.Logger().Debug("AuthController initialized")
 	}

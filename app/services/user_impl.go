@@ -2,11 +2,13 @@ package services
 
 import (
 	"educ-gpt/models"
+	"educ-gpt/utils/securityutils"
 	"errors"
 	"fmt"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"time"
 )
 
 type UserServiceImpl struct {
@@ -15,19 +17,42 @@ type UserServiceImpl struct {
 	defaultRole string
 }
 
-func (u UserServiceImpl) Create(user *models.User) error {
+func (u UserServiceImpl) Activate(key string) error {
+	var user *models.User
+	if err := u.db.Model(&models.User{}).Where("activation_key = ?", key).Find(&user).Error; err != nil {
+		u.logger.Error("activate failed", zap.Error(err))
+		return fmt.Errorf("%w:%w", ErrActivate, err)
+	}
+
+	user.ActivationKey = ""
+	timeNow := time.Now()
+	user.ActivateAt = &timeNow
+
+	if err := u.db.Save(&user).Error; err != nil {
+		u.logger.Error("activate failed", zap.Error(err))
+		return fmt.Errorf("%w:%w", ErrActivate, err)
+	}
+
+	return nil
+}
+
+func (u UserServiceImpl) Create(user *models.User) (string, error) {
 	err := u.checkUnique(user)
 	if err != nil {
 		u.logger.Error("User duplicate", zap.Error(err))
-		return fmt.Errorf("%w: %w", ErrDuplicate, err)
+		return "", fmt.Errorf("%w: %w", ErrDuplicate, err)
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 
+	key := securityutils.GenerateKey(200)
+
 	if err != nil {
-		u.logger.Error("Error hashing password", zap.Error(err))
-		return fmt.Errorf("%w: %w", ErrHashingPassword, err)
+		u.logger.Error("Error create key", zap.Error(err))
+		return "", fmt.Errorf("%w: %w", ErrGenerateKey, err)
 	}
+
+	user.ActivationKey = key
 
 	user.Password = string(hashedPassword)
 
@@ -41,13 +66,13 @@ func (u UserServiceImpl) Create(user *models.User) error {
 	if result.Error != nil {
 		tx.Rollback()
 		u.logger.Error("Error creating user", zap.Error(result.Error))
-		return fmt.Errorf("%w: %w", ErrCreatingUser, result.Error)
+		return "", fmt.Errorf("%w: %w", ErrCreatingUser, result.Error)
 	}
 
 	if err := tx.First(&user, user.ID).Error; err != nil {
 		tx.Rollback()
 		u.logger.Error("Error reloading user", zap.Error(err))
-		return fmt.Errorf("failed to reload user: %w", err)
+		return "", fmt.Errorf("failed to reload user: %w", err)
 	}
 
 	role := &models.Role{}
@@ -56,17 +81,21 @@ func (u UserServiceImpl) Create(user *models.User) error {
 	if result.Error != nil {
 		tx.Rollback()
 		u.logger.Error("Error retrieving role", zap.Error(result.Error))
-		return fmt.Errorf("%w: %w", ErrRetrievingRole, result.Error)
+		return "", fmt.Errorf("%w: %w", ErrRetrievingRole, result.Error)
 	}
 
 	err = tx.Model(user).Association("Roles").Append(role)
 	if err != nil {
 		tx.Rollback()
 		u.logger.Error("Error assigning role to user", zap.Error(err))
-		return fmt.Errorf("failed to assign role: %w", err)
+		return "", fmt.Errorf("failed to assign role: %w", err)
 	}
 
-	return tx.Commit().Error
+	if err := tx.Commit().Error; err != nil {
+		return "", fmt.Errorf("%w:%w", ErrCreatingUser, err)
+	}
+
+	return key, nil
 }
 
 func (u UserServiceImpl) Update(id uint, data map[string]interface{}) error {

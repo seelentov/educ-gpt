@@ -2,7 +2,7 @@ package valid
 
 import (
 	"github.com/go-playground/validator/v10"
-	"strings"
+	"github.com/iancoleman/strcase"
 )
 
 func ParseValidationErrors(err error) map[string]string {
@@ -10,7 +10,7 @@ func ParseValidationErrors(err error) map[string]string {
 
 	for _, e := range err.(validator.ValidationErrors) {
 		err.Error()
-		f := strings.ToLower(e.Field())
+		f := strcase.ToSnake(e.Field())
 		errorsMap[f] = getErrorMsg(e.ActualTag(), e.Param())
 	}
 	return errorsMap

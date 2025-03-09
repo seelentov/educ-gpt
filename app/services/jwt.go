@@ -13,7 +13,7 @@ var (
 )
 
 type JwtService interface {
-	GenerateToken(userID uint) (string, error)
+	GenerateToken(userID uint, ttl int) (string, error)
 	GenerateRefreshToken(userID uint) (string, error)
 	ValidateRefreshToken(tokenString string) (jwt.MapClaims, error)
 }

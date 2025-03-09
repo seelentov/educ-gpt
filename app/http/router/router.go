@@ -20,6 +20,7 @@ func NewRouter() *gin.Engine {
 			authGroup.POST("/me", dic.RequiredAuthMiddleware(), dic.AuthController().Me)
 			authGroup.POST("/login", dic.AuthController().Login)
 			authGroup.POST("/refresh", dic.AuthController().Refresh)
+			authGroup.POST("/activate/:key", dic.AuthController().Activate)
 		}
 		roadmapGroup := apiGroup.Group("/roadmap")
 		{

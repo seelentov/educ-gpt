@@ -106,3 +106,42 @@ func GptService() services.GptService {
 
 	return gptService
 }
+
+var senderService services.SenderService
+
+func SenderService() services.SenderService {
+	smtpPort, err := strconv.ParseInt(os.Getenv("SMTP_PORT"), 10, 64)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if senderService == nil {
+		senderService = services.NewSenderServiceImpl(
+			os.Getenv("SMTP_HOST"),
+			int(smtpPort),
+			os.Getenv("SMTP_USERNAME"),
+			os.Getenv("SMTP_PASSWORD"),
+			os.Getenv("SMTP_FROM"),
+			logger.Logger(),
+		)
+		logger.Logger().Debug("SenderService initialized")
+	}
+
+	return senderService
+}
+
+var mailService services.MailService
+
+func MailService() services.MailService {
+	if mailService == nil {
+		mailService = services.NewMailServiceImpl(
+			os.Getenv("PROTOCOL"),
+			os.Getenv("FULL_HOST"),
+			"activate",
+			logger.Logger(),
+		)
+		logger.Logger().Debug("MailService initialized")
+	}
+
+	return mailService
+}
