@@ -7,6 +7,11 @@ import React from "react";
 import { Footer } from "@/components/layout/footer/footer";
 import { Header } from "@/components/layout/header/header";
 
+export interface Params {
+    params: { slug: string }
+    searchParams: { [key: string]: string | string[] | undefined }
+}
+
 const geistSans = Geist({
     variable: "--font-geist-sans",
     subsets: ["latin"],
