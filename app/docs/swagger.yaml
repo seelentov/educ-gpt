@@ -1,0 +1,790 @@
+basePath: /api/v1
+definitions:
+  dtos.ChangeEmailRequest:
+    properties:
+      email:
+        maxLength: 100
+        type: string
+    required:
+    - email
+    type: object
+  dtos.ChangePasswordRequest:
+    properties:
+      old_password:
+        type: string
+      password:
+        type: string
+    required:
+    - old_password
+    - password
+    type: object
+  dtos.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  dtos.IncreaseUserScoreAndAddAnswerRequest:
+    properties:
+      answer:
+        type: string
+      problem_id:
+        type: integer
+    required:
+    - answer
+    - problem_id
+    type: object
+  dtos.LoginRequest:
+    properties:
+      credential:
+        type: string
+      password:
+        type: string
+    required:
+    - credential
+    - password
+    type: object
+  dtos.MessageResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  dtos.RefreshTokenRequest:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
+    type: object
+  dtos.RegisterRequest:
+    properties:
+      chat_gpt_token:
+        type: string
+      email:
+        maxLength: 100
+        type: string
+      name:
+        maxLength: 100
+        type: string
+      number:
+        maxLength: 100
+        minLength: 8
+        type: string
+      password:
+        minLength: 8
+        type: string
+    required:
+    - chat_gpt_token
+    - email
+    - name
+    - number
+    - password
+    type: object
+  dtos.ResetPasswordRequest:
+    properties:
+      password:
+        type: string
+    required:
+    - password
+    type: object
+  dtos.StatusResponse:
+    properties:
+      status:
+        type: string
+    type: object
+  dtos.ThemeResponse:
+    properties:
+      problems:
+        items:
+          $ref: '#/definitions/models.Problem'
+        type: array
+      text:
+        type: string
+    type: object
+  dtos.TokenResponse:
+    properties:
+      refresh_token:
+        type: string
+      token:
+        type: string
+    type: object
+  dtos.UpdateUserRequest:
+    properties:
+      avatar_url:
+        type: string
+      chat_gpt_model:
+        type: string
+      chat_gpt_token:
+        type: string
+      name:
+        maxLength: 100
+        type: string
+      number:
+        maxLength: 100
+        minLength: 8
+        type: string
+    type: object
+  dtos.ValidationErrorResponse:
+    properties:
+      error:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
+  models.Problem:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: integer
+      question:
+        type: string
+      theme:
+        $ref: '#/definitions/models.Theme'
+      theme_id:
+        type: integer
+    type: object
+  models.Theme:
+    properties:
+      id:
+        type: integer
+      scores:
+        type: integer
+      title:
+        type: string
+      topic:
+        $ref: '#/definitions/models.Topic'
+      topic_id:
+        type: integer
+    type: object
+  models.Topic:
+    properties:
+      id:
+        type: integer
+      scores:
+        type: integer
+      themes:
+        items:
+          $ref: '#/definitions/models.Theme'
+        type: array
+      title:
+        type: string
+    type: object
+  models.User:
+    properties:
+      avatarUrl:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      number:
+        type: string
+    type: object
+  services.PromptProblemRequest:
+    properties:
+      message:
+        type: string
+      ok:
+        type: boolean
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is a sample server for Educ-GPT.
+  title: Educ-GPT API
+  version: "1.0"
+paths:
+  /auth/activate/{key}:
+    post:
+      consumes:
+      - application/json
+      description: Activates a user account using the activation key
+      parameters:
+      - description: Activation key
+        in: path
+        name: key
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Account successfully activated
+          schema:
+            $ref: '#/definitions/dtos.StatusResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+      summary: Activate a user account
+      tags:
+      - auth
+  /auth/change_email/{key}:
+    post:
+      consumes:
+      - application/json
+      description: Changes the user's email after verifying the key
+      parameters:
+      - description: Bearer <JWT token>
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Change email key
+        in: path
+        name: key
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Email changed successfully
+          schema:
+            $ref: '#/definitions/dtos.StatusResponse'
+        "401":
+          description: Unauthorized or invalid key
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+      summary: Change user's email
+      tags:
+      - auth
+  /auth/change_email/task:
+    post:
+      consumes:
+      - application/json
+      description: Initiates the process of changing the user's email by sending a
+        verification email
+      parameters:
+      - description: Bearer <JWT token>
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: New email address
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.ChangeEmailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Verification email sent
+          schema:
+            $ref: '#/definitions/dtos.MessageResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/dtos.ValidationErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "409":
+          description: New email is the same as the old one or already in use
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+      summary: Initiate email change
+      tags:
+      - auth
+  /auth/change_password:
+    post:
+      consumes:
+      - application/json
+      description: Changes the user's password after verifying the old password
+      parameters:
+      - description: Bearer <JWT token>
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Password change details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password changed successfully
+          schema:
+            $ref: '#/definitions/dtos.StatusResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/dtos.ValidationErrorResponse'
+        "401":
+          description: Unauthorized or invalid old password
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+      summary: Change user's password
+      tags:
+      - auth
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user and returns JWT tokens
+      parameters:
+      - description: User credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: JWT tokens
+          schema:
+            $ref: '#/definitions/dtos.TokenResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/dtos.ValidationErrorResponse'
+        "401":
+          description: Invalid credentials or account not activated
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+      summary: Authenticate a user
+      tags:
+      - auth
+  /auth/me:
+    post:
+      consumes:
+      - application/json
+      description: Returns the current user's information based on the JWT token
+      parameters:
+      - description: Bearer <JWT token>
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User information
+          schema:
+            $ref: '#/definitions/models.User'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+      summary: Get current user's information
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Refreshes the JWT token using a valid refresh token
+      parameters:
+      - description: Refresh token
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: New JWT token
+          schema:
+            $ref: '#/definitions/dtos.TokenResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/dtos.ValidationErrorResponse'
+        "401":
+          description: Invalid refresh token
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+      summary: Refresh JWT token
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Registers a new user and sends an activation email.
+      parameters:
+      - description: User registration details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Successfully registered, activation email sent
+          schema:
+            $ref: '#/definitions/dtos.MessageResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/dtos.ValidationErrorResponse'
+        "409":
+          description: User already exists
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+      summary: Register a new user
+      tags:
+      - auth
+  /auth/reset/{key}:
+    post:
+      consumes:
+      - application/json
+      description: Resets the user's password using a valid reset key
+      parameters:
+      - description: Reset password key
+        in: path
+        name: key
+        required: true
+        type: string
+      - description: Bearer <JWT token>
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: New password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.ResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password reset successfully
+          schema:
+            $ref: '#/definitions/dtos.StatusResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/dtos.ValidationErrorResponse'
+        "401":
+          description: Unauthorized or invalid key
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+      summary: Reset user's password
+      tags:
+      - auth
+  /auth/reset/task:
+    post:
+      consumes:
+      - application/json
+      description: Initiates the process of resetting the user's password by sending
+        a reset email
+      parameters:
+      - description: Bearer <JWT token>
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Reset email sent
+          schema:
+            $ref: '#/definitions/dtos.MessageResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+      summary: Initiate password reset
+      tags:
+      - auth
+  /auth/update:
+    patch:
+      consumes:
+      - application/json
+      description: Updates user information based on the provided data
+      parameters:
+      - description: Bearer <JWT token>
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: User information to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User information updated successfully
+          schema:
+            $ref: '#/definitions/dtos.StatusResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/dtos.ValidationErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+      summary: Update user information
+      tags:
+      - auth
+  /roadmap:
+    get:
+      consumes:
+      - application/json
+      description: Returns a list of topics for the current user
+      parameters:
+      - description: Bearer <JWT token>
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of topics
+          schema:
+            items:
+              $ref: '#/definitions/models.Topic'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+      summary: Get topics
+      tags:
+      - roadmap
+  /roadmap/{topic_id}:
+    get:
+      consumes:
+      - application/json
+      description: Returns a list of themes for a specific topic, sorted by user progress
+        and AI recommendations
+      parameters:
+      - description: Topic ID
+        in: path
+        name: topic_id
+        required: true
+        type: integer
+      - description: Bearer <JWT token>
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of themes
+          schema:
+            items:
+              $ref: '#/definitions/models.Theme'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "404":
+          description: Topic not found
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+      summary: Get themes
+      tags:
+      - roadmap
+  /roadmap/{topic_id}/{theme_id}:
+    get:
+      consumes:
+      - application/json
+      description: Returns detailed information about a specific theme, including
+        problems and AI-generated content
+      parameters:
+      - description: Topic ID
+        in: path
+        name: topic_id
+        required: true
+        type: integer
+      - description: Theme ID
+        in: path
+        name: theme_id
+        required: true
+        type: integer
+      - description: Bearer <JWT token>
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Theme details
+          schema:
+            $ref: '#/definitions/dtos.ThemeResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "404":
+          description: Theme or topic not found
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+      summary: Get theme details
+      tags:
+      - roadmap
+  /roadmap/problems/{topic_id}/{theme_id}:
+    get:
+      consumes:
+      - application/json
+      description: Returns a list of problems for a specific theme, generated by AI
+      parameters:
+      - description: Topic ID
+        in: path
+        name: topic_id
+        required: true
+        type: integer
+      - description: Theme ID
+        in: path
+        name: theme_id
+        required: true
+        type: integer
+      - description: Bearer <JWT token>
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of problems
+          schema:
+            items:
+              $ref: '#/definitions/models.Problem'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "404":
+          description: Theme or topic not found
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+      summary: Get problems
+      tags:
+      - roadmap
+  /roadmap/resolve:
+    post:
+      consumes:
+      - application/json
+      description: Increments the user's score and adds an answer to a problem after
+        verifying the answer with AI
+      parameters:
+      - description: Bearer <JWT token>
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Answer details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.IncreaseUserScoreAndAddAnswerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Answer verification result
+          schema:
+            $ref: '#/definitions/services.PromptProblemRequest'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/dtos.ValidationErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "404":
+          description: Problem not found
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+      summary: Increment user score and add answer
+      tags:
+      - roadmap
+swagger: "2.0"

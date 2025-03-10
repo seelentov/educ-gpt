@@ -5,6 +5,5 @@ type RegisterRequest struct {
 	Email        string `json:"email" binding:"required,email,lte=100"`
 	Number       string `json:"number" binding:"required,gte=8,lte=100,number"`
 	Password     string `json:"password" binding:"required,gte=8"`
-	ChatGptModel string `json:"chat_gpt_model"`
 	ChatGptToken string `json:"chat_gpt_token" binding:"required"`
 }

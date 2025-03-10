@@ -115,8 +115,7 @@ func (u UserServiceImpl) Create(user *models.User) (string, error) {
 }
 
 func (u UserServiceImpl) Update(id uint, data map[string]interface{}) error {
-	existingUser := &models.User{}
-	result := u.db.First(existingUser, id).Updates(data)
+	result := u.db.Model(&models.User{}).Where("id = ?", id).Updates(data)
 	if result.Error != nil {
 		u.logger.Error("Error update user", zap.Error(result.Error))
 		return fmt.Errorf("%w: %w", ErrUpdateUser, result.Error)
@@ -219,6 +218,17 @@ func (u UserServiceImpl) getByWhere(query interface{}, args ...interface{}) (*mo
 		return nil, fmt.Errorf("%w: %w", ErrRetrievingUser, result.Error)
 	}
 	return user, nil
+}
+
+func (u UserServiceImpl) ClearNonActivatedUsers() error {
+	threshold := time.Now().Add(-2 * time.Hour)
+
+	result := u.db.Where("created_at < ? AND activate_at IS NULL", threshold).Delete(&models.User{})
+	if result.Error != nil {
+		u.logger.Error("Cant remove non active users", zap.Error(result.Error))
+		return fmt.Errorf("%w:%w", ErrDeleteUsers, result.Error)
+	}
+	return nil
 }
 
 func NewUserServiceImpl(db *gorm.DB, logger *zap.Logger, defaultRole string) *UserServiceImpl {

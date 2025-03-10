@@ -3,6 +3,7 @@ package main
 import (
 	"educ-gpt/data"
 	"educ-gpt/dic"
+
 	"educ-gpt/http/router"
 	"errors"
 	"fmt"
@@ -12,6 +13,12 @@ import (
 	"os"
 )
 
+// @title Educ-GPT API
+// @version 1.0
+// @description This is a sample server for Educ-GPT.
+
+// @host localhost:8080
+// @BasePath /api/v1
 func main() {
 	err := godotenv.Load()
 	if err != nil {

@@ -18,7 +18,7 @@ var (
 	ErrDuplicateNumber    = errors.New("duplicate number")
 	ErrDuplicate          = errors.New("duplicate")
 	ErrActivate           = errors.New("error activate user")
-	ErrGenerateKey        = errors.New("error generating key")
+	ErrDeleteUsers        = errors.New("error deleting user")
 )
 
 type UserService interface {
@@ -33,4 +33,5 @@ type UserService interface {
 	VerifyPassword(input string, password string) error
 	Activate(key string) error
 	ChangePassword(userId uint, password string) error
+	ClearNonActivatedUsers() error
 }

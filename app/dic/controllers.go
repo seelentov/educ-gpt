@@ -15,7 +15,7 @@ func AuthController() *controllers.AuthController {
 			RoleService(),
 			SenderService(),
 			MailService(),
-			ResetTokenService(),
+			TokenService(),
 		)
 		logger.Logger().Debug("AuthController initialized")
 	}

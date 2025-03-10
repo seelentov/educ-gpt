@@ -186,9 +186,9 @@ func (r RoadmapServiceImpl) DeleteProblem(problemID uint) error {
 }
 
 func (r RoadmapServiceImpl) ClearProblems() error {
-	ago := time.Now().Add(-24 * time.Hour)
+	threshold := time.Now().Add(-24 * time.Hour)
 
-	result := r.db.Where("created_at < ?", ago).Delete(&models.Problem{})
+	result := r.db.Where("created_at < ?", threshold).Delete(&models.Problem{})
 	if result.Error != nil {
 		r.logger.Error("Cant remove problem", zap.Error(result.Error))
 		return fmt.Errorf("%w:%w", ErrDeleteEntities, result.Error)

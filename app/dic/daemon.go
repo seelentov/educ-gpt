@@ -28,21 +28,34 @@ func clearProblems() {
 	ClearProblemsDaemon = &DaemonController{ctx, cancel}
 }
 
-var ClearResetTokensDaemon *DaemonController
+var ClearTokensDaemon *DaemonController
 
-func clearResetTokens() {
-	daemon, ctx, cancel := daemons.NewClearResetTokens(
-		ResetTokenService(),
+func clearTokens() {
+	daemon, ctx, cancel := daemons.NewClearTokensDaemon(
+		TokenService(),
 		logger.Logger(),
 		time.Hour*2,
 	)
 	daemonsSlice = append(daemonsSlice, daemon)
-	ClearResetTokensDaemon = &DaemonController{ctx, cancel}
+	ClearTokensDaemon = &DaemonController{ctx, cancel}
+}
+
+var ClearNonActivatedUsersDaemon *DaemonController
+
+func clearNonActivatedUsers() {
+	daemon, ctx, cancel := daemons.NewClearNonActivatedUsersDaemon(
+		UserService(),
+		logger.Logger(),
+		time.Hour*2,
+	)
+	daemonsSlice = append(daemonsSlice, daemon)
+	ClearNonActivatedUsersDaemon = &DaemonController{ctx, cancel}
 }
 
 func initServices() {
 	clearProblems()
-	clearResetTokens()
+	clearTokens()
+	clearNonActivatedUsers()
 }
 
 func InitDaemons() {
