@@ -1,7 +1,7 @@
 'use client'
 
 import { HOST_URL } from "@/core/api/api";
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import Image from "next/image";
 import { useLocalStorage } from "@/core/hooks/useLocalStorage";
 import { me } from "@/core/api/auth/me";
@@ -21,6 +21,19 @@ export default function EditProfileForm() {
     const [loading, setLoading] = useState(false);
     const [loadingMe, setLoadingMe] = useState(false);
 
+    const [initState, setInitState] = useState<User | null>(null)
+
+    const isDisabled =
+        initState === null ||
+        loading ||
+        (
+            initState.avatar_url === avatarUrl &&
+            initState.chat_gpt_model === chatGptModel &&
+            initState.name === name &&
+            initState.number === number &&
+            initState.chat_gpt_token === initState.chat_gpt_token
+        )
+
 
     useEffect(() => {
         (async () => {
@@ -37,6 +50,7 @@ export default function EditProfileForm() {
                     }
                 }
                 else {
+                    setInitState(data)
                     setName(data.name)
                     setNumber(data.number)
                     setAvatarUrl(data.avatar_url)
@@ -86,6 +100,10 @@ export default function EditProfileForm() {
         }
     }
 
+    function handleChange<T>(dispatch: Dispatch<SetStateAction<T>>, value: T) {
+        dispatch(value)
+    }
+
     const uploadImage = () => {
 
     }
@@ -97,10 +115,10 @@ export default function EditProfileForm() {
                     <Loading />
                 </div>
                 : <>
-                    <form onSubmit={updateData} className="col-12">
+                    <form onSubmit={updateData} className="col-12 d-flex align-items-center flex-wrap">
                         <div className="col-12 col-md-6 avatar">
                             <div className="avatar_edit-btn" onClick={uploadImage}>
-                                <Image src={"/icons/edit"} alt="" width={30} height={30} className="rounded-circle" />
+                                <Image src={"/icons/edit.svg"} alt="" width={30} height={30} />
                             </div>
                             {
                                 avatarUrl && avatarUrl !== ""
@@ -119,7 +137,7 @@ export default function EditProfileForm() {
                                         name="name"
                                         placeholder="Имя"
                                         value={name}
-                                        onChange={(e) => setName(e.target.value)}
+                                        onChange={(e) => handleChange(setName, e.target.value)}
                                     />
                                     <p className="text-danger">{errors?.name}</p>
                                 </div>
@@ -133,7 +151,7 @@ export default function EditProfileForm() {
                                         name="number"
                                         placeholder="Телефон"
                                         value={number}
-                                        onChange={(e) => setNumber(e.target.value)}
+                                        onChange={(e) => handleChange(setNumber, e.target.value)}
                                     />
                                     <p className="text-danger">{errors?.number}</p>
                                 </div>
@@ -147,7 +165,7 @@ export default function EditProfileForm() {
                                         name="gpttoken"
                                         placeholder="Ключ Chat-GPT API"
                                         value={chatGptToken}
-                                        onChange={(e) => setChatGptToken(e.target.value)}
+                                        onChange={(e) => handleChange(setChatGptToken, e.target.value)}
                                     />
                                     <p>Получить ключ на <a className="link-primary" href="https://platform.openai.com/api-keys" target="_blank">openai.com</a></p>
                                     <p className="text-danger">{errors?.chat_gpt_token}</p>
@@ -162,16 +180,16 @@ export default function EditProfileForm() {
                                         name="gptmodel"
                                         placeholder="Модель Chat-GPT"
                                         value={chatGptToken}
-                                        onChange={(e) => setChatGptToken(e.target.value)}
+                                        onChange={(e) => handleChange(setChatGptModel, e.target.value)}
                                     />
                                     <p className="text-danger">{errors?.chat_gpt_model}</p>
                                 </div>
                             </div>
                         </div>
                     </form>
-                    <div className="col-12">
-                        <button type="submit" className="btn btn-primary btn-block mb-4" disabled={loading}>
-                            {loading ? "Отправка..." : "Изменить данные"}
+                    <div className="col-12 d-flex justify-content-center">
+                        <button type="submit" className="btn btn-primary btn-block mb-4" disabled={isDisabled}>
+                            {loading ? "Отправка..." : "Сохранить"}
                         </button>
                     </div>
                 </>}

@@ -20,7 +20,7 @@ export function AuthClient() {
                     }
                 }
             } catch (error) {
-                alert("Ошибка при обновлении токена авторизации")
+                console.error(error)
             }
         };
 

@@ -161,3 +161,17 @@ func TokenService() services.TokenService {
 
 	return tokenService
 }
+
+var fileService services.FileService
+
+func FileService() services.FileService {
+	if fileService == nil {
+		fileService = services.NewFileServiceImpl(
+			logger.Logger(),
+			"/storage",
+		)
+		logger.Logger().Debug("FileService initialized")
+	}
+
+	return fileService
+}

@@ -4,18 +4,20 @@ import { Loading } from "@/components/ui/loading";
 import { getTopics } from "@/core/api/roadmap/topics";
 import { useLocalStorage } from "@/core/hooks/useLocalStorage";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export function Topics() {
 
     const [token] = useLocalStorage("token", "")
     const [topics, setTopics] = useState<Topic[]>([])
+    const router = useRouter()
 
     useEffect(() => {
         (async () => {
             const res = await getTopics(token)
             if (res?.error) {
-                alert(res.error)
+                router.refresh()
             }
             else {
                 setTopics(res)

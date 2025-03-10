@@ -8,10 +8,6 @@ import { Footer } from "@/components/layout/footer/footer";
 import { Header } from "@/components/layout/header/header";
 import { AuthClient } from '@/components/layout/authClient/authClient';
 
-export interface Params {
-    params: { slug: string }
-    searchParams: { [key: string]: string | string[] | undefined }
-}
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -37,6 +33,7 @@ export default function RootLayout({
     return (
         <html lang="ru">
             <body className={`${geistSans.variable} ${geistMono.variable}`}>
+                <AuthClient />
                 <Header />
                 <div className="wrapper">
                     <main>
@@ -44,7 +41,6 @@ export default function RootLayout({
                     </main>
                 </div>
                 <Footer />
-                <AuthClient />
             </body>
         </html>
     );

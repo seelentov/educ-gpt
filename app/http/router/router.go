@@ -17,7 +17,7 @@ func NewRouter() *gin.Engine {
 
 	router.Use(dic.AuthMiddleware())
 
-	router.Static("/storage", "./storage")
+	router.Static("/storage", "./app/storage")
 
 	router.NoRoute(func(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, dtos.NotFoundResponse())

@@ -1,7 +1,4 @@
-import { Params } from "@/app/layout";
-
-export default function TopicPage({ params }: Params) {
-    console.log(params)
+export default function TopicPage() {
     return (
         <div>
             <div className="container">

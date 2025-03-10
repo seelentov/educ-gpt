@@ -21,6 +21,7 @@ type AuthController struct {
 	senderSrv   services.SenderService
 	mailSrv     services.MailService
 	tokenSrv    services.TokenService
+	fileSrv     services.FileService
 }
 
 // Register a new user
@@ -281,7 +282,8 @@ func (c *AuthController) Refresh(ctx *gin.Context) {
 // @Router       /auth/update [patch]
 func (c *AuthController) UpdateUser(ctx *gin.Context) {
 	var req dtos.UpdateUserRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+
+	if err := ctx.ShouldBind(&req); err != nil {
 		var valErr validator.ValidationErrors
 		ok := errors.As(err, &valErr)
 
@@ -300,18 +302,28 @@ func (c *AuthController) UpdateUser(ctx *gin.Context) {
 		return
 	}
 
-	updates := make(map[string]interface{})
-
 	reqJson, err := json.Marshal(req)
-
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
 		return
 	}
 
+	updates := make(map[string]interface{})
 	if err := json.Unmarshal(reqJson, &updates); err != nil {
 		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
 		return
+	}
+
+	delete(updates, "avatar_file")
+
+	if req.AvatarFile != nil {
+		fileUrl, err := c.fileSrv.UploadImage(req.AvatarFile)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
+			return
+		}
+
+		updates["avatar_url"] = fileUrl
 	}
 
 	if err := c.userService.Update(userId, updates); err != nil {
@@ -600,6 +612,7 @@ func NewAuthController(
 	senderSrv services.SenderService,
 	mailSrv services.MailService,
 	tokenSrv services.TokenService,
+	fileSrv services.FileService,
 ) *AuthController {
-	return &AuthController{userService, jwtService, roleService, senderSrv, mailSrv, tokenSrv}
+	return &AuthController{userService, jwtService, roleService, senderSrv, mailSrv, tokenSrv, fileSrv}
 }

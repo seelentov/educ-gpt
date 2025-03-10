@@ -100,8 +100,8 @@ export function Header() {
                         </div>
                     }
                     {isLogged &&
-                        <div className="col-md-3 text-end col-5">
-                            <Link href="/profile" type="button" className="btn-sm me-2">
+                        <div className="col-md-3 text-end col-5 d-flex align-items-start justify-content-end">
+                            <Link href="/profile" type="button" className="me-2">
                                 {
                                     avatarUrl && avatarUrl !== ""
                                         ? <Image src={HOST_URL + "/storage/" + avatarUrl} alt="" width={32} height={32} className="rounded-circle" />

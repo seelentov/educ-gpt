@@ -25,3 +25,15 @@
     }
 
 }
+
+.avatar {
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+
+.avatar_edit-btn {
+    position: absolute;
+    top: calc(50% - 15px);
+    left: calc(50% - 15px);
+}
