@@ -317,6 +317,11 @@ func (c *AuthController) UpdateUser(ctx *gin.Context) {
 	delete(updates, "avatar_file")
 
 	if req.AvatarFile != nil {
+		if req.AvatarFile.Size > 5*1024*1024 {
+			ctx.JSON(http.StatusBadRequest, dtos.ValidationErrorResponse{Error: map[string]string{"avatar_file": "Файл должен быть не более 5 мб"}})
+			return
+		}
+
 		fileUrl, err := c.fileSrv.UploadImage(req.AvatarFile)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
