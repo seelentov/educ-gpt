@@ -5,7 +5,7 @@ import { baseFetch } from "../baseFetch";
 
 export async function signup(name: string, email: string, number: string, password: string, chat_gpt_token: string) {
     const data = await baseFetch(
-        "/api/auth/register",
+        "/auth/register",
         JSON.stringify({
             name,
             email,

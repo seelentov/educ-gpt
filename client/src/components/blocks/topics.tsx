@@ -1,6 +1,6 @@
 'use client'
 
-import { Loading } from "@/app/loading/loading";
+import { Loading } from "@/components/ui/loading";
 import { getTopics } from "@/core/api/roadmap/topics";
 import { useLocalStorage } from "@/core/hooks/useLocalStorage";
 import Link from "next/link";

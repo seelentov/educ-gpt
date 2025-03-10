@@ -1,8 +1,6 @@
 'use client'
 
 import { useState } from 'react';
-import Link from 'next/link';
-import { useLocalStorage } from '@/core/hooks/useLocalStorage';
 
 export function ChangePasswordForm() {
     const [oldPassword, setOldPassword] = useState('');
@@ -10,8 +8,6 @@ export function ChangePasswordForm() {
     const [passwordConf, setPasswordConf] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false)
-
-    const [token, settoken] = useLocalStorage("token", "")
 
     const handleSubmit = async (e: any) => {
         setLoading(true)
@@ -21,7 +17,6 @@ export function ChangePasswordForm() {
         try {
 
         } catch (error) {
-            console.log(error)
             setError('Неверный пароль');
         }
         finally {

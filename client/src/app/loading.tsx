@@ -1,4 +1,4 @@
-import { Loading } from './loading/loading';
+import { Loading } from '../components/ui/loading';
 
 export default async function LoadingPage() {
 

@@ -34,8 +34,6 @@ export function LoginForm() {
                 setError(data?.error)
             }
             else {
-                console.log(data)
-
                 if (data?.token) {
                     setToken(data.token)
                 }

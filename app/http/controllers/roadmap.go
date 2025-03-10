@@ -55,6 +55,7 @@ func (r RoadmapController) GetTopics(ctx *gin.Context) {
 // @Success      200 {array} models.Theme "List of themes"
 // @Failure      401 {object} dtos.ErrorResponse "Unauthorized"
 // @Failure      404 {object} dtos.ErrorResponse "Topic not found"
+// @Failure      409 {object} dtos.ErrorResponse "AI request error"
 // @Failure      500 {object} dtos.ErrorResponse "Internal server error"
 // @Router       /roadmap/{topic_id} [get]
 func (r RoadmapController) GetThemes(ctx *gin.Context) {
@@ -109,6 +110,11 @@ func (r RoadmapController) GetThemes(ctx *gin.Context) {
 
 	err = r.aiSrv.GetAnswer(user.ChatGptToken, user.ChatGptModel, []*services.DialogItem{{Text: prompt, IsUser: true}}, &target)
 	if err != nil {
+		if errors.Is(err, services.ErrAIRequestFailed) {
+			ctx.JSON(http.StatusConflict, dtos.ErrorResponse{Error: err.Error()})
+			return
+		}
+
 		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
 		return
 	}
@@ -162,6 +168,7 @@ func (r RoadmapController) GetThemes(ctx *gin.Context) {
 // @Success      200 {object} dtos.ThemeResponse "Theme details"
 // @Failure      401 {object} dtos.ErrorResponse "Unauthorized"
 // @Failure      404 {object} dtos.ErrorResponse "Theme or topic not found"
+// @Failure      409 {object} dtos.ErrorResponse "AI request error"
 // @Failure      500 {object} dtos.ErrorResponse "Internal server error"
 // @Router       /roadmap/{topic_id}/{theme_id} [get]
 func (r RoadmapController) GetTheme(ctx *gin.Context) {
@@ -226,6 +233,11 @@ func (r RoadmapController) GetTheme(ctx *gin.Context) {
 
 	err = r.aiSrv.GetAnswer(user.ChatGptToken, user.ChatGptModel, []*services.DialogItem{{Text: prompt, IsUser: true}}, &target)
 	if err != nil {
+		if errors.Is(err, services.ErrAIRequestFailed) {
+			ctx.JSON(http.StatusConflict, dtos.ErrorResponse{Error: err.Error()})
+			return
+		}
+
 		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
 		return
 	}
@@ -251,6 +263,7 @@ func (r RoadmapController) GetTheme(ctx *gin.Context) {
 // @Success      200 {array} models.Problem "List of problems"
 // @Failure      401 {object} dtos.ErrorResponse "Unauthorized"
 // @Failure      404 {object} dtos.ErrorResponse "Theme or topic not found"
+// @Failure      409 {object} dtos.ErrorResponse "AI request error"
 // @Failure      500 {object} dtos.ErrorResponse "Internal server error"
 // @Router       /roadmap/problems/{topic_id}/{theme_id} [get]
 func (r RoadmapController) GetProblems(ctx *gin.Context) {
@@ -315,6 +328,11 @@ func (r RoadmapController) GetProblems(ctx *gin.Context) {
 
 	err = r.aiSrv.GetAnswer(user.ChatGptToken, user.ChatGptModel, []*services.DialogItem{{Text: prompt, IsUser: true}}, &target)
 	if err != nil {
+		if errors.Is(err, services.ErrAIRequestFailed) {
+			ctx.JSON(http.StatusConflict, dtos.ErrorResponse{Error: err.Error()})
+			return
+		}
+
 		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
 		return
 	}
@@ -340,6 +358,7 @@ func (r RoadmapController) GetProblems(ctx *gin.Context) {
 // @Failure      400 {object} dtos.ValidationErrorResponse "Invalid request body"
 // @Failure      401 {object} dtos.ErrorResponse "Unauthorized"
 // @Failure      404 {object} dtos.ErrorResponse "Problem not found"
+// @Failure      409 {object} dtos.ErrorResponse "AI request error"
 // @Failure      500 {object} dtos.ErrorResponse "Internal server error"
 // @Router       /roadmap/resolve [post]
 func (r RoadmapController) IncrementUserScoreAndAddAnswer(ctx *gin.Context) {
@@ -397,6 +416,11 @@ func (r RoadmapController) IncrementUserScoreAndAddAnswer(ctx *gin.Context) {
 
 	err = r.aiSrv.GetAnswer(user.ChatGptToken, user.ChatGptModel, []*services.DialogItem{{Text: prompt, IsUser: true}}, &target)
 	if err != nil {
+		if errors.Is(err, services.ErrAIRequestFailed) {
+			ctx.JSON(http.StatusConflict, dtos.ErrorResponse{Error: err.Error()})
+			return
+		}
+
 		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
 		return
 	}

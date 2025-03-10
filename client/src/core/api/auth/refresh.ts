@@ -5,7 +5,7 @@ import { baseFetch } from "../baseFetch";
 
 export async function refresh(refresh_token: string) {
     const data = await baseFetch(
-        "/api/auth/refresh",
+        "/auth/refresh",
         JSON.stringify({
             refresh_token,
         }),

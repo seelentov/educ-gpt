@@ -6,6 +6,8 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import Image from "next/image";
 import { useLocalStorage } from '@/core/hooks/useLocalStorage'
+import { me } from '@/core/api/auth/me'
+import { HOST_URL } from '@/core/api/api'
 
 export function Header() {
 
@@ -37,6 +39,20 @@ export function Header() {
     const [__, setRefreshToken] = useLocalStorage("refresh_token", "")
 
     const [isLogged, setIsLogged] = useState<boolean>(false)
+
+    const [avatarUrl, setAvatarUrl] = useState<string>("")
+
+    useEffect(() => {
+        (async () => {
+
+            const data = await me(token)
+
+            if (data?.avatar_url) {
+                setAvatarUrl(data.avatar_url)
+            }
+
+        })()
+    }, [pathname, token, isLogged])
 
     useEffect(() => {
         try {
@@ -86,7 +102,12 @@ export function Header() {
                     {isLogged &&
                         <div className="col-md-3 text-end col-5">
                             <Link href="/profile" type="button" className="btn-sm me-2">
-                                <Image src="" alt="" width={32} height={32} className="rounded-circle" />
+                                {
+                                    avatarUrl && avatarUrl !== ""
+                                        ? <Image src={HOST_URL + "/storage/" + avatarUrl} alt="" width={32} height={32} className="rounded-circle" />
+                                        : <Image src={"/misc/empty_avatar.jpg"} alt="" width={32} height={32} className="rounded-circle" />
+                                }
+
                             </Link>
                             <button onClick={logout} type="button" className="btn btn-outline-primary btn-sm">Выйти</button>
                         </div>

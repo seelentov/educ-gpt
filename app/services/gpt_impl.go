@@ -57,7 +57,7 @@ func (g GptServiceImpl) GetAnswer(token string, model string, dialog []*DialogIt
 
 	if resp.StatusCode != http.StatusOK {
 		g.logger.Error("failed to send request", zap.Error(err))
-		return fmt.Errorf("%w:%v:%s", ErrRequestFailed, resp.StatusCode, bodyBytes)
+		return fmt.Errorf("%w:%v:%s", ErrAIRequestFailed, resp.StatusCode, bodyBytes)
 	}
 
 	tempTarget := &GptResponse{}

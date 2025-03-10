@@ -144,7 +144,7 @@ export function SignUpForm() {
                         <div className="d-flex flex-column mb-2 gap-3">
                             <label htmlFor="fgpttoken">Ключ Chat-GPT API</label>
                             <input
-                                className={`input ${errors?.chatgpttoken && 'err'}`}
+                                className={`input ${errors?.chat_gpt_token && 'err'}`}
                                 type="password"
                                 id="fgpttoken"
                                 name="gpttoken"
@@ -153,7 +153,7 @@ export function SignUpForm() {
                                 onChange={(e) => setChatGptToken(e.target.value)}
                             />
                             <p>Получить ключ на <a className="link-primary" href="https://platform.openai.com/api-keys" target="_blank">openai.com</a></p>
-                            <p className="text-danger">{errors?.chatgpttoken}</p>
+                            <p className="text-danger">{errors?.chat_gpt_token}</p>
                         </div>
                     </div>
 
