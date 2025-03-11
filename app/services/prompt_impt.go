@@ -19,10 +19,9 @@ func (p PromptServiceImpl) GetThemes(topic string, existedThemes []*models.Theme
 	exist := make([]string, 0)
 
 	if existedThemes != nil {
-
 		for i := range existedThemes {
 			if existedThemes[i].Score > 0 {
-				exist[i] = existedThemes[i].Title
+				exist = append(exist, existedThemes[i].Title)
 			}
 		}
 	}
