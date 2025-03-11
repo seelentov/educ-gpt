@@ -85,7 +85,7 @@ func (c *AuthController) Register(ctx *gin.Context) {
 			}
 
 			if errors.Is(err, services.ErrDuplicateName) {
-				ctx.JSON(http.StatusConflict, dtos.ErrorResponse{Error: "Пользователь с таким именем телефона уже существует"})
+				ctx.JSON(http.StatusConflict, dtos.ErrorResponse{Error: "Пользователь с таким именем уже существует"})
 				return
 			}
 		}
