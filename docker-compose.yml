@@ -33,6 +33,10 @@ services:
     restart: unless-stopped
     volumes:
       - ./docker/redis:/data
+    ports:
+      - ${DB_PORT}:${DB_PORT}
+    expose:
+      - ${DB_PORT}
     networks:
       - api
 
