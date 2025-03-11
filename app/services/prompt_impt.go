@@ -68,7 +68,7 @@ func (p PromptServiceImpl) GetThemes(topic string, existedThemes []*models.Theme
 
 func (p PromptServiceImpl) GetTheme(topic string, theme string, userThemeStats *models.Theme, userAllStats []*models.Theme) (string, error) {
 	prompt1 := "Расскажи подробно по теме: "
-	prompt2 := ". Твой ответ должен всключать в себя примеры кода и теории не менее 10000 символов"
+	prompt2 := ". Твой ответ должен всключать в себя примеры кода и теории не менее 15000 символов"
 	prompt3 := ". Учитывай прогресс пользователя. Вот список тем, которые он уже изучил, и количество решенных задач по каждой теме: "
 	prompt4 := ". Подготовь 10 задач по этой теме."
 	prompt5 := ". Вот список задач, которые уже выполнил пользователь, их не должно быть в списке задач от тебя:"
