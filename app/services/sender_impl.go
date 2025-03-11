@@ -51,7 +51,10 @@ func (s SenderServiceImpl) SendMessage(to, subject, body string) error {
 	m.SetBody("text/html", body)
 
 	d := gomail.NewDialer(s.smtpHost, s.smtpPort, s.smtpUsername, s.smtpPassword)
-	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+	d.TLSConfig = &tls.Config{
+		ServerName:         s.smtpHost,
+		InsecureSkipVerify: true,
+	}
 
 	if err := d.DialAndSend(m); err != nil {
 		s.logger.Error("SendMessage failed", zap.Error(err))
