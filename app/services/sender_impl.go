@@ -52,9 +52,10 @@ func (s SenderServiceImpl) SendMessage(to, subject, body string) error {
 
 	d := gomail.NewDialer(s.smtpHost, s.smtpPort, s.smtpUsername, s.smtpPassword)
 	d.TLSConfig = &tls.Config{
-		ServerName:         s.smtpHost,
 		InsecureSkipVerify: true,
 	}
+
+	d.LocalName = "smtp.yandex.ru"
 
 	if err := d.DialAndSend(m); err != nil {
 		s.logger.Error("SendMessage failed", zap.Error(err))
