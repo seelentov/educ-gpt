@@ -1,9 +1,9 @@
 package dic
 
 import (
-	"educ-gpt/data"
+	"educ-gpt/config/data"
+	"educ-gpt/config/logger"
 	"educ-gpt/http/middlewares"
-	"educ-gpt/logger"
 	"github.com/gin-gonic/gin"
 	"log"
 	"os"
@@ -57,7 +57,7 @@ func CacheMiddleware(d time.Duration, onSession bool) gin.HandlerFunc {
 
 	return middlewares.CacheMiddleware(
 		logger.Logger(),
-		data.Cache(),
+		data.Redis(),
 		d,
 		onSession,
 	)

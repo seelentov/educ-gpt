@@ -13,9 +13,11 @@ export default function EditProfileForm() {
 
     const [name, setName] = useState<string>("")
     const [number, setNumber] = useState<string>("")
-    const [avatarUrl, setAvatarUrl] = useState<string>("")
+    const [avatarFile, setAvatarFile] = useState<File | null>(null)
     const [chatGptModel, setChatGptModel] = useState<string>("")
     const [chatGptToken, setChatGptToken] = useState<string>("")
+
+    const [avatarUrl, setAvatarUrl] = useState<string>("")
 
     const [errors, setErrors] = useState<{ [key: string]: string } | null>(null);
     const [loading, setLoading] = useState(false);
@@ -36,51 +38,15 @@ export default function EditProfileForm() {
 
 
     useEffect(() => {
-        (async () => {
-            setLoadingMe(true)
-
-            try {
-                const data = await me(token)
-
-                if (data?.error) {
-                    if (typeof data?.error === "string") {
-                        setErrors({ authorization: data.error })
-                    } else {
-                        setErrors(data?.error)
-                    }
-                }
-                else {
-                    setInitState(data)
-                    setName(data.name)
-                    setNumber(data.number)
-                    setAvatarUrl(data.avatar_url)
-                    setChatGptModel(data.chat_gpt_model)
-                    setChatGptToken(data.chat_gpt_token)
-                }
-            } catch (error) {
-                console.log(error)
-                setErrors({ authorization: JSON.stringify(error) });
-            }
-            finally {
-                setLoadingMe(false)
-            }
-        })()
+        refetchUser()
     }, [token])
 
-    const updateData = async (e: any) => {
-        try {
-            setLoading(true)
-            setErrors(null)
-            e.preventDefault();
+    const refetchUser = async () => {
+        setLoadingMe(true)
 
-            const data = await updateUser(
-                name,
-                number,
-                chatGptToken,
-                chatGptModel,
-                avatarUrl,
-                token
-            );
+        try {
+            const data = await me(token)
+
             if (data?.error) {
                 if (typeof data?.error === "string") {
                     setErrors({ authorization: data.error })
@@ -89,10 +55,71 @@ export default function EditProfileForm() {
                 }
             }
             else {
-                alert("Данные успешно обновлены")
+                setInitState(data)
+                setName(data.name)
+                setNumber(data.number)
+
+                if (data.avatar_url) {
+                    setAvatarUrl(HOST_URL + data.avatar_url)
+
+                }
+
+                setChatGptModel(data.chat_gpt_model)
+                setChatGptToken(data.chat_gpt_token)
             }
         } catch (error) {
-            console.log(error)
+            console.error(error)
+            setErrors({ authorization: JSON.stringify(error) });
+        }
+        finally {
+            setLoadingMe(false)
+        }
+    }
+
+
+    const updateData = async (e: any) => {
+        try {
+            setLoading(true)
+            setErrors(null)
+            e.preventDefault();
+
+            const formData = new FormData()
+
+            if (name) {
+                formData.append("name", name)
+            }
+            if (number) {
+                formData.append("number", number)
+            }
+            if (chatGptToken) {
+                formData.append("chat_gpt_token", chatGptToken)
+            }
+            if (chatGptModel) {
+                formData.append("chat_gpt_model", chatGptModel)
+            }
+            if (name) {
+                formData.append("name", name)
+            }
+
+            if (avatarFile) {
+                formData.append("avatar_file", avatarFile)
+            }
+
+            const data = await updateUser(formData, token);
+
+            if (data?.error) {
+                if (typeof data?.error === "string") {
+                    setErrors({ authorization: data.error })
+                } else {
+                    setErrors({ ...data.error, authorization: data.error.avatar_file })
+                }
+            }
+            else {
+                alert("Данные успешно обновлены")
+                await refetchUser()
+            }
+        } catch (error) {
+            console.error(error)
             setErrors({ authorization: JSON.stringify(error) });
         }
         finally {
@@ -104,9 +131,25 @@ export default function EditProfileForm() {
         dispatch(value)
     }
 
-    const uploadImage = () => {
+    const uploadImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const targetFiles = e.target.files
+        if (targetFiles === null) {
+            return
+        }
+        const files: File[] = Array.from(targetFiles)
+        if (files.length < 1) {
+            return
+        }
+        const file = files[0]
 
+        setAvatarFile(file)
+
+        const imageUrl = URL.createObjectURL(file);
+
+        setAvatarUrl(imageUrl)
     }
+
+    console.log(avatarUrl)
 
     return (
         <>
@@ -117,13 +160,14 @@ export default function EditProfileForm() {
                 : <>
                     <form onSubmit={updateData} className="col-12 d-flex align-items-center flex-wrap">
                         <div className="col-12 col-md-6 avatar">
-                            <div className="avatar_edit-btn" onClick={uploadImage}>
-                                <Image src={"/icons/edit.svg"} alt="" width={30} height={30} />
-                            </div>
+                            <label className="avatar_edit-btn">
+                                <Image style={{ objectFit: 'cover' }} src={"/icons/edit.svg"} alt="" width={60} height={60} />
+                                <input className="avatar_edit-btn" type="file" onChange={uploadImage} accept="image/*" hidden></input>
+                            </label>
                             {
                                 avatarUrl && avatarUrl !== ""
-                                    ? <Image src={HOST_URL + "/storage/" + avatarUrl} alt="" width={300} height={300} className="rounded-circle" />
-                                    : <Image src={"/misc/empty_avatar.jpg"} alt="" width={300} height={300} className="rounded-circle" />
+                                    ? <Image style={{ objectFit: 'cover' }} src={avatarUrl} alt="" width={300} height={300} className="rounded-circle" />
+                                    : <Image style={{ objectFit: 'cover' }} src={"/misc/empty_avatar.jpg"} alt="" width={300} height={300} className="rounded-circle" />
                             }
                         </div>
                         <div className="col-12 col-md-6">
@@ -186,12 +230,13 @@ export default function EditProfileForm() {
                                 </div>
                             </div>
                         </div>
+                        <div className="col-12 d-flex justify-content-center align-items-center flex-column gap-1">
+                            <button type="submit" className="btn btn-primary btn-block mb-4" disabled={isDisabled}>
+                                {loading ? "Отправка..." : "Сохранить"}
+                            </button>
+                            <p>{errors?.authorization}</p>
+                        </div>
                     </form>
-                    <div className="col-12 d-flex justify-content-center">
-                        <button type="submit" className="btn btn-primary btn-block mb-4" disabled={isDisabled}>
-                            {loading ? "Отправка..." : "Сохранить"}
-                        </button>
-                    </div>
                 </>}
         </>
     );

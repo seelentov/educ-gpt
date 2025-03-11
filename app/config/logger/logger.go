@@ -5,6 +5,7 @@ import (
 	"go.uber.org/zap/zapcore"
 	"log"
 	"os"
+	"path/filepath"
 )
 
 var logger *zap.Logger
@@ -26,7 +27,8 @@ func Logger() *zap.Logger {
 		config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 		config.Encoding = "console"
 
-		file, err := os.OpenFile("app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		filePath := filepath.Join("logs", "app.log")
+		file, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			log.Fatalf("failed to open log file: %v", err)
 		}

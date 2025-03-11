@@ -29,3 +29,6 @@ go.work.sum
 
 storage/**/*
 storage/*
+
+cmd/test/*
+cmd/test

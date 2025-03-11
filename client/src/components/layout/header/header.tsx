@@ -67,7 +67,7 @@ export function Header() {
             }
 
         } catch (error) {
-            console.log(error)
+            console.error(error)
         }
 
     }, [pathname, token])
@@ -88,7 +88,7 @@ export function Header() {
                         {routes.map(({ link, title, icon }) =>
                             <li key={link}><Link href={link} className={"nav-link px-2 " + (pathname === link ? "link-secondary disabled" : "link-dark")}>
                                 {
-                                    width > 720 ? title : <Image src={icon} alt={""} width={30} height={30} />
+                                    width > 720 ? title : <Image style={{ objectFit: 'cover' }} src={icon} alt={""} width={30} height={30} />
                                 }
                             </Link></li>
                         )}
@@ -104,8 +104,8 @@ export function Header() {
                             <Link href="/profile" type="button" className="me-2">
                                 {
                                     avatarUrl && avatarUrl !== ""
-                                        ? <Image src={HOST_URL + "/storage/" + avatarUrl} alt="" width={32} height={32} className="rounded-circle" />
-                                        : <Image src={"/misc/empty_avatar.jpg"} alt="" width={32} height={32} className="rounded-circle" />
+                                        ? <Image style={{ objectFit: 'cover' }} src={HOST_URL + avatarUrl} alt="" width={32} height={32} className="rounded-circle" />
+                                        : <Image style={{ objectFit: 'cover' }} src={"/misc/empty_avatar.jpg"} alt="" width={32} height={32} className="rounded-circle" />
                                 }
 
                             </Link>

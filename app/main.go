@@ -1,9 +1,8 @@
 package main
 
 import (
-	"educ-gpt/data"
-	"educ-gpt/dic"
-
+	"educ-gpt/config/data"
+	"educ-gpt/config/dic"
 	"educ-gpt/http/router"
 	"errors"
 	"fmt"

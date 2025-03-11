@@ -44,6 +44,31 @@ func (r RoadmapController) GetTopics(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, topics)
 }
 
+// GetTopicInfo returns info of topic without authorization
+// @Summary      Get topic info
+// @Description  Returns info of topic without authorization
+// @Tags         roadmap
+// @Accept       json
+// @Produce      json
+// @Success      200 {object} models.Topic "Topic info"
+// @Failure      500 {object} dtos.ErrorResponse "Internal server error"
+// @Router       /roadmap/{topic_id}/info [get]
+func (r RoadmapController) GetTopicInfo(ctx *gin.Context) {
+	topicId, err := strconv.ParseUint(ctx.Param("topic_id"), 10, 32)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
+		return
+	}
+
+	topic, err := r.roadmapSrv.GetTopic(0, uint(topicId), false)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
+		return
+	}
+
+	ctx.JSON(http.StatusOK, topic)
+}
+
 // GetThemes returns a list of themes for a specific topic
 // @Summary      Get themes
 // @Description  Returns a list of themes for a specific topic, sorted by user progress and AI recommendations

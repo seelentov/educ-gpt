@@ -2,8 +2,9 @@ package dic
 
 import (
 	"context"
-	"educ-gpt/daemons"
-	"educ-gpt/logger"
+	"educ-gpt/config/data"
+	"educ-gpt/config/logger"
+	"educ-gpt/jobs/daemons"
 	"time"
 )
 
@@ -52,10 +53,38 @@ func clearNonActivatedUsers() {
 	ClearNonActivatedUsersDaemon = &DaemonController{ctx, cancel}
 }
 
+var SendMailDaemon *DaemonController
+
+func sendMail() {
+	daemon, ctx, cancel := daemons.NewSendMailDaemon(
+		SenderService(),
+		data.Redis(),
+		logger.Logger(),
+		0,
+		"email_sender",
+	)
+	daemonsSlice = append(daemonsSlice, daemon)
+	ClearNonActivatedUsersDaemon = &DaemonController{ctx, cancel}
+}
+
+var ClearUnusedFilesDaemon *DaemonController
+
+func clearUnusedFiles() {
+	daemon, ctx, cancel := daemons.NewClearUnusedFilesDaemon(
+		data.DB(),
+		logger.Logger(),
+		time.Hour*24,
+	)
+	daemonsSlice = append(daemonsSlice, daemon)
+	ClearUnusedFilesDaemon = &DaemonController{ctx, cancel}
+}
+
 func initServices() {
 	clearProblems()
 	clearTokens()
 	clearNonActivatedUsers()
+	clearUnusedFiles()
+	sendMail()
 }
 
 func InitDaemons() {

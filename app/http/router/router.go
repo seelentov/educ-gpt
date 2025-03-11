@@ -1,7 +1,7 @@
 package router
 
 import (
-	"educ-gpt/dic"
+	dic2 "educ-gpt/config/dic"
 	_ "educ-gpt/docs"
 	"educ-gpt/http/dtos"
 	"github.com/gin-gonic/gin"
@@ -15,7 +15,7 @@ func NewRouter() *gin.Engine {
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	router.Use(dic.AuthMiddleware())
+	router.Use(dic2.AuthMiddleware())
 
 	router.Static("/storage", "./app/storage")
 
@@ -30,26 +30,27 @@ func NewRouter() *gin.Engine {
 		{
 			authGroup := v1.Group("/auth")
 			{
-				authGroup.POST("/register", dic.AuthController().Register)
-				authGroup.POST("/me", dic.RequiredAuthMiddleware(), dic.AuthController().Me)
-				authGroup.POST("/login", dic.AuthController().Login)
-				authGroup.POST("/refresh", dic.AuthController().Refresh)
-				authGroup.POST("/activate/:key", dic.AuthController().Activate)
-				authGroup.POST("/change_password", dic.AuthController().ChangePassword)
-				authGroup.POST("/reset/:key", dic.AuthController().ResetPassword)
-				authGroup.POST("/reset/task", dic.AuthController().ResetPasswordTask)
-				authGroup.POST("/change_email/task", dic.AuthController().ChangeEmailTask)
-				authGroup.POST("/change_email/:key", dic.AuthController().ChangeEmail)
-				authGroup.PATCH("/update", dic.AuthController().UpdateUser)
+				authGroup.POST("/register", dic2.AuthController().Register)
+				authGroup.POST("/me", dic2.RequiredAuthMiddleware(), dic2.AuthController().Me)
+				authGroup.POST("/login", dic2.AuthController().Login)
+				authGroup.POST("/refresh", dic2.AuthController().Refresh)
+				authGroup.POST("/activate/:key", dic2.AuthController().Activate)
+				authGroup.POST("/change_password", dic2.AuthController().ChangePassword)
+				authGroup.POST("/reset/:key/:user_id", dic2.AuthController().ResetPassword)
+				authGroup.POST("/reset/task", dic2.AuthController().ResetPasswordTask)
+				authGroup.POST("/change_email/task", dic2.AuthController().ChangeEmailTask)
+				authGroup.POST("/change_email/:key/:user_id", dic2.AuthController().ChangeEmail)
+				authGroup.PATCH("/update", dic2.AuthController().UpdateUser)
 			}
 
 			roadmapGroup := v1.Group("/roadmap")
 			{
-				roadmapGroup.GET("", dic.RoadmapController().GetTopics)
-				roadmapGroup.GET("/:topic_id", dic.RoadmapController().GetThemes)
-				roadmapGroup.GET("/:topic_id/:theme_id", dic.RoadmapController().GetTheme)
-				roadmapGroup.GET("/problems/:topic_id/:theme_id", dic.RoadmapController().GetProblems)
-				roadmapGroup.POST("/resolve", dic.RoadmapController().IncrementUserScoreAndAddAnswer)
+				roadmapGroup.GET("", dic2.RoadmapController().GetTopics)
+				roadmapGroup.GET("/:topic_id", dic2.RoadmapController().GetThemes)
+				roadmapGroup.GET("/:topic_id/info", dic2.RoadmapController().GetTopicInfo)
+				roadmapGroup.GET("/:topic_id/:theme_id", dic2.RoadmapController().GetTheme)
+				roadmapGroup.GET("/problems/:topic_id/:theme_id", dic2.RoadmapController().GetProblems)
+				roadmapGroup.POST("/resolve", dic2.RoadmapController().IncrementUserScoreAndAddAnswer)
 			}
 		}
 	}

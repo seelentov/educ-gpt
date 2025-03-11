@@ -31,7 +31,7 @@ func (f FileServiceImpl) UploadImage(file *multipart.FileHeader) (string, error)
 		fileName := securityutils.GenerateKey(50)
 		fileExt := filepath.Ext(file.Filename)
 		newFileName = fileName + fileExt
-		filePath = filepath.Join("app", "storage", newFileName)
+		filePath = filepath.Join("storage", newFileName)
 
 		// Проверяем, существует ли файл
 		if _, err := os.Stat(filePath); os.IsNotExist(err) {

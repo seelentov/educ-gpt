@@ -1,8 +1,12 @@
 package services
 
 import (
+	"context"
 	"crypto/tls"
+	"educ-gpt/jobs/tasks"
+	"encoding/json"
 	"fmt"
+	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 	"gopkg.in/gomail.v2"
 )
@@ -14,7 +18,29 @@ type SenderServiceImpl struct {
 	smtpPassword string
 	smtpFrom     string
 
-	logger *zap.Logger
+	queueName string
+
+	logger      *zap.Logger
+	redisClient *redis.Client
+}
+
+func (s SenderServiceImpl) SendMessageByWorker(to, subject, body string) error {
+	ctx := context.Background()
+	task := tasks.MailTask{To: to, Subject: subject, Body: body}
+
+	taskJSON, err := json.Marshal(task)
+	if err != nil {
+		s.logger.Error("failed to marshal task", zap.Error(err))
+		return fmt.Errorf("%w:%w", ErrQueuedMail, err)
+	}
+
+	err = s.redisClient.RPush(ctx, "email_sender", taskJSON).Err()
+	if err != nil {
+		s.logger.Error("failed to push task to redis", zap.Error(err))
+		return fmt.Errorf("%w:%w", ErrQueuedMail, err)
+	}
+
+	return nil
 }
 
 func (s SenderServiceImpl) SendMessage(to, subject, body string) error {
@@ -35,6 +61,6 @@ func (s SenderServiceImpl) SendMessage(to, subject, body string) error {
 	return nil
 }
 
-func NewSenderServiceImpl(smtpHost string, smtpPort int, smtpUsername, smtpPassword, smtpFrom string, logger *zap.Logger) SenderService {
-	return &SenderServiceImpl{smtpHost, smtpPort, smtpUsername, smtpPassword, smtpFrom, logger}
+func NewSenderServiceImpl(smtpHost string, smtpPort int, smtpUsername, smtpPassword, smtpFrom, queueName string, logger *zap.Logger, redisClient *redis.Client) SenderService {
+	return &SenderServiceImpl{smtpHost, smtpPort, smtpUsername, smtpPassword, smtpFrom, queueName, logger, redisClient}
 }

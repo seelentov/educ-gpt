@@ -35,7 +35,7 @@ func (u UserServiceImpl) ChangePassword(userId uint, password string) error {
 
 func (u UserServiceImpl) Activate(key string) error {
 	var user *models.User
-	if err := u.db.Model(&models.User{}).Where("activation_key = ?", key).Find(&user).Error; err != nil {
+	if err := u.db.Model(&models.User{}).Where("activation_key = ?", key).First(&user).Error; err != nil {
 		u.logger.Error("activate failed", zap.Error(err))
 		return fmt.Errorf("%w:%w", ErrActivate, err)
 	}

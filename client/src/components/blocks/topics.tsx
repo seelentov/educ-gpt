@@ -5,43 +5,46 @@ import { getTopics } from "@/core/api/roadmap/topics";
 import { useLocalStorage } from "@/core/hooks/useLocalStorage";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Cards } from "../ui/cards";
 
 export function Topics() {
 
     const [token] = useLocalStorage("token", "")
     const [topics, setTopics] = useState<Topic[]>([])
+    const [isLoading, setIsLoading] = useState(true)
     const router = useRouter()
+
+
 
     useEffect(() => {
         (async () => {
+            setIsLoading(true)
             const res = await getTopics(token)
             if (res?.error) {
+                console.error(res.error)
                 router.refresh()
             }
             else {
                 setTopics(res)
             }
-
+            setIsLoading(false)
         })()
     }, [token])
 
-    return (
-        <div className="card-desk d-flex flex-wrap">
-            {(topics && topics.length > 0) && topics.map(t =>
-                <Link key={t.id} className="card col-6 col-md-3" href={`/topics/${t.id}`}>
-                    <div className="card-body">
-                        <h2 className="card-title">{t.title}</h2>
-                        {t?.scores && <small className="text-muted">Очки: {t.scores}</small>}
-                    </div>
-                </Link>
-            )}
-            {(!topics || topics.length === 0) &&
-                <div className="col-12 d-flex justify-content-center align-items-center" style={{ height: 200 }}>
-                    <Loading />
-                </div>
-            }
+    const list = useMemo(() => topics.map((t) => {
+        const item = {
+            slug: String(t.id),
+            title: t.title,
+            descInfo: ""
+        }
 
-        </div>
-    );
+        if (t?.scores && t.scores > 0) {
+            item.descInfo = String(t.scores)
+        }
+
+        return item
+    }), [topics])
+
+    return <Cards linkPrefix="/topics" list={list} isLoading={isLoading} />;
 }

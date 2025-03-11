@@ -1,8 +1,8 @@
 package dic
 
 import (
+	"educ-gpt/config/logger"
 	"educ-gpt/http/controllers"
-	"educ-gpt/logger"
 )
 
 var authController *controllers.AuthController

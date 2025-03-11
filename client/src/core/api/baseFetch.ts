@@ -2,19 +2,24 @@ import { API_URL } from "./api";
 
 export async function baseFetch(
     url: string,
-    body: string | undefined | null = null,
+    body: string | FormData | null = null,
     method: string = "GET",
     token: string = "",
-    headers: { [key: string]: string } | null | undefined = null
+    headers: { [key: string]: string } | null | undefined = null,
+    no_json: boolean = false
 ): Promise<any> {
     try {
         const init: RequestInit = {
             method,
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            mode: "no-cors"
+            headers: {}
         };
+
+        if (!no_json) {
+            init.headers = {
+                ...init.headers,
+                'Content-Type': 'application/json',
+            }
+        }
 
         if (headers) {
             init.headers = {
@@ -35,11 +40,6 @@ export async function baseFetch(
         }
 
         const response = await fetch(`${API_URL}${url}`, init);
-
-        const contentLength = response.headers.get('Content-Length');
-        if (response.status >= 200 && response.status < 300 && (contentLength === '0' || !contentLength)) {
-            return { status: response.status };
-        }
 
         const data = await response.json();
         return data;

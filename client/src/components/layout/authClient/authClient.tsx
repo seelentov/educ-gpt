@@ -6,23 +6,39 @@ import { useEffect, useRef } from "react"
 
 export function AuthClient() {
     const [_, setToken] = useLocalStorage("token", "")
-    const [refreshToken, __] = useLocalStorage("refresh_token", "")
+
+
+    const getRefreshToken = () => {
+        const value = window.localStorage.getItem("refresh_token")
+
+        const v = value ? JSON.parse(value) : ""
+
+        return String(v)
+    }
 
 
     useEffect(() => {
         const refreshTokenAsync = async () => {
             try {
-                if (refreshToken !== "") {
-                    const data = await refresh(refreshToken);
+
+                const token = getRefreshToken()
+
+                if (token !== "") {
+                    const data = await refresh(token);
 
                     if (data?.token) {
                         setToken(data.token)
+                    }
+                    else {
+                        await refreshTokenAsync()
                     }
                 }
             } catch (error) {
                 console.error(error)
             }
         };
+
+        refreshTokenAsync()
 
         const interval = setInterval(refreshTokenAsync, 60000);
 
@@ -31,7 +47,7 @@ export function AuthClient() {
                 clearInterval(interval);
             }
         };
-    }, [refreshToken])
+    }, [])
 
     return null
 }

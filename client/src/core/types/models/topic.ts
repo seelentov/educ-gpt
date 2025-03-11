@@ -1,5 +1,5 @@
 interface Topic {
     id: number
-    title: "Frontend Developer"
+    title: string
     scores?: number
 }

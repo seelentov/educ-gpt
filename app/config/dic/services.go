@@ -1,8 +1,8 @@
 package dic
 
 import (
-	"educ-gpt/data"
-	"educ-gpt/logger"
+	"educ-gpt/config/data"
+	"educ-gpt/config/logger"
 	"educ-gpt/services"
 	"log"
 	"os"
@@ -122,7 +122,9 @@ func SenderService() services.SenderService {
 			os.Getenv("SMTP_USERNAME"),
 			os.Getenv("SMTP_PASSWORD"),
 			os.Getenv("SMTP_FROM"),
+			"email_queue",
 			logger.Logger(),
+			data.Redis(),
 		)
 		logger.Logger().Debug("SenderService initialized")
 	}

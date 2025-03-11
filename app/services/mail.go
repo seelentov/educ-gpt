@@ -7,6 +7,6 @@ type Mail struct {
 
 type MailService interface {
 	ActivateMail(name, key string) (*Mail, error)
-	ResetMail(name, key string) (*Mail, error)
-	ChangeEmailMail(name, key string) (*Mail, error)
+	ResetMail(userId uint, name, key string) (*Mail, error)
+	ChangeEmailMail(userId uint, name, key string) (*Mail, error)
 }

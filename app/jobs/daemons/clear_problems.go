@@ -3,14 +3,12 @@ package daemons
 import (
 	"context"
 	"educ-gpt/services"
-	"sync"
 	"time"
 
 	"go.uber.org/zap"
 )
 
 type ClearProblemsDaemon struct {
-	wg         *sync.WaitGroup
 	roadmapSrv services.RoadmapService
 	logger     *zap.Logger
 	sleep      time.Duration
@@ -26,9 +24,7 @@ func (c *ClearProblemsDaemon) Work() {
 }
 
 func (c *ClearProblemsDaemon) Start() {
-	c.wg.Add(1)
 	go func() {
-		defer c.wg.Done()
 		c.logger.Info("ClearProblemsDaemon started")
 		ticker := time.NewTicker(c.sleep)
 		defer ticker.Stop()
@@ -58,7 +54,6 @@ func NewClearProblemsDaemon(
 ) (*ClearProblemsDaemon, context.Context, context.CancelFunc) {
 	ctx, cancel := context.WithCancel(context.Background())
 	return &ClearProblemsDaemon{
-			wg:         &sync.WaitGroup{},
 			roadmapSrv: roadmapSrv,
 			logger:     logger,
 			sleep:      sleep,

@@ -42,8 +42,6 @@ export function SignUpForm() {
         }
 
         try {
-
-
             const data = await signup(
                 name,
                 email,
@@ -62,11 +60,13 @@ export function SignUpForm() {
                 setSuccess(true)
             }
         } catch (error) {
-            console.log(error)
+            console.error(error)
             setErrors({ authorization: JSON.stringify(error) });
         }
         finally {
             setLoading(false)
+            setPassword("")
+            setPasswordConf("")
         }
     };
 

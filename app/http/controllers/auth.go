@@ -12,6 +12,8 @@ import (
 	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
 	"net/http"
+	"strconv"
+	"strings"
 )
 
 type AuthController struct {
@@ -98,7 +100,7 @@ func (c *AuthController) Register(ctx *gin.Context) {
 		return
 	}
 
-	if err := c.senderSrv.SendMessage(user.Email, mail.Subject, mail.Body); err != nil {
+	if err := c.senderSrv.SendMessageByWorker(user.Email, mail.Subject, mail.Body); err != nil {
 		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
 		return
 	}
@@ -405,7 +407,6 @@ func (c *AuthController) ChangePassword(ctx *gin.Context) {
 // @Tags         auth
 // @Accept       json
 // @Produce      json
-// @Param Authorization header string true "Bearer <JWT token>"
 // @Param        key path string true "Change email key"
 // @Success      200 {object} dtos.StatusResponse "Email changed successfully"
 // @Failure      401 {object} dtos.ErrorResponse "Unauthorized or invalid key"
@@ -413,14 +414,15 @@ func (c *AuthController) ChangePassword(ctx *gin.Context) {
 // @Router       /auth/change_email/{key} [post]
 func (c *AuthController) ChangeEmail(ctx *gin.Context) {
 	key := ctx.Param("key")
+	userIdParam := ctx.Param("user_id")
 
-	userId, err := httputils.GetUserId(ctx)
+	userId, err := strconv.ParseUint(userIdParam, 10, 32)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, dtos.UnauthorizedResponse())
 		return
 	}
 
-	email, err := c.tokenSrv.VerifyAndGetData(userId, key, models.TypeChangeEmail)
+	email, err := c.tokenSrv.VerifyAndGetData(uint(userId), key, models.TypeChangeEmail)
 
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, dtos.ErrorResponse{Error: "Неверный ключ"})
@@ -430,11 +432,11 @@ func (c *AuthController) ChangeEmail(ctx *gin.Context) {
 	updates := make(map[string]interface{})
 	updates["email"] = email
 
-	if err := c.userService.Update(userId, updates); err != nil {
+	if err := c.userService.Update(uint(userId), updates); err != nil {
 		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
 		return
 	}
-	ctx.JSON(http.StatusOK, dtos.OkResponse())
+	ctx.JSON(http.StatusOK, dtos.StatusResponse{Status: "Почта успешно изменена"})
 }
 
 // ChangeEmailTask initiates the process of changing the user's email
@@ -501,13 +503,13 @@ func (c *AuthController) ChangeEmailTask(ctx *gin.Context) {
 		return
 	}
 
-	mail, err := c.mailSrv.ChangeEmailMail(user.Name, key)
+	mail, err := c.mailSrv.ChangeEmailMail(userId, user.Name, key)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
 		return
 	}
 
-	if err := c.senderSrv.SendMessage(req.Email, mail.Subject, mail.Body); err != nil {
+	if err := c.senderSrv.SendMessageByWorker(req.Email, mail.Subject, mail.Body); err != nil {
 		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
 		return
 	}
@@ -522,7 +524,6 @@ func (c *AuthController) ChangeEmailTask(ctx *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        key path string true "Reset password key"
-// @Param Authorization header string true "Bearer <JWT token>"
 // @Param        request body dtos.ResetPasswordRequest true "New password"
 // @Success      200 {object} dtos.StatusResponse "Password reset successfully"
 // @Failure      400 {object} dtos.ValidationErrorResponse "Invalid request body"
@@ -545,24 +546,25 @@ func (c *AuthController) ResetPassword(ctx *gin.Context) {
 	}
 
 	key := ctx.Param("key")
+	userIdParam := ctx.Param("user_id")
 
-	userId, err := httputils.GetUserId(ctx)
+	userId, err := strconv.ParseUint(userIdParam, 10, 32)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, dtos.UnauthorizedResponse())
 		return
 	}
 
-	if err := c.tokenSrv.Verify(userId, key, models.TypeResetPassword); err != nil {
+	if err := c.tokenSrv.Verify(uint(userId), key, models.TypeResetPassword); err != nil {
 		ctx.JSON(http.StatusUnauthorized, dtos.ErrorResponse{Error: "Неверный ключ"})
 		return
 	}
 
-	if err := c.userService.ChangePassword(userId, req.Password); err != nil {
+	if err := c.userService.ChangePassword(uint(userId), req.Password); err != nil {
 		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
 		return
 	}
 
-	ctx.JSON(http.StatusOK, dtos.OkResponse())
+	ctx.JSON(http.StatusOK, dtos.StatusResponse{Status: "Пароль успешно изменен"})
 }
 
 // ResetPasswordTask initiates the process of resetting the user's password
@@ -571,43 +573,53 @@ func (c *AuthController) ResetPassword(ctx *gin.Context) {
 // @Tags         auth
 // @Accept       json
 // @Produce      json
-// @Param Authorization header string true "Bearer <JWT token>"
+// @Param        request body dtos.ResetPasswordTaskRequest true "Credential"
 // @Success      200 {object} dtos.MessageResponse "Reset email sent"
 // @Failure      401 {object} dtos.ErrorResponse "Unauthorized"
 // @Failure      500 {object} dtos.ErrorResponse "Internal server error"
 // @Router       /auth/reset/task [post]
 func (c *AuthController) ResetPasswordTask(ctx *gin.Context) {
-	userId, err := httputils.GetUserId(ctx)
-	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, dtos.UnauthorizedResponse())
+	var req dtos.ResetPasswordTaskRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		var valErr validator.ValidationErrors
+		ok := errors.As(err, &valErr)
+
+		if ok {
+			ctx.JSON(http.StatusBadRequest, dtos.ValidationErrorResponse{Error: valid.ParseValidationErrors(err)})
+			return
+		}
+
+		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
 		return
 	}
 
-	user, err := c.userService.GetById(userId)
+	user, err := c.userService.GetByCredential(req.Credential)
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, dtos.UnauthorizedResponse())
+		ctx.JSON(http.StatusUnauthorized, dtos.ErrorResponse{Error: "Пользователь не найден"})
 		return
 	}
 
-	key, err := c.tokenSrv.Create(userId, models.TypeResetPassword, "")
+	key, err := c.tokenSrv.Create(user.ID, models.TypeResetPassword, "")
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
 		return
 	}
 
-	mail, err := c.mailSrv.ResetMail(user.Name, key)
+	mail, err := c.mailSrv.ResetMail(user.ID, user.Name, key)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
 		return
 	}
 
-	if err := c.senderSrv.SendMessage(user.Email, mail.Subject, mail.Body); err != nil {
+	if err := c.senderSrv.SendMessageByWorker(user.Email, mail.Subject, mail.Body); err != nil {
 		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
 		return
 	}
 
-	ctx.JSON(http.StatusOK, dtos.MessageResponse{Message: "Письмо для восстановления аккаунта отправлено на " + user.Email})
+	email := user.Email[:2] + "**********" + user.Email[strings.Index(user.Email, "@"):]
+
+	ctx.JSON(http.StatusOK, dtos.MessageResponse{Message: "Письмо для восстановления аккаунта отправлено на " + email})
 }
 
 func NewAuthController(

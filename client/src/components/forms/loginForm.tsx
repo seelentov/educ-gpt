@@ -18,7 +18,7 @@ export function LoginForm() {
 
     useEffect(() => {
         if (token != "") {
-            router.push("/topics")
+            router.replace("/topics")
         }
     })
 
@@ -31,7 +31,11 @@ export function LoginForm() {
         try {
             const data = await login(credential, password);
             if (data?.error) {
-                setError(data?.error)
+                if (typeof data?.error === "string") {
+                    setError(data?.error)
+                } else {
+                    setError(data.error[Object.keys(data.error)[0]])
+                }
             }
             else {
                 if (data?.token) {
@@ -46,11 +50,12 @@ export function LoginForm() {
 
 
         } catch (error) {
-            console.log(error)
+            console.error(error)
             setError('Неверный логин или пароль');
         }
         finally {
             setLoading(false)
+            setPassword("")
         }
     };
 
@@ -91,7 +96,7 @@ export function LoginForm() {
                 <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
                     {loading ? "Вход..." : "Войти"}
                 </button>
-                <Link href="/" className='link-primary'>Забыли пароль?</Link>
+                <Link href="/reset" className='link-primary'>Забыли пароль?</Link>
             </div>
 
             <hr />

@@ -7,17 +7,12 @@ export function Footer() {
                 <ul className="nav col-12 justify-content-end list-unstyled d-flex">
                     <li className="ms-3">
                         <a className="text-muted" target="_blank" href="https://github.com/seelentov/">
-                            <Image src="/icons/github.svg" alt={""} width={40} height={40} />
+                            <Image style={{ objectFit: 'cover' }} src="/icons/github.svg" alt={""} width={40} height={40} />
                         </a>
                     </li>
                     <li className="ms-3">
                         <a className="text-muted" target="_blank" href="https://t.me/komkov01">
-                            <Image src="/icons/telegram.svg" alt={""} width={40} height={40} />
-                        </a>
-                    </li>
-                    <li className="ms-3">
-                        <a className="text-muted" target="_blank" href="https://hh.ru/resume/ffae0a05ff0b8281f20039ed1f587964334e32">
-                            <Image src="/icons/hh.svg" alt={""} width={40} height={40} />
+                            <Image style={{ objectFit: 'cover' }} src="/icons/telegram.svg" alt={""} width={40} height={40} />
                         </a>
                     </li>
                 </ul>

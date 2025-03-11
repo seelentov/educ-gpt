@@ -3,14 +3,12 @@ package daemons
 import (
 	"context"
 	"educ-gpt/services"
-	"sync"
 	"time"
 
 	"go.uber.org/zap"
 )
 
 type ClearNonActivatedUsersDaemon struct {
-	wg      *sync.WaitGroup
 	userSrv services.UserService
 	logger  *zap.Logger
 	sleep   time.Duration
@@ -26,9 +24,7 @@ func (c *ClearNonActivatedUsersDaemon) Work() {
 }
 
 func (c *ClearNonActivatedUsersDaemon) Start() {
-	c.wg.Add(1)
 	go func() {
-		defer c.wg.Done()
 		c.logger.Info("ClearNonActivatedUsersDaemon started")
 		ticker := time.NewTicker(c.sleep)
 		defer ticker.Stop()
@@ -58,7 +54,6 @@ func NewClearNonActivatedUsersDaemon(
 ) (*ClearNonActivatedUsersDaemon, context.Context, context.CancelFunc) {
 	ctx, cancel := context.WithCancel(context.Background())
 	return &ClearNonActivatedUsersDaemon{
-			wg:      &sync.WaitGroup{},
 			userSrv: userSrv,
 			logger:  logger,
 			sleep:   sleep,

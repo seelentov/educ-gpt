@@ -1,7 +1,7 @@
 package data
 
 import (
-	"educ-gpt/logger"
+	"educ-gpt/config/logger"
 	"educ-gpt/models"
 	"errors"
 	"fmt"
