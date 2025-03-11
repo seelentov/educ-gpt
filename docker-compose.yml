@@ -27,8 +27,6 @@ services:
       - POSTGRES_PASSWORD=${DB_PASS}
     ports:
       - ${DB_PORT}:${DB_PORT}
-    expose:
-      - ${DB_PORT}
     networks:
       - api
   redis:
@@ -39,8 +37,6 @@ services:
       - ./docker/redis:/data
     ports:
       - ${REDIS_PORT}:${REDIS_PORT}
-    expose:
-      - ${REDIS_PORT}
     networks:
       - api
 
