@@ -67,7 +67,7 @@ services:
   certbot:
     image: certbot/certbot
     depends_on:
-      - nginx
+      - web
     container_name: certbot
     volumes:
       - ./app:/var/app
