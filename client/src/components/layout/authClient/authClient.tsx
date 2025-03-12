@@ -2,10 +2,10 @@
 
 import { refresh } from "@/core/api/auth/refresh"
 import { useLocalStorage } from "@/core/hooks/useLocalStorage"
-import { useEffect, useRef } from "react"
+import { useEffect } from "react"
 
 export function AuthClient() {
-    const [_, setToken] = useLocalStorage("token", "")
+    const [, setToken] = useLocalStorage("token", "")
 
 
     const getRefreshToken = () => {
@@ -47,7 +47,7 @@ export function AuthClient() {
                 clearInterval(interval);
             }
         };
-    }, [])
+    }, [setToken])
 
     return null
 }

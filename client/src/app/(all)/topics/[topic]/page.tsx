@@ -1,14 +1,10 @@
 import { Themes } from "@/components/blocks/themes";
 import { getTopicInfo } from "@/core/api/roadmap/topic_info";
 
-interface ITopicPageParams {
-    params: {
-        topic: number
-    }
-}
+type Params = Promise<{ topic: number }>
 
-export default async function TopicPage({ params }: ITopicPageParams) {
-
+export default async function TopicPage(props: { params: Params }) {
+    const params = await props.params;
     const topic = await getTopicInfo(params.topic)
 
     return (

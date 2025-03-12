@@ -2,7 +2,6 @@
 
 import { changeEmailActivate } from "@/core/api/auth/change_email_activate"
 import { useLocalStorage } from "@/core/hooks/useLocalStorage"
-import { Redirector } from "./redirector"
 import { useEffect, useState } from "react"
 
 interface IChangeEmailActivateProps {

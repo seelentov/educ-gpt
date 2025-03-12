@@ -11,7 +11,7 @@ export function LoginForm() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [token, setToken] = useLocalStorage("token", "")
-    const [refreshToken, setRefreshToken] = useLocalStorage("refresh_token", "")
+    const [, setRefreshToken] = useLocalStorage("refresh_token", "")
     const [loading, setLoading] = useState(false)
 
     const router = useRouter()

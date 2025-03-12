@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { resetPassword } from '@/core/api/auth/reset_password';
 
 export function ResetPasswordTaskForm() {
@@ -9,7 +8,6 @@ export function ResetPasswordTaskForm() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false)
     const [message, setMessage] = useState<string>("")
-
 
     const handleSubmit = async (e: any) => {
         if (loading) {

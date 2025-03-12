@@ -9,7 +9,7 @@ import { updateUser } from "@/core/api/auth/update";
 import { Loading } from "../ui/loading";
 
 export default function EditProfileForm() {
-    const [token, _] = useLocalStorage("token", "")
+    const [token] = useLocalStorage("token", "")
 
     const [name, setName] = useState<string>("")
     const [number, setNumber] = useState<string>("")
@@ -36,14 +36,7 @@ export default function EditProfileForm() {
             initState.chat_gpt_token === initState.chat_gpt_token
         )
 
-
-    useEffect(() => {
-        refetchUser()
-    }, [token])
-
     const refetchUser = async () => {
-
-
         setLoadingMe(true)
 
         try {
@@ -77,6 +70,9 @@ export default function EditProfileForm() {
         }
     }
 
+    useEffect(() => {
+        refetchUser()
+    }, [token, refetchUser])
 
     const updateData = async (e: any) => {
         if (loading) {

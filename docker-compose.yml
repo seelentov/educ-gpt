@@ -1,21 +1,45 @@
 services:
+  web:
+    container_name: nginx
+    image: nginx:stable-alpine
+    restart: always
+    depends_on:
+      - app
+      - client
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./app:/var/app
+      - ./web/conf.d:/etc/nginx/conf.d
+      - ./web/etc-letsencrypt:/etc/letsencrypt
+    networks:
+      - api
+      - client
+
+  client:
+    container_name: client
+    build:
+      context: client
+      dockerfile: Dockerfile
+    volumes:
+      - ./client/:/var/app
+    networks:
+      - client
+
   app:
     build:
       context: ./app
       dockerfile: Dockerfile
     restart: unless-stopped
     volumes:
-      - ./app:/app
+      - ./app:/var/app
     depends_on:
       - db
       - redis
-    ports:
-      - ${PORT}:${PORT}
-    expose:
-      - ${PORT}
     networks:
       - api
-      - client
+
   db:
     image: postgres:15
     restart: unless-stopped
@@ -37,6 +61,21 @@ services:
     restart: unless-stopped
     volumes:
       - ./docker/redis:/data
+    networks:
+      - api
+
+  certbot:
+    image: certbot/certbot
+    depends_on:
+      - nginx
+    container_name: certbot
+    volumes:
+      - ./app:/var/app
+      - ./web/conf.d:/etc/nginx/conf.d
+      - ./web/etc-letsencrypt:/etc/letsencrypt
+    command: certonly --webroot --webroot-path=/var/app/storage --email ${ADMIN_EMAIL} --agree-tos --no-eff-email -d ${DOMAIN} -v
+    profiles: 
+      - certbot
     networks:
       - api
 

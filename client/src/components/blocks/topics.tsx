@@ -1,9 +1,7 @@
 'use client'
 
-import { Loading } from "@/components/ui/loading";
 import { getTopics } from "@/core/api/roadmap/topics";
 import { useLocalStorage } from "@/core/hooks/useLocalStorage";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Cards } from "../ui/cards";
@@ -31,7 +29,7 @@ export function Topics() {
             }
             setIsLoading(false)
         })()
-    }, [token])
+    }, [token, router])
 
     const list = useMemo(() => topics.map((t) => {
         const item = {
@@ -45,7 +43,7 @@ export function Topics() {
         }
 
         return item
-    }), [topics])
+    }), [topics, router])
 
     return <Cards linkPrefix="/topics" list={list} isLoading={isLoading} />;
 }

@@ -37,7 +37,7 @@ export function Themes({ id }: IThemesProps) {
             }
             setIsLoading(false)
         })()
-    }, [token])
+    }, [token, id, router])
 
     const list = useMemo(() => themes.map((t) => {
         const item = {

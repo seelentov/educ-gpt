@@ -73,7 +73,7 @@ export default function ThemePage() {
             }))
             setGlobalLoading(false)
         })()
-    }, [topic, theme, token])
+    }, [topic, theme, token, router])
 
     const checkAnswer = async () => {
         if (checkLoading || tasks[activeTask].isDone || code == "") {
@@ -158,7 +158,7 @@ export default function ThemePage() {
         setProblemsLoading(false)
     }
 
-    const canNextTask = useMemo(() => tasks.length > activeTask + 1, [tasks, activeTask])
+    const canNextTask = useMemo(() => tasks.length > activeTask + 1, [tasks.length, activeTask])
 
     const nextTask = () => {
         if (!canNextTask || checkLoading) {
@@ -168,7 +168,7 @@ export default function ThemePage() {
         setActiveTask(p => p + 1)
     }
 
-    const canPrevTask = useMemo(() => activeTask > 0, [tasks, activeTask])
+    const canPrevTask = useMemo(() => activeTask > 0, [tasks.length, activeTask])
 
     const prevTask = () => {
         if (!canPrevTask || checkLoading) {
@@ -207,7 +207,7 @@ export default function ThemePage() {
                             ? <>
                                 <div className="text p-2 border rounded" style={{ height: 'calc(100% - 50px)', overflow: 'scroll' }}>
                                     {tasks.length > 0 && <div dangerouslySetInnerHTML={{ __html: tasks[activeTask].task }} />}
-                                    {tasks.length > 0 && tasks[activeTask].dialog.map((d) => <p><strong>AI:</strong> {d}</p>)}
+                                    {tasks.length > 0 && tasks[activeTask].dialog.map((d, i) => <p key={i}><strong>AI:</strong> {d}</p>)}
                                     {checkLoading && <p><strong>AI:</strong> Думаю...</p>}
                                 </div>
                                 <div className="p-2 border rounded d-flex gap-1 align-items-center" style={{ height: '50px' }}>

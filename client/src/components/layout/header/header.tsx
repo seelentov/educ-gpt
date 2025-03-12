@@ -19,16 +19,6 @@ export function Header() {
             title: "Список тем",
             icon: "/icons/book.svg"
         },
-        {
-            link: "/leaderboard",
-            title: "Таблица лидеров",
-            icon: "/icons/person.svg"
-        },
-        {
-            link: "/donut",
-            title: "Поддержать проект",
-            icon: "/icons/donat.svg"
-        },
 
     ], [])
 
@@ -36,7 +26,7 @@ export function Header() {
     const router = useRouter()
 
     const [token, setToken] = useLocalStorage("token", "")
-    const [__, setRefreshToken] = useLocalStorage("refresh_token", "")
+    const [, setRefreshToken] = useLocalStorage("refresh_token", "")
 
     const [isLogged, setIsLogged] = useState<boolean>(false)
 

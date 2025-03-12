@@ -1,5 +1,4 @@
 import { ResetPasswordForm } from "@/components/forms/resetPasswordForm"
-import { resetPasswordActivate } from "@/core/api/auth/reset_password_activate"
 
 export default async function ResetPasswordActivate() {
 

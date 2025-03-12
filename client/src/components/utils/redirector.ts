@@ -15,7 +15,13 @@ export function Redirector({ timeout, link }: IRedirectorProps) {
         const timeOut = setTimeout(() => {
             router.replace(link)
         }, timeout)
-    }, [])
+
+        return () => {
+            if (timeOut) {
+                clearTimeout(timeOut);
+            }
+        };
+    }, [link, router, timeout])
 
     return null
 }
