@@ -72,7 +72,7 @@ export default function EditProfileForm() {
 
     useEffect(() => {
         refetchUser()
-    }, [token, refetchUser])
+    }, [])
 
     const updateData = async (e: any) => {
         if (loading) {
