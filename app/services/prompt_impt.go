@@ -171,8 +171,6 @@ func (p PromptServiceImpl) VerifyAnswer(problem string, answer string) string {
 
 	sb := strings.Builder{}
 
-	answer = strings.ReplaceAll(answer, `"`, `\"`)
-
 	sb.WriteString(prompt1)
 	sb.WriteString(problem)
 	sb.WriteString(prompt2)
