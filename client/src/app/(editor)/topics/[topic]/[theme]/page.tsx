@@ -11,6 +11,7 @@ import { useLocalStorage } from "@/core/hooks/useLocalStorage";
 import { Loading } from "@/components/ui/loading";
 import { resolve } from "@/core/api/roadmap/resolve";
 import { compile } from "@/core/api/utils/compile";
+import { getProblems } from "@/core/api/roadmap/problems";
 
 export default function ThemePage() {
     const [part, setPath] = useState<"theory" | "tasks">("theory")
@@ -26,61 +27,60 @@ export default function ThemePage() {
     const { topic, theme } = useParams()
 
     const [token] = useLocalStorage("token", "")
-    const [globalLoading, setGlobalLoading] = useState<boolean>(true)
+    const [globalLoading, setGlobalLoading] = useState<boolean>(false)
     const [problemsLoading, setProblemsLoading] = useState<boolean>(false)
     const [checkLoading, setCheckLoading] = useState<boolean>(false)
     const [compilationLoading, setCompilationLoading] = useState<boolean>(false)
 
-    useEffect(() => {
-        (async () => {
-            if (!topic || !theme || !token) {
-                return
-            }
-            setGlobalLoading(true)
-            const data = await getTheme(topic as string, theme as string, token)
+    // useEffect(() => {
+    //     (async () => {
+    //         if (!topic || !theme || !token) {
+    //             return
+    //         }
+    //         setGlobalLoading(true)
+    //         const data = await getTheme(topic as string, theme as string, token)
 
-            if (data?.error) {
-                console.error(data.error)
-                router.refresh()
-                setGlobalLoading(false)
-                return
-            }
+    //         if (data?.error) {
+    //             console.error(data.error)
+    //             alert(data.error)
+    //             router.refresh()
+    //             setGlobalLoading(false)
+    //             return
+    //         }
 
-            const processedContent = await remark()
-                .use(html)
-                .use(rehypeHihglight)
-                .process(data.text);
-            setContent(processedContent.toString())
+    //         const processedContent = await remark()
+    //             .use(html)
+    //             .use(rehypeHihglight)
+    //             .process(data.text);
+    //         setContent(processedContent.toString())
 
-            for (let i = 0; i < data.problems.length; i++) {
-                const processedProblem = await remark()
-                    .use(html)
-                    .use(rehypeHihglight)
-                    .process(data.problems[i].question);
+    //         for (let i = 0; i < data.problems.length; i++) {
+    //             const processedProblem = await remark()
+    //                 .use(html)
+    //                 .use(rehypeHihglight)
+    //                 .process(data.problems[i].question);
 
-                data.problems[i].question = processedProblem.toString()
-            }
+    //             data.problems[i].question = processedProblem.toString()
+    //         }
 
-            setTasks(data.problems.map((p: Problem) => {
-                return {
-                    id: p.id,
-                    task: p.question,
-                    isDone: false,
-                    dialog: []
-                }
-            }))
-            setGlobalLoading(false)
-        })()
-    }, [topic, theme, token])
+    //         setTasks(data.problems.map((p: Problem) => {
+    //             return {
+    //                 id: p.id,
+    //                 task: p.question,
+    //                 isDone: false,
+    //                 dialog: []
+    //             }
+    //         }))
+    //         setGlobalLoading(false)
+    //     })()
+    // }, [topic, theme, token])
 
     const checkAnswer = async () => {
-        if (checkLoading || tasks[activeTask].isDone) {
+        if (checkLoading || tasks[activeTask].isDone || code == "") {
             return
         }
 
         setCheckLoading(true)
-
-        console.log(tasks[activeTask])
 
         const data = await resolve(tasks[activeTask].id, JSON.stringify(code).slice(1, -1).replace(/\n/g, '\\n'), token)
 
@@ -91,19 +91,14 @@ export default function ThemePage() {
             return
         }
 
-        if (data?.message && data?.status) {
-            setTasks(ts => ([
-                ...ts.filter(t => t.id !== tasks[activeTask].id),
-                {
-                    ...tasks[activeTask],
-                    dialog: [...tasks[activeTask].dialog, data.message],
-                    isDone: data.status
-                }
-            ]))
-        } else {
-            console.error(data)
-            alert(JSON.stringify(data))
-        }
+        setTasks(ts => {
+            if (!ts[activeTask].dialog.includes(data.message)) {
+                ts[activeTask].dialog.push(data.message)
+            }
+
+            ts[activeTask].isDone = data.ok
+            return ts
+        })
 
         setCheckLoading(false)
     }
@@ -112,10 +107,6 @@ export default function ThemePage() {
         if (compilationLoading || code == "") {
             return
         }
-
-        console.log(JSON.stringify(code).slice(1, -1).replace(/\n/g, '\\n'))
-        console.log(JSON.stringify(code))
-        console.log(code)
 
         setCompilationLoading(true)
 
@@ -143,7 +134,7 @@ export default function ThemePage() {
 
         setProblemsLoading(true)
 
-        const data = await getTheme(topic as string, theme as string, token)
+        const data = await getProblems(topic as string, theme as string, token)
 
         if (data?.error) {
             console.error(data.error)
@@ -198,7 +189,7 @@ export default function ThemePage() {
 
                     </div>
                     <div className="col-6 border rounded position-relative" style={{ height: '100%' }}>
-                        <button onClick={() => compilation()} disabled={compilationLoading} type="button" className="btn btn-success btn-sm position-absolute" style={{ top: '10px', right: '10px', zIndex: 999 }}>{"▶"}</button>
+                        <button onClick={() => compilation()} disabled={compilationLoading || code == ""} type="button" className="btn btn-success btn-sm position-absolute" style={{ top: '10px', right: '10px', zIndex: 999 }}>{"▶"}</button>
                         <div className="border" style={{ height: 'calc(100% - 150px)', overflow: 'scroll' }}>
                             <CodeMirror
                                 onChange={setCode}
@@ -212,17 +203,18 @@ export default function ThemePage() {
                         </div>
                     </div>
                     <div className="col-6 border rounded p-2" style={{ height: '100%', overflow: 'scroll' }}>
-                        {part === 'tasks' && tasks && tasks.length > 0
+                        {part === 'tasks'
                             ? <>
                                 <div className="text p-2 border rounded" style={{ height: 'calc(100% - 50px)', overflow: 'scroll' }}>
-                                    <div dangerouslySetInnerHTML={{ __html: tasks[activeTask].task }} />
-                                    {tasks[activeTask].dialog.map((d) => <p><strong>AI:</strong> {d}</p>)}
+                                    {tasks.length > 0 && <div dangerouslySetInnerHTML={{ __html: tasks[activeTask].task }} />}
+                                    {tasks.length > 0 && tasks[activeTask].dialog.map((d) => <p><strong>AI:</strong> {d}</p>)}
+                                    {checkLoading && <p><strong>AI:</strong> Думаю...</p>}
                                 </div>
                                 <div className="p-2 border rounded d-flex gap-1 align-items-center" style={{ height: '50px' }}>
-                                    <button onClick={() => prevTask()} type="button" className="btn btn-outline-primary btn-sm" disabled={!canPrevTask}>{"<<"}</button>
-                                    <button disabled={checkLoading || tasks[activeTask].isDone} onClick={() => checkAnswer()} type="button" className="btn btn-outline-success btn-sm">Проверить решение</button>
-                                    <button onClick={() => nextTask()} type="button" className="btn btn-outline-primary btn-sm" disabled={!canNextTask}>{">>"}</button>
-                                    <p className="test-center mx-auto mb-0">{activeTask + 1} / {tasks.length}</p>
+                                    {tasks.length > 0 && <button onClick={() => prevTask()} type="button" className="btn btn-outline-primary btn-sm" disabled={!canPrevTask}>{"<<"}</button>}
+                                    {tasks.length > 0 && <button disabled={checkLoading || tasks[activeTask].isDone || code == ""} onClick={() => checkAnswer()} type="button" className="btn btn-outline-success btn-sm">Проверить решение</button>}
+                                    {tasks.length > 0 && <button onClick={() => nextTask()} type="button" className="btn btn-outline-primary btn-sm" disabled={!canNextTask}>{">>"}</button>}
+                                    {tasks.length > 0 && <p className="test-center mx-auto mb-0">{activeTask + 1} / {tasks.length}</p>}
                                     <button onClick={() => loadMoreProblems()} disabled={problemsLoading} type="button" className="btn btn-outline-warning btn-sm" style={{ marginLeft: 'auto' }}>Загрузить еще...</button>
                                 </div>
                             </>
