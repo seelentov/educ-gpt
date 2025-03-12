@@ -8,4 +8,5 @@ docker/
 
 *.log
 
-
+/web/etc-letsencrypt/**/*
+!/web/etc-letsencrypt/.gitkeep
