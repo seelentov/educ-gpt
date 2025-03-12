@@ -56,7 +56,6 @@ export default function EditProfileForm() {
 
                 if (data.avatar_url) {
                     setAvatarUrl(HOST_URL + data.avatar_url)
-
                 }
 
                 setChatGptModel(data.chat_gpt_model)
@@ -223,7 +222,7 @@ export default function EditProfileForm() {
                                         id="fgptmodel"
                                         name="gptmodel"
                                         placeholder="Модель Chat-GPT"
-                                        value={chatGptToken}
+                                        value={chatGptModel}
                                         onChange={(e) => handleChange(setChatGptModel, e.target.value)}
                                     />
                                     <p className="text-danger">{errors?.chat_gpt_model}</p>
