@@ -159,6 +159,7 @@ func (c *AuthController) Me(ctx *gin.Context) {
 	}
 
 	user.Password = ""
+	user.ChatGptToken = ""
 
 	ctx.JSON(http.StatusOK, user)
 }

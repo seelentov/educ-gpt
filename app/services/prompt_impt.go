@@ -10,7 +10,7 @@ type PromptServiceImpl struct{}
 
 func (p PromptServiceImpl) CompileCode(code string) string {
 	prompt1 := "Пришли мне в ответном сообщении, что выведет в консоль этот код: "
-	prompt2 := `Ответ должен быть в формате JSON такого вида: {"result":"(текст в терминале при запуске этого кода)"}!`
+	prompt2 := `Ответ должен быть в формате JSON такого вида: {result:(текст в терминале при запуске этого кода)}!`
 
 	sb := strings.Builder{}
 

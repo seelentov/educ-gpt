@@ -67,7 +67,6 @@ export default function EditProfileForm() {
                 }
 
                 setChatGptModel(data.chat_gpt_model)
-                setChatGptToken(data.chat_gpt_token)
             }
         } catch (error) {
             console.error(error)
@@ -106,7 +105,6 @@ export default function EditProfileForm() {
             if (name) {
                 formData.append("name", name)
             }
-
             if (avatarFile) {
                 formData.append("avatar_file", avatarFile)
             }
