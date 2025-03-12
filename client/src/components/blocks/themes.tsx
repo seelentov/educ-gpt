@@ -29,6 +29,7 @@ export function Themes({ id }: IThemesProps) {
             const res = await getThemes(id, token)
             if (res?.error) {
                 console.error(res.error)
+                alert(JSON.stringify(res.error))
                 router.refresh()
             }
             else {

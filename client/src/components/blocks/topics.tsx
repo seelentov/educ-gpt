@@ -23,6 +23,7 @@ export function Topics() {
             const res = await getTopics(token)
             if (res?.error) {
                 console.error(res.error)
+                alert(JSON.stringify(res.error))
                 router.refresh()
             }
             else {

@@ -10,6 +10,7 @@ import { getTheme } from "@/core/api/roadmap/theme";
 import { useLocalStorage } from "@/core/hooks/useLocalStorage";
 import { Loading } from "@/components/ui/loading";
 import { resolve } from "@/core/api/roadmap/resolve";
+import { compile } from "@/core/api/utils/compile";
 
 export default function ThemePage() {
     const [part, setPath] = useState<"theory" | "tasks">("theory")
@@ -20,14 +21,15 @@ export default function ThemePage() {
     const [activeTask, setActiveTask] = useState<number>(0)
 
     const [code, setCode] = useState<string>("")
-    const [consoleText, setConsoleText] = useState<string>()
+    const [consoleText, setConsoleText] = useState<string[]>([])
     const router = useRouter()
     const { topic, theme } = useParams()
 
     const [token] = useLocalStorage("token", "")
     const [globalLoading, setGlobalLoading] = useState<boolean>(true)
-    const [problemsLoading, setProblemsLoading] = useState<boolean>(true)
-    const [checkLoading, setCheckLoading] = useState<boolean>(true)
+    const [problemsLoading, setProblemsLoading] = useState<boolean>(false)
+    const [checkLoading, setCheckLoading] = useState<boolean>(false)
+    const [compilationLoading, setCompilationLoading] = useState<boolean>(false)
 
     useEffect(() => {
         (async () => {
@@ -40,6 +42,7 @@ export default function ThemePage() {
             if (data?.error) {
                 console.error(data.error)
                 router.refresh()
+                setGlobalLoading(false)
                 return
             }
 
@@ -77,11 +80,14 @@ export default function ThemePage() {
 
         setCheckLoading(true)
 
-        const data = await resolve(tasks[activeTask].id, code, token)
+        console.log(tasks[activeTask])
+
+        const data = await resolve(tasks[activeTask].id, JSON.stringify(code).slice(1, -1).replace(/\n/g, '\\n'), token)
 
         if (data?.error) {
             console.error(data.error)
             alert(JSON.stringify(data.error))
+            setCheckLoading(false)
             return
         }
 
@@ -102,16 +108,47 @@ export default function ThemePage() {
         setCheckLoading(false)
     }
 
+    const compilation = async () => {
+        if (compilationLoading || code == "") {
+            return
+        }
+
+        console.log(JSON.stringify(code).slice(1, -1).replace(/\n/g, '\\n'))
+        console.log(JSON.stringify(code))
+        console.log(code)
+
+        setCompilationLoading(true)
+
+        const data = await compile(JSON.stringify(code).slice(1, -1).replace(/\n/g, '\\n'), token)
+
+        if (data?.error) {
+            console.error(data.error)
+            alert(JSON.stringify(data.error))
+            setCompilationLoading(false)
+
+            return
+        }
+
+        if (data?.result) {
+            setConsoleText(p => [...p, data.result])
+        }
+
+        setCompilationLoading(false)
+    }
+
     const loadMoreProblems = async () => {
         if (problemsLoading) {
             return
         }
+
+        setProblemsLoading(true)
 
         const data = await getTheme(topic as string, theme as string, token)
 
         if (data?.error) {
             console.error(data.error)
             alert(JSON.stringify(data.error))
+            setProblemsLoading(false)
             return
         }
 
@@ -126,7 +163,7 @@ export default function ThemePage() {
             })
         ]))
 
-        setProblemsLoading(true)
+
         setProblemsLoading(false)
     }
 
@@ -161,7 +198,7 @@ export default function ThemePage() {
 
                     </div>
                     <div className="col-6 border rounded position-relative" style={{ height: '100%' }}>
-                        <button type="button" className="btn btn-success btn-sm position-absolute" style={{ top: '10px', right: '10px', zIndex: 999 }}>{"▶"}</button>
+                        <button onClick={() => compilation()} disabled={compilationLoading} type="button" className="btn btn-success btn-sm position-absolute" style={{ top: '10px', right: '10px', zIndex: 999 }}>{"▶"}</button>
                         <div className="border" style={{ height: 'calc(100% - 150px)', overflow: 'scroll' }}>
                             <CodeMirror
                                 onChange={setCode}
@@ -170,7 +207,8 @@ export default function ThemePage() {
                             />
                         </div>
                         <div className="border p-2 " style={{ height: '150px', overflow: 'scroll' }}>
-                            {consoleText}
+                            {consoleText.map((s, i) => <p key={i}>{s}</p>)}
+                            {compilationLoading && <p>Думаю что это...</p>}
                         </div>
                     </div>
                     <div className="col-6 border rounded p-2" style={{ height: '100%', overflow: 'scroll' }}>
