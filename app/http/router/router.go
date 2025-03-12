@@ -55,7 +55,7 @@ func NewRouter() *gin.Engine {
 
 			utilsGroup := v1.Group("/utils")
 			{
-				utilsGroup.POST("/compile")
+				utilsGroup.POST("/compile", dic.UtilsController().Compile)
 			}
 		}
 	}
