@@ -29,6 +29,7 @@ go.work.sum
 
 storage/**/*
 storage/*
+!storage/.gitkeep
 
 cmd/test/*
 cmd/test

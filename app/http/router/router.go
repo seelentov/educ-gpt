@@ -4,10 +4,11 @@ import (
 	"educ-gpt/config/dic"
 	_ "educ-gpt/docs"
 	"educ-gpt/http/dtos"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"net/http"
 )
 
 func NewRouter() *gin.Engine {
@@ -17,7 +18,7 @@ func NewRouter() *gin.Engine {
 
 	router.Use(dic.AuthMiddleware())
 
-	router.Static("/storage", "./app/storage")
+	router.Static("/storage", "./storage")
 
 	router.NoRoute(func(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, dtos.NotFoundResponse())
