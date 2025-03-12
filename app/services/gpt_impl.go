@@ -70,8 +70,8 @@ func (g GptServiceImpl) GetAnswer(token string, model string, dialog []*DialogIt
 
 	msg := tempTarget.Choices[len(tempTarget.Choices)-1].Message.Content
 
-	msg = strings.ReplaceAll(msg, "```json", "")
-	msg = strings.ReplaceAll(msg, "```", "")
+	msg = strings.TrimPrefix(msg, "```json")
+	msg = strings.TrimSuffix(msg, "```")
 
 	if reflect.TypeOf(target).String() == "*string" {
 		reflect.ValueOf(target).Elem().Set(reflect.ValueOf(msg))
