@@ -12,6 +12,9 @@ export function ResetPasswordTaskForm() {
 
 
     const handleSubmit = async (e: any) => {
+        if (loading) {
+            return
+        }
 
         setLoading(true)
         setError('')

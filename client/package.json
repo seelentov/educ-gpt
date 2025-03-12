@@ -9,11 +9,17 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@uiw/react-codemirror": "^4.23.10",
     "bootstrap": "^5.3.3",
     "next": "15.2.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-spinners": "^0.15.0",
+    "rehype-highlight": "^7.0.2",
+    "rehype-starry-night": "^2.2.0",
+    "remark": "^15.0.1",
+    "remark-highlight.js": "^7.0.1",
+    "remark-html": "^16.0.1",
     "sass": "^1.85.1"
   },
   "devDependencies": {

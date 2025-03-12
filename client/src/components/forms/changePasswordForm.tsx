@@ -16,6 +16,10 @@ export function ChangePasswordForm() {
     const disabled = !oldPassword && !password && !passwordConf
 
     const handleSubmit = async (e: any) => {
+        if (loading) {
+            return
+        }
+
         setLoading(true)
         setErrors(null)
         e.preventDefault();

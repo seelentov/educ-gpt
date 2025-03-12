@@ -13,6 +13,10 @@ export function ChangeEmailForm() {
     const [token] = useLocalStorage("token", "")
 
     const handleSubmit = async (e: any) => {
+        if (loading) {
+            return
+        }
+
         setLoading(true)
         setError('')
         e.preventDefault();

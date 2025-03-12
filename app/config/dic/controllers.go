@@ -34,8 +34,22 @@ func RoadmapController() *controllers.RoadmapController {
 			PromptService(),
 			RoadmapService(),
 		)
-		logger.Logger().Debug("TestController initialized")
+		logger.Logger().Debug("RoadmapController initialized")
 	}
 
 	return roadmapController
+}
+
+var utilsController *controllers.UtilsController
+
+func UtilsController() *controllers.UtilsController {
+	if utilsController == nil {
+		utilsController = controllers.NewUtilsController(
+			GptService(),
+			PromptService(),
+			UserService(),
+		)
+		logger.Logger().Debug("UtilsController initialized")
+	}
+	return utilsController
 }

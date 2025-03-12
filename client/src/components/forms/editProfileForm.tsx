@@ -42,6 +42,8 @@ export default function EditProfileForm() {
     }, [token])
 
     const refetchUser = async () => {
+
+
         setLoadingMe(true)
 
         try {
@@ -78,6 +80,10 @@ export default function EditProfileForm() {
 
 
     const updateData = async (e: any) => {
+        if (loading) {
+            return
+        }
+
         try {
             setLoading(true)
             setErrors(null)

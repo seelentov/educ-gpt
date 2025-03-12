@@ -15,6 +15,10 @@ export function ResetPasswordForm() {
     const { key, userId } = useParams()
 
     const handleSubmit = async (e: any) => {
+        if (loading) {
+            return
+        }
+
         setLoading(true)
         setError('')
         e.preventDefault();

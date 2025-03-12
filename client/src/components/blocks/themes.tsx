@@ -27,7 +27,6 @@ export function Themes({ id }: IThemesProps) {
         (async () => {
             setIsLoading(true)
             const res = await getThemes(id, token)
-            console.log(res)
             if (res?.error) {
                 console.error(res.error)
                 router.refresh()

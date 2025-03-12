@@ -125,11 +125,7 @@ func (r RoadmapController) GetThemes(ctx *gin.Context) {
 		}
 	}
 
-	prompt, err := r.promptSrv.GetThemes(topic.Title, topic.Themes, userStats)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
-		return
-	}
+	prompt := r.promptSrv.GetThemes(topic.Title, topic.Themes, userStats)
 
 	var target []string
 
@@ -248,13 +244,9 @@ func (r RoadmapController) GetTheme(ctx *gin.Context) {
 		return
 	}
 
-	prompt, err := r.promptSrv.GetTheme(topic.Title, theme.Title, theme, topic.Themes)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
-		return
-	}
+	prompt := r.promptSrv.GetTheme(topic.Title, theme.Title, theme, topic.Themes)
 
-	var target services.PromptThemeRequest
+	var target services.PromptThemeResponse
 
 	err = r.aiSrv.GetAnswer(user.ChatGptToken, user.ChatGptModel, []*services.DialogItem{{Text: prompt, IsUser: true}}, &target)
 	if err != nil {
@@ -343,13 +335,9 @@ func (r RoadmapController) GetProblems(ctx *gin.Context) {
 		return
 	}
 
-	prompt, err := r.promptSrv.GetProblems(10, topic.Title, theme.Title, theme, topic.Themes)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
-		return
-	}
+	prompt := r.promptSrv.GetProblems(10, topic.Title, theme.Title, theme, topic.Themes)
 
-	var target services.PromptProblemsRequest
+	var target services.PromptProblemsResponse
 
 	err = r.aiSrv.GetAnswer(user.ChatGptToken, user.ChatGptModel, []*services.DialogItem{{Text: prompt, IsUser: true}}, &target)
 	if err != nil {
@@ -431,12 +419,7 @@ func (r RoadmapController) IncrementUserScoreAndAddAnswer(ctx *gin.Context) {
 		return
 	}
 
-	prompt, err := r.promptSrv.VerifyAnswer(problem.Question, req.Answer)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
-		return
-	}
-
+	prompt := r.promptSrv.VerifyAnswer(problem.Question, req.Answer)
 	var target services.PromptProblemRequest
 
 	err = r.aiSrv.GetAnswer(user.ChatGptToken, user.ChatGptModel, []*services.DialogItem{{Text: prompt, IsUser: true}}, &target)

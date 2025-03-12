@@ -8,7 +8,20 @@ import (
 
 type PromptServiceImpl struct{}
 
-func (p PromptServiceImpl) GetThemes(topic string, existedThemes []*models.Theme, userStats []*models.Theme) (string, error) {
+func (p PromptServiceImpl) CompileCode(code string) string {
+	prompt1 := "Пришли мне в ответном сообщении, что выведет в консоль этот код: "
+	prompt2 := `Ответ должен быть в формате JSON такого вида: {"result":"(текст в терминале при запуске этого кода)"}!`
+
+	sb := strings.Builder{}
+
+	sb.WriteString(prompt1)
+	sb.WriteString(code)
+	sb.WriteString(prompt2)
+
+	return sb.String()
+}
+
+func (p PromptServiceImpl) GetThemes(topic string, existedThemes []*models.Theme, userStats []*models.Theme) string {
 	prompt1 := "Я собираю список разделов для обучения программированию по теме: "
 	prompt2 := ". В списке уже есть эти разделы, не создавай новые разделы в списке, которые являются аналогами существующих: "
 	prompt3 := ". Учитывай прогресс пользователя. Вот список разделов, которые он уже изучил, и количество решенных задач по каждому разделу: "
@@ -63,12 +76,12 @@ func (p PromptServiceImpl) GetThemes(topic string, existedThemes []*models.Theme
 
 	sb.WriteString(prompt5)
 
-	return sb.String(), nil
+	return sb.String()
 }
 
-func (p PromptServiceImpl) GetTheme(topic string, theme string, userThemeStats *models.Theme, userAllStats []*models.Theme) (string, error) {
+func (p PromptServiceImpl) GetTheme(topic string, theme string, userThemeStats *models.Theme, userAllStats []*models.Theme) string {
 	prompt1 := "Расскажи подробно по теме: "
-	prompt2 := ". Твой ответ должен всключать в себя примеры кода и теории не менее 15000 символов"
+	prompt2 := ". Твой ответ должен включать в себя примеры кода и теории не менее 30000 символов, не считая кода"
 	prompt3 := ". Учитывай прогресс пользователя. Вот список тем, которые он уже изучил, и количество решенных задач по каждой теме: "
 	prompt4 := ". Подготовь 10 задач по этой теме."
 	prompt5 := ". Вот список задач, которые уже выполнил пользователь, их не должно быть в списке задач от тебя:"
@@ -101,10 +114,10 @@ func (p PromptServiceImpl) GetTheme(topic string, theme string, userThemeStats *
 	}
 	sb.WriteString(prompt6)
 
-	return sb.String(), nil
+	return sb.String()
 }
 
-func (p PromptServiceImpl) GetProblems(count int, topic string, theme string, userThemeStats *models.Theme, userAllStats []*models.Theme) (string, error) {
+func (p PromptServiceImpl) GetProblems(count int, topic string, theme string, userThemeStats *models.Theme, userAllStats []*models.Theme) string {
 	prompt1 := fmt.Sprintf("Подготовь 10 задачи в количестве %v по теме: ", count)
 	prompt2 := ". Учитывай прогресс пользователя. Вот список тем, которые он уже изучил, и количество решенных задач по каждой теме: "
 	prompt3 := ". Вот список задач, которые уже выполнил пользователь, их не должно быть в списке задач от тебя:"
@@ -148,10 +161,10 @@ func (p PromptServiceImpl) GetProblems(count int, topic string, theme string, us
 
 	sb.WriteString(prompt4)
 
-	return sb.String(), nil
+	return sb.String()
 }
 
-func (p PromptServiceImpl) VerifyAnswer(problem string, answer string) (string, error) {
+func (p PromptServiceImpl) VerifyAnswer(problem string, answer string) string {
 	prompt1 := "Я получил от тебя задачу: "
 	prompt2 := " Вот мое решение: "
 	prompt3 := `. Соответствует ли мой ответ требованиям задачи? Я жду от тебя ответ в формате JSON : {ok: <Булево значение, соответствует ли решение задаче>, message:<Если ok==false, то тут должно быть короткое пояснение в виде строки, если ты не принимаешь задачу или подсказку к улучшению кода, если задача выполнена>}. Если ответ пользователя решает задачу то прими ее, подсказав, как решение можно улучшить в message. В ответе должен быть только JSON в описанным мной ранее формате!`
@@ -166,7 +179,7 @@ func (p PromptServiceImpl) VerifyAnswer(problem string, answer string) (string, 
 	sb.WriteString(answer)
 	sb.WriteString(prompt3)
 
-	return sb.String(), nil
+	return sb.String()
 }
 
 func NewPromptServiceImpl() PromptService {

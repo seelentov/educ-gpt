@@ -34,9 +34,13 @@ export default function RootLayout({
         <html lang="ru">
             <body className={`${geistSans.variable} ${geistMono.variable}`}>
                 <AuthClient />
-                <main>
-                    {children}
-                </main>
+                <Header />
+                <div className="wrapper">
+                    <main>
+                        {children}
+                    </main>
+                </div>
+                <Footer />
             </body>
         </html>
     );

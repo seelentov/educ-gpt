@@ -31,6 +31,10 @@ export function SignUpForm() {
     })
 
     const handleSubmit = async (e: any) => {
+        if (loading) {
+            return
+        }
+
         setLoading(true)
         setErrors(null)
         e.preventDefault();
