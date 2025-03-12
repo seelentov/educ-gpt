@@ -27,53 +27,53 @@ export default function ThemePage() {
     const { topic, theme } = useParams()
 
     const [token] = useLocalStorage("token", "")
-    const [globalLoading, setGlobalLoading] = useState<boolean>(false)
+    const [globalLoading, setGlobalLoading] = useState<boolean>(true)
     const [problemsLoading, setProblemsLoading] = useState<boolean>(false)
     const [checkLoading, setCheckLoading] = useState<boolean>(false)
     const [compilationLoading, setCompilationLoading] = useState<boolean>(false)
 
-    // useEffect(() => {
-    //     (async () => {
-    //         if (!topic || !theme || !token) {
-    //             return
-    //         }
-    //         setGlobalLoading(true)
-    //         const data = await getTheme(topic as string, theme as string, token)
+    useEffect(() => {
+        (async () => {
+            if (!topic || !theme || !token) {
+                return
+            }
+            setGlobalLoading(true)
+            const data = await getTheme(topic as string, theme as string, token)
 
-    //         if (data?.error) {
-    //             console.error(data.error)
-    //             alert(data.error)
-    //             router.refresh()
-    //             setGlobalLoading(false)
-    //             return
-    //         }
+            if (data?.error) {
+                console.error(data.error)
+                alert(data.error)
+                router.refresh()
+                setGlobalLoading(false)
+                return
+            }
 
-    //         const processedContent = await remark()
-    //             .use(html)
-    //             .use(rehypeHihglight)
-    //             .process(data.text);
-    //         setContent(processedContent.toString())
+            const processedContent = await remark()
+                .use(html)
+                .use(rehypeHihglight)
+                .process(data.text);
+            setContent(processedContent.toString())
 
-    //         for (let i = 0; i < data.problems.length; i++) {
-    //             const processedProblem = await remark()
-    //                 .use(html)
-    //                 .use(rehypeHihglight)
-    //                 .process(data.problems[i].question);
+            for (let i = 0; i < data.problems.length; i++) {
+                const processedProblem = await remark()
+                    .use(html)
+                    .use(rehypeHihglight)
+                    .process(data.problems[i].question);
 
-    //             data.problems[i].question = processedProblem.toString()
-    //         }
+                data.problems[i].question = processedProblem.toString()
+            }
 
-    //         setTasks(data.problems.map((p: Problem) => {
-    //             return {
-    //                 id: p.id,
-    //                 task: p.question,
-    //                 isDone: false,
-    //                 dialog: []
-    //             }
-    //         }))
-    //         setGlobalLoading(false)
-    //     })()
-    // }, [topic, theme, token])
+            setTasks(data.problems.map((p: Problem) => {
+                return {
+                    id: p.id,
+                    task: p.question,
+                    isDone: false,
+                    dialog: []
+                }
+            }))
+            setGlobalLoading(false)
+        })()
+    }, [topic, theme, token])
 
     const checkAnswer = async () => {
         if (checkLoading || tasks[activeTask].isDone || code == "") {
