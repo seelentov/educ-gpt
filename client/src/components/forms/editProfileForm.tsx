@@ -55,7 +55,7 @@ export default function EditProfileForm() {
                 setNumber(data.number)
 
                 if (data.avatar_url) {
-                    setAvatarUrl(HOST_URL + data.avatar_url)
+                    setAvatarUrl(data.avatar_url)
                 }
 
                 setChatGptModel(data.chat_gpt_model)

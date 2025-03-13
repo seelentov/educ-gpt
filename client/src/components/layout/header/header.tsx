@@ -94,7 +94,7 @@ export function Header() {
                             <Link href="/profile" type="button" className="me-2">
                                 {
                                     avatarUrl && avatarUrl !== ""
-                                        ? <Image style={{ objectFit: 'cover' }} src={HOST_URL + avatarUrl} alt="" width={32} height={32} className="rounded-circle" />
+                                        ? <Image style={{ objectFit: 'cover' }} src={avatarUrl} alt="" width={32} height={32} className="rounded-circle" />
                                         : <Image style={{ objectFit: 'cover' }} src={"/misc/empty_avatar.jpg"} alt="" width={32} height={32} className="rounded-circle" />
                                 }
 
