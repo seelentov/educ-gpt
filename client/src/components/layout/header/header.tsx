@@ -1,6 +1,5 @@
 'use client'
 
-import { useWidth } from '@/core/hooks/useWidth'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
