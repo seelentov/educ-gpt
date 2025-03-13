@@ -14,9 +14,20 @@ type RoadmapServiceImpl struct {
 	logger *zap.Logger
 }
 
-func (r RoadmapServiceImpl) GetTheme(userID uint, themeID uint) (*models.Theme, error) {
+func (r RoadmapServiceImpl) GetTheme(userID uint, themeID uint, prTopic bool) (*models.Theme, error) {
 	var theme *models.Theme
-	r.db.Model(&models.Theme{}).Where("id = ?", themeID).First(&theme)
+	result := r.db.Model(&models.Theme{}).Where("id = ?", themeID)
+
+	if prTopic {
+		result = result.Preload("Topic")
+	}
+
+	result = result.First(&theme)
+
+	if result.Error != nil {
+		r.logger.Error("Cant get theme", zap.Error(result.Error))
+		return nil, fmt.Errorf("%w:%w", ErrGetEntities, result.Error)
+	}
 
 	if userID != 0 {
 		var userTheme *models.UserTheme

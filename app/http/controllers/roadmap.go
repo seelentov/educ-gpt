@@ -52,7 +52,7 @@ func (r RoadmapController) GetTopics(ctx *gin.Context) {
 // @Produce      json
 // @Success      200 {object} models.Topic "Topic info"
 // @Failure      500 {object} dtos.ErrorResponse "Internal server error"
-// @Router       /roadmap/{topic_id}/info [get]
+// @Router       /roadmap/info/topic/{topic_id} [get]
 func (r RoadmapController) GetTopicInfo(ctx *gin.Context) {
 	topicId, err := strconv.ParseUint(ctx.Param("topic_id"), 10, 32)
 	if err != nil {
@@ -67,6 +67,31 @@ func (r RoadmapController) GetTopicInfo(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, topic)
+}
+
+// GetThemeInfo returns info of theme without authorization
+// @Summary      Get theme info
+// @Description  Returns info of theme without authorization
+// @Tags         roadmap
+// @Accept       json
+// @Produce      json
+// @Success      200 {object} models.Theme "Theme info"
+// @Failure      500 {object} dtos.ErrorResponse "Internal server error"
+// @Router       /roadmap/info/theme/{theme_id} [get]
+func (r RoadmapController) GetThemeInfo(ctx *gin.Context) {
+	themeId, err := strconv.ParseUint(ctx.Param("theme_id"), 10, 32)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
+		return
+	}
+
+	theme, err := r.roadmapSrv.GetTheme(0, uint(themeId), true)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
+		return
+	}
+
+	ctx.JSON(http.StatusOK, theme)
 }
 
 // GetThemes returns a list of themes for a specific topic
@@ -233,7 +258,7 @@ func (r RoadmapController) GetTheme(ctx *gin.Context) {
 		return
 	}
 
-	theme, err := r.roadmapSrv.GetTheme(userId, uint(themeId))
+	theme, err := r.roadmapSrv.GetTheme(userId, uint(themeId), false)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, dtos.NotFoundResponse())
@@ -324,7 +349,7 @@ func (r RoadmapController) GetProblems(ctx *gin.Context) {
 		return
 	}
 
-	theme, err := r.roadmapSrv.GetTheme(userId, uint(themeId))
+	theme, err := r.roadmapSrv.GetTheme(userId, uint(themeId), false)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, dtos.NotFoundResponse())

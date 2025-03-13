@@ -4,6 +4,6 @@ import { baseFetch } from "../baseFetch"
 
 
 export async function getTopicInfo(id: number) {
-    const data = await baseFetch("/roadmap/" + id + "/info", null, "GET")
+    const data = await baseFetch("/roadmap/info/topic/" + id, null, "GET")
     return data
 }
