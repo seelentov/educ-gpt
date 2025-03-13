@@ -14,9 +14,7 @@ import (
 
 // @title Educ-GPT API
 // @version 1.0
-// @description This is a sample server for Educ-GPT.
-
-// @host localhost:8080
+// @host https://educgpt.ru
 // @BasePath /api/v1
 func main() {
 	err := godotenv.Load()
