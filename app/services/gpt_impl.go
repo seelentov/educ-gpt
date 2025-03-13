@@ -78,6 +78,8 @@ func (g GptServiceImpl) GetAnswer(token string, model string, dialog []*DialogIt
 		return nil
 	}
 
+	g.logger.Debug("received response", zap.String("message", msg))
+
 	err = json.Unmarshal([]byte(msg), &target)
 	if err != nil {
 		g.logger.Error("failed to send request", zap.Error(err))
