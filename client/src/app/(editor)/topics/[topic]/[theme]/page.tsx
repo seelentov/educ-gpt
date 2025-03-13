@@ -38,5 +38,5 @@ export async function generateMetadata(
 }
 
 export default function ThemePage() {
-    <Editor />
+    return <Editor />
 }
