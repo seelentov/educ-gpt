@@ -18,6 +18,13 @@ definitions:
     - old_password
     - password
     type: object
+  dtos.CompileRequest:
+    properties:
+      code:
+        type: string
+    required:
+    - code
+    type: object
   dtos.ErrorResponse:
     properties:
       error:
@@ -86,6 +93,18 @@ definitions:
     required:
     - password
     type: object
+  dtos.ResetPasswordTaskRequest:
+    properties:
+      credential:
+        type: string
+    required:
+    - credential
+    type: object
+  dtos.ResultResponse:
+    properties:
+      result:
+        type: string
+    type: object
   dtos.StatusResponse:
     properties:
       status:
@@ -108,20 +127,6 @@ definitions:
         type: string
     type: object
   dtos.UpdateUserRequest:
-    properties:
-      avatar_url:
-        type: string
-      chat_gpt_model:
-        type: string
-      chat_gpt_token:
-        type: string
-      name:
-        maxLength: 100
-        type: string
-      number:
-        maxLength: 100
-        minLength: 8
-        type: string
     type: object
   dtos.ValidationErrorResponse:
     properties:
@@ -132,8 +137,6 @@ definitions:
     type: object
   models.Problem:
     properties:
-      createdAt:
-        type: string
       id:
         type: integer
       question:
@@ -171,7 +174,11 @@ definitions:
     type: object
   models.User:
     properties:
-      avatarUrl:
+      avatar_url:
+        type: string
+      chat_gpt_model:
+        type: string
+      chat_gpt_token:
         type: string
       email:
         type: string
@@ -182,17 +189,16 @@ definitions:
       number:
         type: string
     type: object
-  services.PromptProblemRequest:
+  services.PromptProblemResponse:
     properties:
       message:
         type: string
       ok:
         type: boolean
     type: object
-host: localhost:8080
+host: https://educgpt.ru
 info:
   contact: {}
-  description: This is a sample server for Educ-GPT.
   title: Educ-GPT API
   version: "1.0"
 paths:
@@ -227,11 +233,6 @@ paths:
       - application/json
       description: Changes the user's email after verifying the key
       parameters:
-      - description: Bearer <JWT token>
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - description: Change email key
         in: path
         name: key
@@ -480,11 +481,6 @@ paths:
         name: key
         required: true
         type: string
-      - description: Bearer <JWT token>
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - description: New password
         in: body
         name: request
@@ -520,11 +516,12 @@ paths:
       description: Initiates the process of resetting the user's password by sending
         a reset email
       parameters:
-      - description: Bearer <JWT token>
-        in: header
-        name: Authorization
+      - description: Credential
+        in: body
+        name: request
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/dtos.ResetPasswordTaskRequest'
       produces:
       - application/json
       responses:
@@ -647,6 +644,10 @@ paths:
           description: Topic not found
           schema:
             $ref: '#/definitions/dtos.ErrorResponse'
+        "409":
+          description: AI request error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
         "500":
           description: Internal server error
           schema:
@@ -691,11 +692,53 @@ paths:
           description: Theme or topic not found
           schema:
             $ref: '#/definitions/dtos.ErrorResponse'
+        "409":
+          description: AI request error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
         "500":
           description: Internal server error
           schema:
             $ref: '#/definitions/dtos.ErrorResponse'
       summary: Get theme details
+      tags:
+      - roadmap
+  /roadmap/info/theme/{theme_id}:
+    get:
+      consumes:
+      - application/json
+      description: Returns info of theme without authorization
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Theme info
+          schema:
+            $ref: '#/definitions/models.Theme'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+      summary: Get theme info
+      tags:
+      - roadmap
+  /roadmap/info/topic/{topic_id}:
+    get:
+      consumes:
+      - application/json
+      description: Returns info of topic without authorization
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Topic info
+          schema:
+            $ref: '#/definitions/models.Topic'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+      summary: Get topic info
       tags:
       - roadmap
   /roadmap/problems/{topic_id}/{theme_id}:
@@ -736,6 +779,10 @@ paths:
           description: Theme or topic not found
           schema:
             $ref: '#/definitions/dtos.ErrorResponse'
+        "409":
+          description: AI request error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
         "500":
           description: Internal server error
           schema:
@@ -767,7 +814,7 @@ paths:
         "200":
           description: Answer verification result
           schema:
-            $ref: '#/definitions/services.PromptProblemRequest'
+            $ref: '#/definitions/services.PromptProblemResponse'
         "400":
           description: Invalid request body
           schema:
@@ -780,6 +827,10 @@ paths:
           description: Problem not found
           schema:
             $ref: '#/definitions/dtos.ErrorResponse'
+        "409":
+          description: AI request error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
         "500":
           description: Internal server error
           schema:
@@ -787,4 +838,47 @@ paths:
       summary: Increment user score and add answer
       tags:
       - roadmap
+  /utils/compile:
+    post:
+      consumes:
+      - application/json
+      description: Compile code by AI
+      parameters:
+      - description: Bearer <JWT token>
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Code for compiler
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.CompileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Compiled code
+          schema:
+            $ref: '#/definitions/dtos.ResultResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/dtos.ValidationErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "409":
+          description: AI request error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+      summary: Compile
+      tags:
+      - utils
 swagger: "2.0"

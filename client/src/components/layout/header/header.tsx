@@ -13,16 +13,6 @@ export function Header() {
 
     const pathname = usePathname()
 
-    const routes = useMemo(() => [
-        {
-            link: "/topics",
-            title: "Список тем",
-            icon: "/icons/book.svg"
-        },
-
-    ], [])
-
-    const width = useWidth()
     const router = useRouter()
 
     const [token, setToken] = useLocalStorage("token", "")
@@ -70,18 +60,29 @@ export function Header() {
         router.push("/")
     }
 
+    const routes = useMemo(() => [
+        {
+            link: "/topics",
+            title: "Список тем",
+        },
+
+    ], [])
+
     return (
         <div className='header'>
             <div className="container">
                 <header className="d-flex align-items-center justify-content-center justify-content-md-between py-sm-3 py-1 border-bottom">
                     <ul className="nav col-sm-12 col-md-auto col-7 mb-sm-2 justify-content-start justify-content-sm-center mb-md-0">
-                        {routes.map(({ link, title, icon }) =>
+                        {routes.map(({ link, title }) =>
                             <li key={link}><Link href={link} className={"nav-link px-2 " + (pathname === link ? "link-secondary disabled" : "link-dark")}>
-                                {
-                                    width > 720 ? title : <Image style={{ objectFit: 'cover' }} src={icon} alt={""} width={30} height={30} />
-                                }
+                                {title}
                             </Link></li>
                         )}
+                        <li>
+                            <a target='_blank' href="/swagger/index.html" className="nav-link px-2 link-dark">
+                                API
+                            </a>
+                        </li>
                     </ul>
                     {(pathname != "/login" && pathname != "/signup" && !isLogged) &&
                         <div className="col-md-3 text-end col-5">
