@@ -139,7 +139,7 @@ func (u UserServiceImpl) GetByEmail(s string) (*models.User, error) {
 func (u UserServiceImpl) GetByCredential(s string) (*models.User, error) {
 	query := "email = ? OR name = ?"
 
-	user, err := u.getByWhere(query, s, s, s)
+	user, err := u.getByWhere(query, s, s)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", ErrRetrievingUser, err)
 	}
