@@ -188,7 +188,11 @@ func (c *AuthController) Login(ctx *gin.Context) {
 
 	user, err := c.userService.GetByCredential(req.Credential)
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, dtos.ErrorResponse{Error: "Неверный логин или пароль"})
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			ctx.JSON(http.StatusUnauthorized, dtos.ErrorResponse{Error: "Неверный логин или пароль"})
+		}
+
+		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
 		return
 	}
 
