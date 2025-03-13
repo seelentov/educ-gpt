@@ -392,7 +392,7 @@ func (r RoadmapController) GetProblems(ctx *gin.Context) {
 // @Produce      json
 // @Param Authorization header string true "Bearer <JWT token>"
 // @Param        request body dtos.IncreaseUserScoreAndAddAnswerRequest true "Answer details"
-// @Success      200 {object} services.PromptProblemRequest "Answer verification result"
+// @Success      200 {object} services.PromptProblemResponse "Answer verification result"
 // @Failure      400 {object} dtos.ValidationErrorResponse "Invalid request body"
 // @Failure      401 {object} dtos.ErrorResponse "Unauthorized"
 // @Failure      404 {object} dtos.ErrorResponse "Problem not found"
@@ -445,7 +445,7 @@ func (r RoadmapController) IncrementUserScoreAndAddAnswer(ctx *gin.Context) {
 	}
 
 	prompt := r.promptSrv.VerifyAnswer(problem.Question, req.Answer)
-	var target services.PromptProblemRequest
+	var target services.PromptProblemResponse
 
 	err = r.aiSrv.GetAnswer(user.ChatGptToken, user.ChatGptModel, []*services.DialogItem{{Text: prompt, IsUser: true}}, &target)
 	if err != nil {

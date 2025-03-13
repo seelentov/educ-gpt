@@ -17,7 +17,7 @@ type PromptThemeResponse struct {
 	Text     string   `json:"text"`
 	Problems []string `json:"problems"`
 }
-type PromptProblemRequest struct {
+type PromptProblemResponse struct {
 	Ok      bool   `json:"ok"`
 	Message string `json:"message"`
 }
