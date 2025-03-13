@@ -284,7 +284,11 @@ func (r RoadmapController) GetTheme(ctx *gin.Context) {
 		return
 	}
 
-	problems, err := r.roadmapSrv.CreateProblems(target.Problems, uint(themeId))
+	for i := range target.Problems {
+		target.Problems[i].ThemeID = theme.ID
+	}
+
+	problems, err := r.roadmapSrv.CreateProblems(target.Problems)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
 		return
@@ -375,7 +379,11 @@ func (r RoadmapController) GetProblems(ctx *gin.Context) {
 		return
 	}
 
-	problems, err := r.roadmapSrv.CreateProblems(target.Problems, uint(themeId))
+	for i := range target.Problems {
+		target.Problems[i].ThemeID = theme.ID
+	}
+
+	problems, err := r.roadmapSrv.CreateProblems(target.Problems)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
 		return
@@ -384,14 +392,14 @@ func (r RoadmapController) GetProblems(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, problems)
 }
 
-// IncrementUserScoreAndAddAnswer increments the user's score and adds an answer to a problem
-// @Summary      Increment user score and add answer
+// VerifyAnswerAndIncrementUserScore increments the user's score and adds an answer to a problem
+// @Summary      Verify answer and increment user score
 // @Description  Increments the user's score and adds an answer to a problem after verifying the answer with AI
 // @Tags         roadmap
 // @Accept       json
 // @Produce      json
 // @Param Authorization header string true "Bearer <JWT token>"
-// @Param        request body dtos.IncreaseUserScoreAndAddAnswerRequest true "Answer details"
+// @Param        request body dtos.VerifyAnswerAndIncrementUserScoreRequest true "Answer details"
 // @Success      200 {object} services.PromptProblemResponse "Answer verification result"
 // @Failure      400 {object} dtos.ValidationErrorResponse "Invalid request body"
 // @Failure      401 {object} dtos.ErrorResponse "Unauthorized"
@@ -399,8 +407,8 @@ func (r RoadmapController) GetProblems(ctx *gin.Context) {
 // @Failure      409 {object} dtos.ErrorResponse "AI request error"
 // @Failure      500 {object} dtos.ErrorResponse "Internal server error"
 // @Router       /roadmap/resolve [post]
-func (r RoadmapController) IncrementUserScoreAndAddAnswer(ctx *gin.Context) {
-	var req dtos.IncreaseUserScoreAndAddAnswerRequest
+func (r RoadmapController) VerifyAnswerAndIncrementUserScore(ctx *gin.Context) {
+	var req dtos.VerifyAnswerAndIncrementUserScoreRequest
 
 	userId, err := httputils.GetUserId(ctx)
 	if err != nil {
@@ -411,11 +419,6 @@ func (r RoadmapController) IncrementUserScoreAndAddAnswer(ctx *gin.Context) {
 
 	user, err := r.userSrv.GetById(userId)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			ctx.JSON(http.StatusNotFound, dtos.NotFoundResponse())
-			return
-		}
-
 		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
 		return
 	}
@@ -444,7 +447,7 @@ func (r RoadmapController) IncrementUserScoreAndAddAnswer(ctx *gin.Context) {
 		return
 	}
 
-	prompt := r.promptSrv.VerifyAnswer(problem.Question, req.Answer)
+	prompt := r.promptSrv.VerifyAnswer(problem.Question, req.Answer, req.Language)
 	var target services.PromptProblemResponse
 
 	err = r.aiSrv.GetAnswer(user.ChatGptToken, user.ChatGptModel, []*services.DialogItem{{Text: prompt, IsUser: true}}, &target)
@@ -464,6 +467,66 @@ func (r RoadmapController) IncrementUserScoreAndAddAnswer(ctx *gin.Context) {
 			ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
 			return
 		}
+	}
+
+	ctx.JSON(http.StatusOK, target)
+}
+
+// VerifyAnswer and get verification status by AI
+// @Summary      Verify answer
+// @Description  VerifyAnswer and get verification status by AI
+// @Tags         roadmap
+// @Accept       json
+// @Produce      json
+// @Param Authorization header string true "Bearer <JWT token>"
+// @Param        request body dtos.VerifyAnswerRequest true "Answer details"
+// @Success      200 {object} services.PromptProblemResponse "Answer verification result"
+// @Failure      400 {object} dtos.ValidationErrorResponse "Invalid request body"
+// @Failure      401 {object} dtos.ErrorResponse "Unauthorized"
+// @Failure      409 {object} dtos.ErrorResponse "AI request error"
+// @Failure      500 {object} dtos.ErrorResponse "Internal server error"
+// @Router       /roadmap/resolve [post]
+func (r RoadmapController) VerifyAnswer(ctx *gin.Context) {
+	var req dtos.VerifyAnswerRequest
+
+	userId, err := httputils.GetUserId(ctx)
+	if err != nil {
+
+		ctx.JSON(http.StatusUnauthorized, dtos.UnauthorizedResponse())
+		return
+	}
+
+	user, err := r.userSrv.GetById(userId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
+		return
+	}
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		var valErr validator.ValidationErrors
+		ok := errors.As(err, &valErr)
+
+		if ok {
+			ctx.JSON(http.StatusBadRequest, dtos.ValidationErrorResponse{Error: valid.ParseValidationErrors(err)})
+			return
+		}
+
+		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
+		return
+	}
+
+	prompt := r.promptSrv.VerifyAnswer(req.Problem, req.Answer, req.Language)
+	var target services.PromptProblemResponse
+
+	err = r.aiSrv.GetAnswer(user.ChatGptToken, user.ChatGptModel, []*services.DialogItem{{Text: prompt, IsUser: true}}, &target)
+	if err != nil {
+		if errors.Is(err, services.ErrAIRequestFailed) {
+			ctx.JSON(http.StatusConflict, dtos.ErrorResponse{Error: err.Error()})
+			return
+		}
+
+		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
+		return
 	}
 
 	ctx.JSON(http.StatusOK, target)

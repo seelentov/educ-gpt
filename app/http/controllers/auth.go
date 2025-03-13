@@ -59,7 +59,6 @@ func (c *AuthController) Register(ctx *gin.Context) {
 		ID:           0,
 		Name:         req.Name,
 		Email:        req.Email,
-		Number:       req.Number,
 		Password:     req.Password,
 		ChatGptModel: "gpt-4o-mini",
 		ChatGptToken: req.ChatGptToken,
@@ -76,11 +75,6 @@ func (c *AuthController) Register(ctx *gin.Context) {
 		if errors.Is(err, services.ErrDuplicate) {
 			if errors.Is(err, services.ErrDuplicateEmail) {
 				ctx.JSON(http.StatusConflict, dtos.ErrorResponse{Error: "Пользователь с таким email уже существует"})
-				return
-			}
-
-			if errors.Is(err, services.ErrDuplicateNumber) {
-				ctx.JSON(http.StatusConflict, dtos.ErrorResponse{Error: "Пользователь с таким номером телефона уже существует"})
 				return
 			}
 

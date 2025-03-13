@@ -136,12 +136,8 @@ func (u UserServiceImpl) GetByEmail(s string) (*models.User, error) {
 	return u.getBy("email", s)
 }
 
-func (u UserServiceImpl) GetByNumber(s string) (*models.User, error) {
-	return u.getBy("number", s)
-}
-
 func (u UserServiceImpl) GetByCredential(s string) (*models.User, error) {
-	query := "number = ? OR email = ? OR name = ?"
+	query := "email = ? OR name = ?"
 
 	user, err := u.getByWhere(query, s, s, s)
 	if err != nil {
@@ -192,15 +188,6 @@ func (u UserServiceImpl) checkUnique(user *models.User) error {
 	} else if !errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		u.logger.Error("Error checking for duplicate email", zap.Error(result.Error))
 		return fmt.Errorf("error checking email uniqueness: %w", result.Error)
-	}
-
-	result = u.db.Where("number = ?", user.Number).First(&existingUser)
-	if result.Error == nil {
-		u.logger.Warn("Duplicate number", zap.String("number", user.Number))
-		return ErrDuplicateNumber
-	} else if !errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		u.logger.Error("Error checking for duplicate number", zap.Error(result.Error))
-		return fmt.Errorf("error checking number uniqueness: %w", result.Error)
 	}
 
 	return nil

@@ -13,6 +13,6 @@ type AIService interface {
 }
 
 type DialogItem struct {
-	Text   string
-	IsUser bool
+	Text   string `json:"text"`
+	IsUser bool   `json:"is_user"`
 }

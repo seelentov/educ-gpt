@@ -52,7 +52,8 @@ func NewRouter() *gin.Engine {
 				roadmapGroup.GET("/info/theme/:theme_id/", dic.RoadmapController().GetThemeInfo)
 				roadmapGroup.GET("/:topic_id/:theme_id", dic.RoadmapController().GetTheme)
 				roadmapGroup.GET("/problems/:topic_id/:theme_id", dic.RoadmapController().GetProblems)
-				roadmapGroup.POST("/resolve", dic.RoadmapController().IncrementUserScoreAndAddAnswer)
+				roadmapGroup.POST("/resolve", dic.RoadmapController().VerifyAnswerAndIncrementUserScore)
+				roadmapGroup.POST("/check_answer", dic.RoadmapController().VerifyAnswer)
 			}
 
 			utilsGroup := v1.Group("/utils")

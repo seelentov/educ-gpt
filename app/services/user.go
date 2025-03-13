@@ -15,7 +15,6 @@ var (
 	ErrUpdateUser         = errors.New("error updating user")
 	ErrDuplicateName      = errors.New("duplicate name")
 	ErrDuplicateEmail     = errors.New("duplicate email")
-	ErrDuplicateNumber    = errors.New("duplicate number")
 	ErrDuplicate          = errors.New("duplicate")
 	ErrActivate           = errors.New("error activate user")
 	ErrDeleteUsers        = errors.New("error deleting user")
@@ -27,7 +26,6 @@ type UserService interface {
 	GetById(uint) (*models.User, error)
 	GetByName(string) (*models.User, error)
 	GetByEmail(string) (*models.User, error)
-	GetByNumber(string) (*models.User, error)
 	GetByCredential(string) (*models.User, error)
 	Verify(input string, credential string) error
 	VerifyPassword(input string, password string) error

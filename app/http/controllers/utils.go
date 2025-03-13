@@ -66,7 +66,7 @@ func (u UtilsController) Compile(ctx *gin.Context) {
 		return
 	}
 
-	prompt := u.promptSrv.CompileCode(req.Code)
+	prompt := u.promptSrv.CompileCode(req.Code, req.Language)
 
 	var res dtos.ResultResponse
 

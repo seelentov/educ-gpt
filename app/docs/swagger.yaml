@@ -22,23 +22,16 @@ definitions:
     properties:
       code:
         type: string
+      language:
+        type: string
     required:
     - code
+    - language
     type: object
   dtos.ErrorResponse:
     properties:
       error:
         type: string
-    type: object
-  dtos.IncreaseUserScoreAndAddAnswerRequest:
-    properties:
-      answer:
-        type: string
-      problem_id:
-        type: integer
-    required:
-    - answer
-    - problem_id
     type: object
   dtos.LoginRequest:
     properties:
@@ -72,10 +65,6 @@ definitions:
       name:
         maxLength: 100
         type: string
-      number:
-        maxLength: 100
-        minLength: 8
-        type: string
       password:
         minLength: 8
         type: string
@@ -83,7 +72,6 @@ definitions:
     - chat_gpt_token
     - email
     - name
-    - number
     - password
     type: object
   dtos.ResetPasswordRequest:
@@ -135,10 +123,42 @@ definitions:
           type: string
         type: object
     type: object
+  dtos.VerifyAnswerAndIncrementUserScoreRequest:
+    properties:
+      answer:
+        type: string
+      language:
+        type: string
+      problem_id:
+        type: integer
+    required:
+    - answer
+    - language
+    - problem_id
+    type: object
+  dtos.VerifyAnswerRequest:
+    properties:
+      answer:
+        type: string
+      language:
+        type: string
+      problem:
+        type: string
+    required:
+    - answer
+    - language
+    - problem
+    type: object
   models.Problem:
     properties:
       id:
         type: integer
+      is_theory:
+        type: boolean
+      languages:
+        items:
+          type: string
+        type: array
       question:
         type: string
       theme:
@@ -185,8 +205,6 @@ definitions:
       id:
         type: integer
       name:
-        type: string
-      number:
         type: string
     type: object
   services.PromptProblemResponse:
@@ -794,8 +812,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Increments the user's score and adds an answer to a problem after
-        verifying the answer with AI
+      description: VerifyAnswer and get verification status by AI
       parameters:
       - description: Bearer <JWT token>
         in: header
@@ -807,7 +824,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/dtos.IncreaseUserScoreAndAddAnswerRequest'
+          $ref: '#/definitions/dtos.VerifyAnswerRequest'
       produces:
       - application/json
       responses:
@@ -823,10 +840,6 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/dtos.ErrorResponse'
-        "404":
-          description: Problem not found
-          schema:
-            $ref: '#/definitions/dtos.ErrorResponse'
         "409":
           description: AI request error
           schema:
@@ -835,7 +848,7 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/dtos.ErrorResponse'
-      summary: Increment user score and add answer
+      summary: Verify answer
       tags:
       - roadmap
   /utils/compile:

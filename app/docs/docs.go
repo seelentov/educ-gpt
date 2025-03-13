@@ -765,7 +765,7 @@ const docTemplate = `{
         },
         "/roadmap/resolve": {
             "post": {
-                "description": "Increments the user's score and adds an answer to a problem after verifying the answer with AI",
+                "description": "VerifyAnswer and get verification status by AI",
                 "consumes": [
                     "application/json"
                 ],
@@ -775,7 +775,7 @@ const docTemplate = `{
                 "tags": [
                     "roadmap"
                 ],
-                "summary": "Increment user score and add answer",
+                "summary": "Verify answer",
                 "parameters": [
                     {
                         "type": "string",
@@ -790,7 +790,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dtos.IncreaseUserScoreAndAddAnswerRequest"
+                            "$ref": "#/definitions/dtos.VerifyAnswerRequest"
                         }
                     }
                 ],
@@ -809,12 +809,6 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/dtos.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Problem not found",
                         "schema": {
                             "$ref": "#/definitions/dtos.ErrorResponse"
                         }
@@ -1067,10 +1061,14 @@ const docTemplate = `{
         "dtos.CompileRequest": {
             "type": "object",
             "required": [
-                "code"
+                "code",
+                "language"
             ],
             "properties": {
                 "code": {
+                    "type": "string"
+                },
+                "language": {
                     "type": "string"
                 }
             }
@@ -1080,21 +1078,6 @@ const docTemplate = `{
             "properties": {
                 "error": {
                     "type": "string"
-                }
-            }
-        },
-        "dtos.IncreaseUserScoreAndAddAnswerRequest": {
-            "type": "object",
-            "required": [
-                "answer",
-                "problem_id"
-            ],
-            "properties": {
-                "answer": {
-                    "type": "string"
-                },
-                "problem_id": {
-                    "type": "integer"
                 }
             }
         },
@@ -1138,7 +1121,6 @@ const docTemplate = `{
                 "chat_gpt_token",
                 "email",
                 "name",
-                "number",
                 "password"
             ],
             "properties": {
@@ -1152,11 +1134,6 @@ const docTemplate = `{
                 "name": {
                     "type": "string",
                     "maxLength": 100
-                },
-                "number": {
-                    "type": "string",
-                    "maxLength": 100,
-                    "minLength": 8
                 },
                 "password": {
                     "type": "string",
@@ -1241,11 +1218,58 @@ const docTemplate = `{
                 }
             }
         },
+        "dtos.VerifyAnswerAndIncrementUserScoreRequest": {
+            "type": "object",
+            "required": [
+                "answer",
+                "language",
+                "problem_id"
+            ],
+            "properties": {
+                "answer": {
+                    "type": "string"
+                },
+                "language": {
+                    "type": "string"
+                },
+                "problem_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dtos.VerifyAnswerRequest": {
+            "type": "object",
+            "required": [
+                "answer",
+                "language",
+                "problem"
+            ],
+            "properties": {
+                "answer": {
+                    "type": "string"
+                },
+                "language": {
+                    "type": "string"
+                },
+                "problem": {
+                    "type": "string"
+                }
+            }
+        },
         "models.Problem": {
             "type": "object",
             "properties": {
                 "id": {
                     "type": "integer"
+                },
+                "is_theory": {
+                    "type": "boolean"
+                },
+                "languages": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "question": {
                     "type": "string"
@@ -1317,9 +1341,6 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "name": {
-                    "type": "string"
-                },
-                "number": {
                     "type": "string"
                 }
             }

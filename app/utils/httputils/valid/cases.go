@@ -10,8 +10,6 @@ func getErrorMsg(tag string, param string) string {
 		return "Должен быть меньше чем " + param
 	case "gte":
 		return "Должен быть больше чем " + param
-	case "number":
-		return "Должен быть валидным номером телефона"
 	case "url":
 		return "Должен быть URL адресом"
 	}

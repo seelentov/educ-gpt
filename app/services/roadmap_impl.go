@@ -55,7 +55,7 @@ func (r RoadmapServiceImpl) IncrementUserScoreAndAddAnswer(userID uint, problemI
 
 	userTheme := &models.UserTheme{UserID: userID, ThemeID: problem.ThemeID}
 
-	result := r.db.Model(userTheme).FirstOrCreate(userTheme)
+	result := r.db.Model(models.UserTheme{}).FirstOrCreate(&userTheme)
 	if result.Error != nil {
 		r.logger.Error("Cant get or create user_theme", zap.Error(result.Error))
 		return fmt.Errorf("%w:%w", ErrGetOrCreateEntity, result.Error)
@@ -173,19 +173,13 @@ func (r RoadmapServiceImpl) GetTopic(userID uint, topicID uint, prThemes bool) (
 	return topic, nil
 }
 
-func (r RoadmapServiceImpl) CreateProblems(problems []string, themeID uint) ([]*models.Problem, error) {
-	problemsStrs := make([]*models.Problem, len(problems))
-
-	for i := range problems {
-		problemsStrs[i] = &models.Problem{Question: problems[i], ThemeID: themeID}
-	}
-
-	if err := r.db.Save(&problemsStrs).Error; err != nil {
+func (r RoadmapServiceImpl) CreateProblems(problems []*models.Problem) ([]*models.Problem, error) {
+	if err := r.db.Save(&problems).Error; err != nil {
 		r.logger.Error("Cant create problems", zap.Error(err))
 		return nil, fmt.Errorf("%w:%w", ErrCreateEntity, err)
 	}
 
-	return problemsStrs, nil
+	return problems, nil
 }
 
 func (r RoadmapServiceImpl) DeleteProblem(problemID uint) error {
