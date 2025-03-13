@@ -1,13 +1,12 @@
-import { LoginForm } from "@/components/forms/loginForm";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Вход | Educ GPT",
-    description: "Вход в аккаунт Educ GPT",
+    title: "404 | Educ GPT",
+    description: "Страница не найдена",
     metadataBase: new URL("https://educgpt.ru"),
     openGraph: {
-        title: 'Вход | Educ GPT',
-        description: 'Вход в аккаунт Educ GPT',
+        title: '404 | Educ GPT',
+        description: 'Страница не найдена',
         url: "https://educgpt.ru",
         siteName: 'Educ GPT',
         images: [
@@ -27,13 +26,13 @@ export const metadata: Metadata = {
     },
 };
 
-export default function Login() {
+export default async function NotFoundPage() {
+
     return (
-        <div className="container">
-            <div className="d-flex justify-content-center mt-5">
-                <div className="col-12 col-md-5">
-                    <LoginForm />
-                </div>
+        <div className="container mt-5">
+            <div className="text col-12 d-flex justify-content-center align-items-center gap-5">
+                <h1>404</h1>
+                <p>Страница не найдена</p>
             </div>
         </div>
     );

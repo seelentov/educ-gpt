@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { remark } from 'remark';
 import html from 'remark-html';
 import rehypeHihglight from 'rehype-highlight'
-import { useParams, useRouter } from "next/navigation";
+import { notFound, useParams, useRouter } from "next/navigation";
 import CodeMirror from "@uiw/react-codemirror";
 import { getTheme } from "@/core/api/roadmap/theme";
 import { useLocalStorage } from "@/core/hooks/useLocalStorage";
@@ -12,6 +12,42 @@ import { Loading } from "@/components/ui/loading";
 import { resolve } from "@/core/api/roadmap/resolve";
 import { compile } from "@/core/api/utils/compile";
 import { getProblems } from "@/core/api/roadmap/problems";
+import { Metadata } from "next";
+import { getThemeInfo } from "@/core/api/roadmap/theme_info";
+
+type Params = Promise<{ topic: number, theme: number }>
+
+export async function generateMetadata(
+    props: { params: Params }
+): Promise<Metadata> {
+
+    const params = await props.params;
+    const theme: Theme = await getThemeInfo(params.theme)
+
+    if (!theme) {
+        notFound();
+    }
+
+    return {
+        title: `${theme.topic?.title}. ${theme.title} | Educ GPT`,
+        description: `Теория и практика по теме ${theme.topic?.title}. ${theme.title}.`,
+        openGraph: {
+            title: `${theme.topic?.title}. ${theme.title} | Educ GPT`,
+            description: `Теория и практика по теме ${theme.topic?.title}. ${theme.title}.`,
+            url: "https://educgpt.ru",
+            siteName: 'Educ GPT',
+            images: [
+                {
+                    url: '/favicon.png',
+                    width: 500,
+                    height: 500,
+                },
+            ],
+            locale: 'ru',
+            type: 'website',
+        },
+    }
+}
 
 export default function ThemePage() {
     const [part, setPath] = useState<"theory" | "tasks">("theory")
