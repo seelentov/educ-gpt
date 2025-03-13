@@ -1,6 +1,5 @@
 'use client'
 
-import { HOST_URL } from "@/core/api/api";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import Image from "next/image";
 import { useLocalStorage } from "@/core/hooks/useLocalStorage";

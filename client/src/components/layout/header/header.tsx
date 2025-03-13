@@ -6,7 +6,6 @@ import { useEffect, useMemo, useState } from 'react'
 import Image from "next/image";
 import { useLocalStorage } from '@/core/hooks/useLocalStorage'
 import { me } from '@/core/api/auth/me'
-import { HOST_URL } from '@/core/api/api'
 
 export function Header() {
 
