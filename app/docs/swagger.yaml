@@ -156,9 +156,7 @@ definitions:
       is_theory:
         type: boolean
       languages:
-        items:
-          type: string
-        type: array
+        type: string
       question:
         type: string
       theme:

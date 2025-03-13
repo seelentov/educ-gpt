@@ -1266,10 +1266,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "languages": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                    "type": "string"
                 },
                 "question": {
                     "type": "string"
