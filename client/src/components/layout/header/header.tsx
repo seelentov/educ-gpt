@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Image from "next/image";
 import { useLocalStorage } from '@/core/hooks/useLocalStorage'
 import { me } from '@/core/api/auth/me'
+import { HOST_URL } from '@/core/api/api';
 
 export function Header() {
 
@@ -26,7 +27,7 @@ export function Header() {
             const data = await me(token)
 
             if (data?.avatar_url) {
-                setAvatarUrl(data.avatar_url)
+                setAvatarUrl(HOST_URL + data.avatar_url)
             }
 
         })()
