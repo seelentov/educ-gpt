@@ -21,18 +21,6 @@ export default function EditProfileForm() {
     const [loading, setLoading] = useState(false);
     const [loadingMe, setLoadingMe] = useState(false);
 
-    const [initState, setInitState] = useState<User | null>(null)
-
-    const isDisabled =
-        initState === null ||
-        loading ||
-        (
-            initState.avatar_url === avatarUrl &&
-            initState.chat_gpt_model === chatGptModel &&
-            initState.name === name &&
-            initState.chat_gpt_token === initState.chat_gpt_token
-        )
-
     const refetchUser = async () => {
         setLoadingMe(true)
 
@@ -47,7 +35,6 @@ export default function EditProfileForm() {
                 }
             }
             else {
-                setInitState(data)
                 setName(data.name)
 
                 if (data.avatar_url) {
@@ -197,7 +184,7 @@ export default function EditProfileForm() {
                                     <label htmlFor="fgptmodel">Модель Chat-GPT</label>
                                     <input
                                         className={`input ${errors?.chat_gpt_model && 'err'}`}
-                                        type="password"
+                                        type="text"
                                         id="fgptmodel"
                                         name="gptmodel"
                                         placeholder="Модель Chat-GPT"
@@ -209,7 +196,7 @@ export default function EditProfileForm() {
                             </div>
                         </div>
                         <div className="col-12 d-flex justify-content-center align-items-center flex-column gap-1">
-                            <button type="submit" className="btn btn-primary btn-block mb-4" disabled={isDisabled}>
+                            <button type="submit" className="btn btn-primary btn-block mb-4" disabled={loading}>
                                 {loading ? "Отправка..." : "Сохранить"}
                             </button>
                             <p>{errors?.authorization}</p>
