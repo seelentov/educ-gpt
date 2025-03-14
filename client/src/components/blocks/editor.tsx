@@ -111,7 +111,7 @@ export function Editor() {
         let data
 
         if (tasks[activeTask].isDone) {
-            data = await checkAnswerUtil(tasks[activeTask].task, JSON.stringify(code).slice(1, -1).replace(/\n/g, '\\n'), activeLanguage, token)
+            data = await checkAnswerUtil(tasks[activeTask].task.replace(/<[^>]*>?/gm, '').replace(/\n/g, ' '), JSON.stringify(code).slice(1, -1).replace(/\n/g, '\\n'), activeLanguage, token)
         } else {
             data = await resolve(tasks[activeTask].id, JSON.stringify(code).slice(1, -1).replace(/\n/g, '\\n'), activeLanguage, token)
         }
