@@ -291,6 +291,7 @@ export function Editor() {
                         {part === 'tasks'
                             ? <>
                                 <div className="text p-2 border rounded" style={{ height: 'calc(100% - 50px)', overflowY: 'scroll' }}>
+                                    {tasks[activeTask].isDone && <p className="text-success">Ответ принят</p>}
                                     {tasks.length > 0 && <div dangerouslySetInnerHTML={{ __html: tasks[activeTask].task }} />}
                                     {tasks.length > 0 && tasks[activeTask].dialog.map((d, i) => <p key={i}><strong>AI:</strong> {d}</p>)}
                                     {checkLoading && <p><strong>AI:</strong> Думаю...</p>}
@@ -300,7 +301,7 @@ export function Editor() {
                                         {tasks.length > 0 && <button onClick={() => prevTask()} type="button" className="btn btn-outline-primary btn-sm" disabled={!canPrevTask}>{"<<"}</button>}
                                         {tasks.length > 0 && <button onClick={() => nextTask()} type="button" className="btn btn-outline-primary btn-sm" disabled={!canNextTask}>{">>"}</button>}
                                     </div>
-                                    {tasks.length > 0 && <button disabled={checkLoading || code == ""} onClick={() => checkAnswer()} type="button" className="btn btn-outline-success btn-sm w-100">Проверить решение</button>}
+                                    {tasks.length > 0 && <button disabled={checkLoading || code == ""} onClick={() => checkAnswer()} type="button" className="btn btn-outline-success btn-sm w-100">{tasks[activeTask].isDone ? "Внести правки" : "Проверить решение"}</button>}
                                     {tasks.length > 0 && <p className="text-center mx-auto mb-0">{activeTask + 1} / {tasks.length}</p>}
                                     <button onClick={() => loadMoreProblems()} disabled={problemsLoading} type="button" className="btn btn-outline-warning btn-sm w-100">Загрузить еще...</button>
                                 </div>
