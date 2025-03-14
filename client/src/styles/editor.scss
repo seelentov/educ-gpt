@@ -3,6 +3,10 @@
         flex-direction: column;
     }
 
+    .editor-btns {
+        height: auto;
+    }
+
     .editor-left,
     .editor-right {
         width: 100%;
@@ -25,25 +29,26 @@
         width: 100%;
         margin-bottom: 5px;
     }
+}
 
+@media (max-width: 1024px) {
     .console-container {
         height: 75px
     }
-
-
 }
 
 .console-container {
     height: 150px
 }
 
-
 .editor-btns {
     height: 50px;
+    display: flex !important;
+    flex-direction: row !important;
 
-    @media (max-width: 768px) {
-        height: auto;
+
+    button {
+        text-wrap-mode: nowrap;
     }
 
-    .editor-btns_switch-btn {}
 }
