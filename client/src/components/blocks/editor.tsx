@@ -302,7 +302,7 @@ export function Editor() {
                                         {tasks.length > 0 && <button onClick={() => nextTask()} type="button" className="btn btn-outline-primary btn-sm" disabled={!canNextTask}>{">>"}</button>}
                                     </div>
                                     {tasks.length > 0 && <button disabled={checkLoading || code == ""} onClick={() => checkAnswer()} type="button" className="btn btn-outline-success btn-sm w-100">{tasks[activeTask].isDone ? "Внести правки" : "Проверить решение"}</button>}
-                                    {tasks.length > 0 && <p className="text-center mx-auto mb-0">{activeTask + 1} / {tasks.length}</p>}
+                                    {tasks.length > 0 && <p className="text-center mx-auto mb-0 text-nowrap">{activeTask + 1} / {tasks.length}</p>}
                                     <button onClick={() => loadMoreProblems()} disabled={problemsLoading} type="button" className="btn btn-outline-warning btn-sm w-100">Загрузить еще...</button>
                                 </div>
                             </>

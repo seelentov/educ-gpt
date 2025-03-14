@@ -5,6 +5,7 @@
 
     .editor-btns {
         height: auto;
+        flex-direction: column !important;
     }
 
     .editor-left,
@@ -45,7 +46,6 @@
     height: 50px;
     display: flex !important;
     flex-direction: row !important;
-
 
     button {
         text-wrap-mode: nowrap;
