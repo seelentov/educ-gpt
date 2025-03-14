@@ -6,7 +6,7 @@ import { useLocalStorage } from "@/core/hooks/useLocalStorage";
 import { me } from "@/core/api/auth/me";
 import { updateUser } from "@/core/api/auth/update";
 import { Loading } from "../ui/loading";
-import { HOST_URL } from "@/core/api/api";
+import { HOST_URL_PROD } from "@/core/api/api";
 
 export default function EditProfileForm() {
     const [token] = useLocalStorage("token", "")
@@ -39,7 +39,7 @@ export default function EditProfileForm() {
                 setName(data.name)
 
                 if (data.avatar_url) {
-                    setAvatarUrl(HOST_URL + data.avatar_url)
+                    setAvatarUrl(HOST_URL_PROD + data.avatar_url)
                 }
 
                 setChatGptModel(data.chat_gpt_model)
