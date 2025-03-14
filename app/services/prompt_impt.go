@@ -10,12 +10,14 @@ type PromptServiceImpl struct{}
 
 func (p PromptServiceImpl) CompileCode(code string, language string) string {
 	prompt1 := "Пришли мне в ответном сообщении, что выведет в консоль этот код на языке " + language + ": "
-	prompt2 := ". Ответ должен быть в формате JSON такого вида: {result:(текст в терминале при запуске этого кода)}!"
+	prompt2 := " Ответ должен быть в формате JSON такого вида: {result:(текст в терминале при запуске этого кода)}!"
 
 	sb := strings.Builder{}
 
 	sb.WriteString(prompt1)
+	sb.WriteString("<начало кода>")
 	sb.WriteString(code)
+	sb.WriteString("<конец кода>")
 	sb.WriteString(prompt2)
 
 	return sb.String()
@@ -167,7 +169,7 @@ func (p PromptServiceImpl) GetProblems(count int, topic string, theme string, us
 func (p PromptServiceImpl) VerifyAnswer(problem string, answer string, language string) string {
 	prompt1 := "Я получил от тебя задачу: "
 	prompt2 := " Вот мое решение: "
-	prompt3 := `. Соответствует ли мой ответ требованиям задачи? Я жду от тебя ответ в формате JSON : {ok: <Булево значение, соответствует ли решение задаче>, message:<Если ok==false, то тут должно быть пояснение в виде строки, если ты не принимаешь задачу или подсказку к более правильному ответу, если задача выполнена>}. Если ответ пользователя решает задачу то прими ее, подсказав, как решение можно улучшить в message. В ответе должен быть только JSON в описанным мной ранее формате!`
+	prompt3 := ` Соответствует ли мой ответ требованиям задачи? Я жду от тебя ответ в формате JSON : {ok: <Булево значение, соответствует ли решение задаче>, message:<Если ok==false, то тут должно быть пояснение в виде строки, если ты не принимаешь задачу или подсказку к более правильному ответу, если задача выполнена>}. Если ответ пользователя решает задачу то прими ее, подсказав, как решение можно улучшить в message. В ответе должен быть только JSON в описанным мной ранее формате!`
 	prompt4 := ". Задача выполнена на " + language + ". Учти это при ответе."
 
 	sb := strings.Builder{}
@@ -175,7 +177,9 @@ func (p PromptServiceImpl) VerifyAnswer(problem string, answer string, language 
 	sb.WriteString(prompt1)
 	sb.WriteString(problem)
 	sb.WriteString(prompt2)
+	sb.WriteString("<начало кода>")
 	sb.WriteString(answer)
+	sb.WriteString("<конец кода>")
 	sb.WriteString(prompt3)
 
 	if language != "" {

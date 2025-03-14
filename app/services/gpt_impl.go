@@ -39,6 +39,8 @@ func (g GptServiceImpl) GetAnswer(token string, model string, dialog []*DialogIt
 	req.Header.Add("Content-Type", "application/json;charset=utf-8")
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
 
+	g.logger.Debug("request body", zap.String("body", body))
+
 	client := &http.Client{}
 	resp, err := client.Do(req)
 
