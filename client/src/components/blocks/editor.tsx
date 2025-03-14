@@ -223,17 +223,17 @@ export function Editor() {
 
     const leftSizeIsTheory = useMemo(() => (tasks && tasks.length > 0 && tasks[activeTask].isTheory && part === 'tasks'), [tasks, activeTask, part])
 
+
     return (
         <>
             {!globalLoading
-                ? <div className="col12 p-3 border d-flex gap-3 pt-5 position-relative" style={{ height: '100vh' }}>
+                ? <div className="editor-container col12 p-3 border d-flex gap-3 pt-5 position-relative" style={{ height: '100vh' }}>
                     <div className="position-absolute fixed-top p-2 d-flex" style={{ height: '48px' }}>
                         <button onClick={() => router.back()} type="button" className={`btn btn-outline-primary btn-sm me-2`}>Назад</button>
                         <button onClick={() => setPath('theory')} style={{ marginLeft: 'auto' }} type="button" className={`btn ${part === 'theory' ? "btn-primary" : "btn-outline-primary"} btn-sm me-2`}>Теория</button>
                         <button onClick={() => setPath('tasks')} type="button" className={`btn ${part === 'tasks' ? "btn-primary" : "btn-outline-primary"} btn-sm me-2`}>Задачи</button>
-
                     </div>
-                    <div className="col-6 border rounded position-relative" style={{ height: '100%' }}>
+                    <div className="editor-left col-6 border rounded position-relative" style={{ height: '100%' }}>
                         {!leftSizeIsTheory && <div className="border d-flex gap-1 align-items-flex-start" style={{ height: '50px', padding: '5px' }}>
                             <button onClick={() => compilation()} disabled={compilationLoading || code == ""} type="button" className="btn btn-success" style={{ zIndex: 999 }}>{"▶"}</button>
                             {languageOptions.length > 0 && (
@@ -282,12 +282,12 @@ export function Editor() {
                         </div>
                         {!leftSizeIsTheory
                             &&
-                            <div className="border p-2 " style={{ height: '150px', overflowY: 'scroll' }}>
+                            <div className="console-container border p-2 " style={{ overflowY: 'scroll' }}>
                                 {consoleText.map((s, i) => <p key={i}>{s}</p>)}
                                 {compilationLoading && <p>Думаю что это...</p>}
                             </div>}
                     </div>
-                    <div className="col-6 border rounded p-2" style={{ height: '100%', overflowY: 'scroll' }}>
+                    <div className="editor-right col-6 border rounded p-2" style={{ height: '100%', overflowY: 'scroll' }}>
                         {part === 'tasks'
                             ? <>
                                 <div className="text p-2 border rounded" style={{ height: 'calc(100% - 50px)', overflowY: 'scroll' }}>
@@ -295,12 +295,14 @@ export function Editor() {
                                     {tasks.length > 0 && tasks[activeTask].dialog.map((d, i) => <p key={i}><strong>AI:</strong> {d}</p>)}
                                     {checkLoading && <p><strong>AI:</strong> Думаю...</p>}
                                 </div>
-                                <div className="p-2 border rounded d-flex gap-1 align-items-center" style={{ height: '50px' }}>
-                                    {tasks.length > 0 && <button onClick={() => prevTask()} type="button" className="btn btn-outline-primary btn-sm" disabled={!canPrevTask}>{"<<"}</button>}
-                                    {tasks.length > 0 && <button disabled={checkLoading || code == ""} onClick={() => checkAnswer()} type="button" className="btn btn-outline-success btn-sm">Проверить решение</button>}
-                                    {tasks.length > 0 && <button onClick={() => nextTask()} type="button" className="btn btn-outline-primary btn-sm" disabled={!canNextTask}>{">>"}</button>}
-                                    {tasks.length > 0 && <p className="test-center mx-auto mb-0">{activeTask + 1} / {tasks.length}</p>}
-                                    <button onClick={() => loadMoreProblems()} disabled={problemsLoading} type="button" className="btn btn-outline-warning btn-sm" style={{ marginLeft: 'auto' }}>Загрузить еще...</button>
+                                <div className="p-2 border rounded d-flex flex-column gap-1 align-items-center editor-btns">
+                                    <div className="d-flex gap-1">
+                                        {tasks.length > 0 && <button onClick={() => prevTask()} type="button" className="btn btn-outline-primary btn-sm" disabled={!canPrevTask}>{"<<"}</button>}
+                                        {tasks.length > 0 && <button onClick={() => nextTask()} type="button" className="btn btn-outline-primary btn-sm" disabled={!canNextTask}>{">>"}</button>}
+                                    </div>
+                                    {tasks.length > 0 && <button disabled={checkLoading || code == ""} onClick={() => checkAnswer()} type="button" className="btn btn-outline-success btn-sm w-100">Проверить решение</button>}
+                                    {tasks.length > 0 && <p className="text-center mx-auto mb-0">{activeTask + 1} / {tasks.length}</p>}
+                                    <button onClick={() => loadMoreProblems()} disabled={problemsLoading} type="button" className="btn btn-outline-warning btn-sm w-100">Загрузить еще...</button>
                                 </div>
                             </>
                             : <>
@@ -315,6 +317,5 @@ export function Editor() {
 
             }
         </>
-
     )
 }

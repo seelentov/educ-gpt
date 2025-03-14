@@ -1,0 +1,49 @@
+@media (max-width: 768px) {
+    .editor-container {
+        flex-direction: column;
+    }
+
+    .editor-left,
+    .editor-right {
+        width: 100%;
+        height: auto;
+    }
+
+    .editor-left {
+        order: 1;
+    }
+
+    .editor-right {
+        order: 2;
+    }
+
+    .button-group {
+        flex-direction: column;
+    }
+
+    .button-group button {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+
+    .console-container {
+        height: 75px
+    }
+
+
+}
+
+.console-container {
+    height: 150px
+}
+
+
+.editor-btns {
+    height: 50px;
+
+    @media (max-width: 768px) {
+        height: auto;
+    }
+
+    .editor-btns_switch-btn {}
+}
