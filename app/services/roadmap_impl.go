@@ -55,7 +55,7 @@ func (r RoadmapServiceImpl) IncrementUserScoreAndAddAnswer(userID uint, problemI
 
 	userTheme := &models.UserTheme{UserID: userID, ThemeID: problem.ThemeID}
 
-	result := r.db.Model(models.UserTheme{}).FirstOrCreate(&userTheme)
+	result := r.db.Model(models.UserTheme{}).Where("theme_id = ? AND user_id = ?", problem.ThemeID, userID).FirstOrCreate(&userTheme)
 	if result.Error != nil {
 		r.logger.Error("Cant get or create user_theme", zap.Error(result.Error))
 		return fmt.Errorf("%w:%w", ErrGetOrCreateEntity, result.Error)
