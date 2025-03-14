@@ -12,23 +12,25 @@ import rehypeHihglight from 'rehype-highlight'
 import { resolve } from "@/core/api/roadmap/resolve"
 import { compile } from "@/core/api/utils/compile"
 import CodeMirror from "@uiw/react-codemirror";
+import { checkAnswerUtil } from "@/core/api/utils/check_answer"
+import Select from 'react-select'
 
+interface Task {
+    task: string, isDone: boolean, dialog: string[], id: number, isTheory: boolean, languages: string[]
+}
 
 export function Editor() {
     const [part, setPath] = useState<"theory" | "tasks">("theory")
-
     const [content, setContent] = useState<string>("")
-
-    const [tasks, setTasks] = useState<{ task: string, isDone: boolean, dialog: string[], id: number }[]>([])
+    const [tasks, setTasks] = useState<Task[]>([])
     const [activeTask, setActiveTask] = useState<number>(0)
-
     const [code, setCode] = useState<string>("")
+    const [activeLanguage, setActiveLanguage] = useState<string>("")
     const [consoleText, setConsoleText] = useState<string[]>([])
     const router = useRouter()
     const { topic, theme } = useParams()
-
     const [token] = useLocalStorage("token", "")
-    const [globalLoading, setGlobalLoading] = useState<boolean>(true)
+    const [globalLoading, setGlobalLoading] = useState<boolean>(false)
     const [problemsLoading, setProblemsLoading] = useState<boolean>(false)
     const [checkLoading, setCheckLoading] = useState<boolean>(false)
     const [compilationLoading, setCompilationLoading] = useState<boolean>(false)
@@ -69,6 +71,8 @@ export function Editor() {
                     id: p.id,
                     task: p.question,
                     isDone: false,
+                    isTheory: p.is_theory,
+                    languages: p.languages.split(";"),
                     dialog: []
                 }
             }))
@@ -76,14 +80,41 @@ export function Editor() {
         })()
     }, [topic, theme, token, router])
 
+    const languageOptions = useMemo(() => {
+        if (part == 'theory') {
+            return "Python; JavaScript; Java; C++; C#; PHP; TypeScript; Swift; Go; Kotlin; Ruby; Rust; SQL; R; Perl; Dart; Scala; Haskell; Lua; Objective-C; Shell; PowerShell; Assembly; MATLAB; Groovy; Elixir; Clojure; F#; Erlang; VBA; Delphi; Ada; Lisp; Fortran; Prolog; Cobol; Bash; Racket; Julia; Crystal; Nim; OCaml; D; Vala; Smalltalk; ABAP; ActionScript; Apex; ColdFusion; Eiffel; LabVIEW; PL/SQL; SAS; Scheme; Tcl; Verilog; VHDL; Zig".split("; ").map((l) => ({
+                value: l,
+                label: l
+            }))
+        }
+
+
+        return tasks[activeTask]?.languages.map(l => ({
+            value: l,
+            label: l
+        })) || []
+    }, [tasks, activeTask, part])
+
+    useEffect(() => {
+        if (languageOptions.length > 0) {
+            setActiveLanguage(languageOptions[0].value)
+        }
+    }, [languageOptions])
+
     const checkAnswer = async () => {
-        if (checkLoading || tasks[activeTask].isDone || code == "") {
+        if (checkLoading || code == "") {
             return
         }
 
         setCheckLoading(true)
 
-        const data = await resolve(tasks[activeTask].id, JSON.stringify(code).slice(1, -1).replace(/\n/g, '\\n'), token)
+        let data
+
+        if (tasks[activeTask].isDone) {
+            data = await checkAnswerUtil(tasks[activeTask].task.replace(/<[^>]*>?/gm, '').replace(/\n/g, ' '), JSON.stringify(code).slice(1, -1).replace(/\n/g, '\\n'), activeLanguage, token)
+        } else {
+            data = await resolve(tasks[activeTask].id, JSON.stringify(code).slice(1, -1).replace(/\n/g, '\\n'), activeLanguage, token)
+        }
 
         if (data?.error) {
             console.error(data.error)
@@ -97,7 +128,10 @@ export function Editor() {
                 ts[activeTask].dialog.push(data.message)
             }
 
-            ts[activeTask].isDone = data.ok
+            if (!ts[activeTask].isDone) {
+                ts[activeTask].isDone = data.ok
+            }
+
             return ts
         })
 
@@ -111,7 +145,7 @@ export function Editor() {
 
         setCompilationLoading(true)
 
-        const data = await compile(JSON.stringify(code).slice(1, -1).replace(/\n/g, '\\n'), token)
+        const data = await compile(JSON.stringify(code).slice(1, -1).replace(/\n/g, '\\n'), activeLanguage, token)
 
         if (data?.error) {
             console.error(data.error)
@@ -148,13 +182,15 @@ export function Editor() {
             ...ts,
             ...data.map((p: Problem) => {
                 return {
+                    id: p.id,
                     task: p.question,
                     isDone: false,
+                    isTheory: p.is_theory,
+                    languages: p.languages.split(";"),
                     dialog: []
                 }
             })
         ]))
-
 
         setProblemsLoading(false)
     }
@@ -179,6 +215,8 @@ export function Editor() {
         setActiveTask(p => p - 1)
     }
 
+    const leftSizeIsTheory = useMemo(() => (tasks && tasks.length > 0 && tasks[activeTask].isTheory && part === 'tasks'), [tasks, activeTask])
+
     return (
         <>
             {!globalLoading
@@ -190,30 +228,70 @@ export function Editor() {
 
                     </div>
                     <div className="col-6 border rounded position-relative" style={{ height: '100%' }}>
-                        <button onClick={() => compilation()} disabled={compilationLoading || code == ""} type="button" className="btn btn-success btn-sm position-absolute" style={{ top: '10px', right: '10px', zIndex: 999 }}>{"▶"}</button>
-                        <div className="border" style={{ height: 'calc(100% - 150px)', overflow: 'scroll' }}>
-                            <CodeMirror
-                                onChange={setCode}
-                                value={code}
-                                height="100%"
-                            />
+                        {!leftSizeIsTheory && <div className="border d-flex gap-1 align-items-flex-start" style={{ height: '50px', padding: '5px' }}>
+                            <button onClick={() => compilation()} disabled={compilationLoading || code == ""} type="button" className="btn btn-success" style={{ zIndex: 999 }}>{"▶"}</button>
+                            {languageOptions.length > 0 && (
+                                <Select
+                                    className="basic-single"
+                                    classNamePrefix="select"
+                                    value={languageOptions.find(option => option.value === activeLanguage)}
+                                    onChange={(selectedOption) => setActiveLanguage(selectedOption?.value || "")}
+                                    options={languageOptions}
+                                    isSearchable={true}
+                                    styles={{
+                                        container: (provided) => ({
+                                            ...provided,
+                                            width: '150px',
+                                            height: '30px',
+                                            fontSize: '13px'
+                                        }),
+                                        control: (provided) => ({
+                                            ...provided,
+                                            width: '100%',
+                                        }),
+                                        menu: (provided) => ({
+                                            ...provided,
+                                            width: '150px',
+                                        }),
+                                    }}
+                                />
+                            )}
+                        </div>}
+                        <div className={leftSizeIsTheory ? "" : "border"} style={{ height: leftSizeIsTheory ? '100%' : 'calc(100% - 190px)', overflowY: leftSizeIsTheory ? "initial" : 'scroll' }}>
+                            {
+                                leftSizeIsTheory
+                                    ? <textarea
+                                        onChange={(e) => setCode(e.target.value)}
+                                        value={code}
+                                        className="p-3 w-100 h-100"
+                                        style={{ resize: 'none', overflowY: 'scroll', height: '100%' }}
+                                        placeholder="Ваш ответ..."
+                                    />
+                                    : <CodeMirror
+                                        onChange={setCode}
+                                        value={code}
+                                        height="1000px"
+                                    />
+                            }
                         </div>
-                        <div className="border p-2 " style={{ height: '150px', overflow: 'scroll' }}>
-                            {consoleText.map((s, i) => <p key={i}>{s}</p>)}
-                            {compilationLoading && <p>Думаю что это...</p>}
-                        </div>
+                        {!leftSizeIsTheory
+                            &&
+                            <div className="border p-2 " style={{ height: '150px', overflowY: 'scroll' }}>
+                                {consoleText.map((s, i) => <p key={i}>{s}</p>)}
+                                {compilationLoading && <p>Думаю что это...</p>}
+                            </div>}
                     </div>
-                    <div className="col-6 border rounded p-2" style={{ height: '100%', overflow: 'scroll' }}>
+                    <div className="col-6 border rounded p-2" style={{ height: '100%', overflowY: 'scroll' }}>
                         {part === 'tasks'
                             ? <>
-                                <div className="text p-2 border rounded" style={{ height: 'calc(100% - 50px)', overflow: 'scroll' }}>
+                                <div className="text p-2 border rounded" style={{ height: 'calc(100% - 50px)', overflowY: 'scroll' }}>
                                     {tasks.length > 0 && <div dangerouslySetInnerHTML={{ __html: tasks[activeTask].task }} />}
                                     {tasks.length > 0 && tasks[activeTask].dialog.map((d, i) => <p key={i}><strong>AI:</strong> {d}</p>)}
                                     {checkLoading && <p><strong>AI:</strong> Думаю...</p>}
                                 </div>
                                 <div className="p-2 border rounded d-flex gap-1 align-items-center" style={{ height: '50px' }}>
                                     {tasks.length > 0 && <button onClick={() => prevTask()} type="button" className="btn btn-outline-primary btn-sm" disabled={!canPrevTask}>{"<<"}</button>}
-                                    {tasks.length > 0 && <button disabled={checkLoading || tasks[activeTask].isDone || code == ""} onClick={() => checkAnswer()} type="button" className="btn btn-outline-success btn-sm">Проверить решение</button>}
+                                    {tasks.length > 0 && <button disabled={checkLoading || code == ""} onClick={() => checkAnswer()} type="button" className="btn btn-outline-success btn-sm">Проверить решение</button>}
                                     {tasks.length > 0 && <button onClick={() => nextTask()} type="button" className="btn btn-outline-primary btn-sm" disabled={!canNextTask}>{">>"}</button>}
                                     {tasks.length > 0 && <p className="test-center mx-auto mb-0">{activeTask + 1} / {tasks.length}</p>}
                                     <button onClick={() => loadMoreProblems()} disabled={problemsLoading} type="button" className="btn btn-outline-warning btn-sm" style={{ marginLeft: 'auto' }}>Загрузить еще...</button>

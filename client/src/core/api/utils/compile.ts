@@ -3,11 +3,12 @@
 import { baseFetch } from "../baseFetch"
 
 
-export async function compile(code: string, token: string = "") {
+export async function compile(code: string, language: string, token: string = "") {
     const data = await baseFetch(
         "/utils/compile",
         JSON.stringify({
-            code
+            code,
+            language
         }),
         "POST",
         token

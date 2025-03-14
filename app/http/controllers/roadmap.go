@@ -366,7 +366,7 @@ func (r RoadmapController) GetProblems(ctx *gin.Context) {
 
 	prompt := r.promptSrv.GetProblems(10, topic.Title, theme.Title, theme, topic.Themes)
 
-	var target services.PromptProblemsResponse
+	var target []*models.Problem
 
 	err = r.aiSrv.GetAnswer(user.ChatGptToken, user.ChatGptModel, []*services.DialogItem{{Text: prompt, IsUser: true}}, &target)
 	if err != nil {
@@ -379,11 +379,11 @@ func (r RoadmapController) GetProblems(ctx *gin.Context) {
 		return
 	}
 
-	for i := range target.Problems {
-		target.Problems[i].ThemeID = theme.ID
+	for i := range target {
+		target[i].ThemeID = theme.ID
 	}
 
-	problems, err := r.roadmapSrv.CreateProblems(target.Problems)
+	problems, err := r.roadmapSrv.CreateProblems(target)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
 		return

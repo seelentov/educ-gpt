@@ -7,5 +7,5 @@ type UserTheme struct {
 	User             *Topic `json:"user,omitempty"`
 	UserID           uint   `gorm:"not null" json:"user_id"`
 	Score            uint   `gorm:"not null" json:"score"`
-	ResolvedProblems string `gorm:"-" json:"-"`
+	ResolvedProblems string `json:"-"`
 }

@@ -57,7 +57,7 @@
 //=======================================================================
 
 ::-webkit-scrollbar {
-    width: 20px;
+    width: 10px;
 }
 
 ::-webkit-scrollbar-track {
@@ -65,11 +65,11 @@
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgb(105, 105, 105);
+    background: rgb(0, 153, 255);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: rgb(54, 54, 54);
+    background: rgb(0, 116, 194);
 }
 
 //=======================================================================
