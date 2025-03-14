@@ -6,4 +6,6 @@ interface ThemeRequest {
 interface Problem {
     id: number
     question: string
+    languages: string
+    is_theory: boolean
 }

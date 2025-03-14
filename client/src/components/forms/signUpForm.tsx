@@ -10,7 +10,6 @@ export function SignUpForm() {
 
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
-    const [number, setNumber] = useState('');
     const [password, setPassword] = useState('');
     const [passwordConf, setPasswordConf] = useState('');
     const [chatGptToken, setChatGptToken] = useState('');
@@ -49,7 +48,6 @@ export function SignUpForm() {
             const data = await signup(
                 name,
                 email,
-                number,
                 password,
                 chatGptToken
             );
@@ -105,19 +103,6 @@ export function SignUpForm() {
                                 onChange={(e) => setEmail(e.target.value)}
                             />
                             <p className="text-danger">{errors?.email}</p>
-                        </div>
-                        <div className="d-flex flex-column mb-2 gap-3">
-                            <label htmlFor="fnumber">Номер телефона</label>
-                            <input
-                                type="tel"
-                                className={`input ${errors?.number && 'err'}`}
-                                id="fnumber"
-                                name="number"
-                                placeholder="Телефон"
-                                value={number}
-                                onChange={(e) => setNumber(e.target.value)}
-                            />
-                            <p className="text-danger">{errors?.number}</p>
                         </div>
                         <div className="d-flex flex-column mb-2 gap-3">
                             <label htmlFor="fpass">Пароль</label>

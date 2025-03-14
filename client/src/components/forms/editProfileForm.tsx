@@ -11,7 +11,6 @@ export default function EditProfileForm() {
     const [token] = useLocalStorage("token", "")
 
     const [name, setName] = useState<string>("")
-    const [number, setNumber] = useState<string>("")
     const [avatarFile, setAvatarFile] = useState<File | null>(null)
     const [chatGptModel, setChatGptModel] = useState<string>("")
     const [chatGptToken, setChatGptToken] = useState<string>("")
@@ -31,7 +30,6 @@ export default function EditProfileForm() {
             initState.avatar_url === avatarUrl &&
             initState.chat_gpt_model === chatGptModel &&
             initState.name === name &&
-            initState.number === number &&
             initState.chat_gpt_token === initState.chat_gpt_token
         )
 
@@ -51,7 +49,6 @@ export default function EditProfileForm() {
             else {
                 setInitState(data)
                 setName(data.name)
-                setNumber(data.number)
 
                 if (data.avatar_url) {
                     setAvatarUrl(data.avatar_url)
@@ -86,9 +83,6 @@ export default function EditProfileForm() {
 
             if (name) {
                 formData.append("name", name)
-            }
-            if (number) {
-                formData.append("number", number)
             }
             if (chatGptToken) {
                 formData.append("chat_gpt_token", chatGptToken)
@@ -182,20 +176,6 @@ export default function EditProfileForm() {
                                         onChange={(e) => handleChange(setName, e.target.value)}
                                     />
                                     <p className="text-danger">{errors?.name}</p>
-                                </div>
-
-                                <div className="d-flex flex-column mb-2 gap-3">
-                                    <label htmlFor="fnumber">Номер телефона</label>
-                                    <input
-                                        type="tel"
-                                        className={`input ${errors?.number && 'err'}`}
-                                        id="fnumber"
-                                        name="number"
-                                        placeholder="Телефон"
-                                        value={number}
-                                        onChange={(e) => handleChange(setNumber, e.target.value)}
-                                    />
-                                    <p className="text-danger">{errors?.number}</p>
                                 </div>
 
                                 <div className="d-flex flex-column mb-2 gap-3">
