@@ -97,11 +97,21 @@ func (p PromptServiceImpl) GetTheme(topic string, theme string, userThemeStats *
 	sb.WriteString(theme)
 	sb.WriteString(prompt2)
 
-	if userAllStats != nil && len(userAllStats) > 0 {
+	notEmptyUserAllStats := make([]*models.Theme, 0)
+
+	if userAllStats != nil {
+		for i := range userAllStats {
+			if userAllStats[i].Score > 0 {
+				notEmptyUserAllStats = append(notEmptyUserAllStats, userAllStats[i])
+			}
+		}
+	}
+
+	if len(notEmptyUserAllStats) > 0 {
 		sb.WriteString(prompt3)
 		sb.WriteRune('[')
-		for i := range userAllStats {
-			sb.WriteString(fmt.Sprintf("%s : %v задач, ", userAllStats[i].Title, userAllStats[i].Score))
+		for i := range notEmptyUserAllStats {
+			sb.WriteString(fmt.Sprintf("%s : %v задач, ", notEmptyUserAllStats[i].Title, notEmptyUserAllStats[i].Score))
 		}
 		sb.WriteRune(']')
 	}
