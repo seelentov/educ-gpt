@@ -101,6 +101,12 @@ export function Editor() {
         }
     }, [languageOptions])
 
+    useEffect(() => {
+        if (part === 'tasks' && tasks[activeTask].isTheory) {
+            setActiveLanguage("")
+        }
+    }, [part])
+
     const checkAnswer = async () => {
         if (checkLoading || code == "") {
             return
@@ -111,9 +117,9 @@ export function Editor() {
         let data
 
         if (tasks[activeTask].isDone) {
-            data = await checkAnswerUtil(tasks[activeTask].task.replace(/<[^>]*>?/gm, '').replace(/\n/g, ' '), JSON.stringify(code).slice(1, -1).replace(/\n/g, '\\n'), activeLanguage, token)
+            data = await checkAnswerUtil(tasks[activeTask].task.replace(/<[^>]*>?/gm, '').replace(/\n/g, ' '), JSON.stringify(code).slice(1, -1).replace(/\n/g, '\\n'), activeLanguage || "", token)
         } else {
-            data = await resolve(tasks[activeTask].id, JSON.stringify(code).slice(1, -1).replace(/\n/g, '\\n'), activeLanguage, token)
+            data = await resolve(tasks[activeTask].id, JSON.stringify(code).slice(1, -1).replace(/\n/g, '\\n'), activeLanguage || "", token)
         }
 
         if (data?.error) {
@@ -145,7 +151,7 @@ export function Editor() {
 
         setCompilationLoading(true)
 
-        const data = await compile(JSON.stringify(code).slice(1, -1).replace(/\n/g, '\\n'), activeLanguage, token)
+        const data = await compile(JSON.stringify(code).slice(1, -1).replace(/\n/g, '\\n'), activeLanguage || "", token)
 
         if (data?.error) {
             console.error(data.error)
@@ -215,7 +221,7 @@ export function Editor() {
         setActiveTask(p => p - 1)
     }
 
-    const leftSizeIsTheory = useMemo(() => (tasks && tasks.length > 0 && tasks[activeTask].isTheory && part === 'tasks'), [tasks, activeTask])
+    const leftSizeIsTheory = useMemo(() => (tasks && tasks.length > 0 && tasks[activeTask].isTheory && part === 'tasks'), [tasks, activeTask, part])
 
     return (
         <>
