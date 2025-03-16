@@ -2,7 +2,6 @@ package services
 
 import (
 	"educ-gpt/models"
-	"errors"
 	"fmt"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -15,35 +14,30 @@ type RoadmapServiceImpl struct {
 }
 
 func (r RoadmapServiceImpl) GetTheme(userID uint, themeID uint, prTopic bool) (*models.Theme, error) {
-	var theme *models.Theme
-	result := r.db.Model(&models.Theme{}).Where("id = ?", themeID)
+	var theme models.Theme
+	query := r.db.Model(&models.Theme{}).Where("id = ?", themeID)
 
 	if prTopic {
-		result = result.Preload("Topic")
+		query = query.Preload("Topic")
 	}
 
-	result = result.First(&theme)
+	if userID != 0 {
+		query = query.Preload("UserThemes", "user_id = ?", userID)
+	}
+
+	result := query.First(&theme)
 
 	if result.Error != nil {
 		r.logger.Error("Cant get theme", zap.Error(result.Error))
 		return nil, fmt.Errorf("%w:%w", ErrGetEntities, result.Error)
 	}
 
-	if userID != 0 {
-		var userTheme *models.UserTheme
-		result := r.db.Model(&models.UserTheme{}).Where("user_id = ? AND theme_id = ?", userID, themeID).First(&userTheme)
-		if result.Error != nil {
-			if !errors.Is(result.Error, gorm.ErrRecordNotFound) {
-				r.logger.Error("Cant get topic", zap.Error(result.Error))
-				return nil, fmt.Errorf("%w:%w", ErrGetEntities, result.Error)
-			}
-		} else {
-			theme.Score = userTheme.Score
-			theme.ResolvedProblems = userTheme.ResolvedProblems
-		}
+	if userID != 0 && len(theme.UserThemes) > 0 {
+		theme.Score = theme.UserThemes[0].Score
+		theme.ResolvedProblems = theme.UserThemes[0].ResolvedProblems
 	}
 
-	return theme, nil
+	return &theme, nil
 }
 
 func (r RoadmapServiceImpl) IncrementUserScoreAndAddAnswer(userID uint, problemID uint, score uint) error {
@@ -95,13 +89,13 @@ func (r RoadmapServiceImpl) CreateThemes(theme []*models.Theme) error {
 
 func (r RoadmapServiceImpl) GetTopics(userID uint, prThemes bool) ([]*models.Topic, error) {
 	var topics []*models.Topic
-	result := r.db.Model(&models.Topic{})
+	query := r.db.Model(&models.Topic{})
 
 	if prThemes || userID != 0 {
-		result = result.Preload("Themes")
+		query = query.Preload("Themes.UserThemes", "user_id = ?", userID)
 	}
 
-	result = result.Find(&topics)
+	result := query.Find(&topics)
 
 	if result.Error != nil {
 		r.logger.Error("Cant get topics", zap.Error(result.Error))
@@ -111,18 +105,9 @@ func (r RoadmapServiceImpl) GetTopics(userID uint, prThemes bool) ([]*models.Top
 	if userID != 0 {
 		for i := range topics {
 			for j := range topics[i].Themes {
-				var userTheme *models.UserTheme
-				result := r.db.Model(&models.UserTheme{}).Where("user_id = ? AND theme_id = ?", userID, topics[i].Themes[j].ID).First(&userTheme)
-				if result.Error != nil {
-					if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-						continue
-					}
-
-					r.logger.Error("Cant get topic", zap.Error(result.Error))
-					return nil, fmt.Errorf("%w:%w", ErrGetEntities, result.Error)
+				if len(topics[i].Themes[j].UserThemes) > 0 {
+					topics[i].Score += topics[i].Themes[j].UserThemes[0].Score
 				}
-
-				topics[i].Score += userTheme.Score
 			}
 		}
 	}
@@ -137,15 +122,14 @@ func (r RoadmapServiceImpl) GetTopics(userID uint, prThemes bool) ([]*models.Top
 }
 
 func (r RoadmapServiceImpl) GetTopic(userID uint, topicID uint, prThemes bool) (*models.Topic, error) {
-	var topic *models.Topic
-
-	result := r.db.Model(&models.Topic{}).Where("id = ?", topicID)
+	var topic models.Topic
+	query := r.db.Model(&models.Topic{}).Where("id = ?", topicID)
 
 	if prThemes {
-		result = result.Preload("Themes")
+		query = query.Preload("Themes.UserThemes", "user_id = ?", userID)
 	}
 
-	result = result.First(&topic)
+	result := query.First(&topic)
 
 	if result.Error != nil {
 		r.logger.Error("Cant get topic", zap.Error(result.Error))
@@ -154,23 +138,14 @@ func (r RoadmapServiceImpl) GetTopic(userID uint, topicID uint, prThemes bool) (
 
 	if userID != 0 && prThemes {
 		for i := range topic.Themes {
-			var userTheme *models.UserTheme
-			result := r.db.Model(&models.UserTheme{}).Where("user_id = ? AND theme_id = ?", userID, topic.Themes[i].ID).First(&userTheme)
-			if result.Error != nil {
-				if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-					continue
-				}
-
-				r.logger.Error("Cant get topic", zap.Error(result.Error))
-				return nil, fmt.Errorf("%w:%w", ErrGetEntities, result.Error)
+			if len(topic.Themes[i].UserThemes) > 0 {
+				topic.Themes[i].Score = topic.Themes[i].UserThemes[0].Score
+				topic.Themes[i].ResolvedProblems = topic.Themes[i].UserThemes[0].ResolvedProblems
 			}
-
-			topic.Themes[i].Score = userTheme.Score
-			topic.Themes[i].ResolvedProblems = userTheme.ResolvedProblems
 		}
 	}
 
-	return topic, nil
+	return &topic, nil
 }
 
 func (r RoadmapServiceImpl) CreateProblems(problems []*models.Problem) ([]*models.Problem, error) {
@@ -202,14 +177,14 @@ func (r RoadmapServiceImpl) ClearProblems() error {
 }
 
 func (r RoadmapServiceImpl) GetProblem(problemID uint) (*models.Problem, error) {
-	var problem *models.Problem
+	var problem models.Problem
 	result := r.db.Model(&models.Problem{}).Where("id = ?", problemID).First(&problem)
 	if result.Error != nil {
 		r.logger.Error("Cant get problem", zap.Error(result.Error))
 		return nil, fmt.Errorf("%w:%w", ErrGetEntities, result.Error)
 	}
 
-	return problem, nil
+	return &problem, nil
 }
 
 func NewRoadmapServiceImpl(db *gorm.DB, logger *zap.Logger) RoadmapService {

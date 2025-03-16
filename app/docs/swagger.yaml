@@ -107,6 +107,13 @@ definitions:
       text:
         type: string
     type: object
+  dtos.ThrowMessageRequest:
+    properties:
+      message:
+        type: string
+    required:
+    - message
+    type: object
   dtos.TokenResponse:
     properties:
       refresh_token:
@@ -133,7 +140,6 @@ definitions:
         type: integer
     required:
     - answer
-    - language
     - problem_id
     type: object
   dtos.VerifyAnswerRequest:
@@ -146,8 +152,27 @@ definitions:
         type: string
     required:
     - answer
-    - language
     - problem
+    type: object
+  models.Dialog:
+    properties:
+      dialog_items:
+        items:
+          $ref: '#/definitions/models.DialogItem'
+        type: array
+      id:
+        type: integer
+    type: object
+  models.DialogItem:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      is_user:
+        type: boolean
+      text:
+        type: string
     type: object
   models.Problem:
     properties:
@@ -595,6 +620,189 @@ paths:
       summary: Update user information
       tags:
       - auth
+  /dialogs:
+    get:
+      consumes:
+      - application/json
+      description: Returns the current user's dialogs based on the JWT token
+      parameters:
+      - description: Bearer <JWT token>
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User`s dialogs
+          schema:
+            items:
+              $ref: '#/definitions/models.Dialog'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+      summary: Get current user's dialogs
+      tags:
+      - dialog
+    post:
+      consumes:
+      - application/json
+      description: Create dialog with user_id based on the JWT token
+      parameters:
+      - description: Bearer <JWT token>
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Dialog created successfully
+          schema:
+            $ref: '#/definitions/models.Dialog'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+      summary: Create dialog
+      tags:
+      - dialog
+  /dialogs/{dialog_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove dialog by id after verification based on the JWT token and
+        get answer
+      parameters:
+      - description: Bearer <JWT token>
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Dialog removed successfully
+          schema:
+            $ref: '#/definitions/dtos.StatusResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+      tags:
+      - dialog
+    get:
+      consumes:
+      - application/json
+      description: Returns the dialog after verification based on the JWT token
+      parameters:
+      - description: Bearer <JWT token>
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Dialog
+          schema:
+            items:
+              $ref: '#/definitions/models.Dialog'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+      summary: Get dialog by id
+      tags:
+      - dialog
+    post:
+      consumes:
+      - application/json
+      description: Add message to dialog by id after verification based on the JWT
+        token and get answer
+      parameters:
+      - description: Bearer <JWT token>
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Message
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.ThrowMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: AI response
+          schema:
+            items:
+              $ref: '#/definitions/models.DialogItem'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "409":
+          description: AI Error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+      summary: Add message to dialog and get answer
+      tags:
+      - dialog
   /roadmap:
     get:
       consumes:
@@ -810,6 +1018,54 @@ paths:
     post:
       consumes:
       - application/json
+      description: Increments the user's score and adds an answer to a problem after
+        verifying the answer with AI
+      parameters:
+      - description: Bearer <JWT token>
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Answer details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.VerifyAnswerAndIncrementUserScoreRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Answer verification result
+          schema:
+            $ref: '#/definitions/services.PromptProblemResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/dtos.ValidationErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "404":
+          description: Problem not found
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "409":
+          description: AI request error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+      summary: Verify answer and increment user score
+      tags:
+      - roadmap
+  /utils/check_answer:
+    post:
+      consumes:
+      - application/json
       description: VerifyAnswer and get verification status by AI
       parameters:
       - description: Bearer <JWT token>
@@ -848,7 +1104,7 @@ paths:
             $ref: '#/definitions/dtos.ErrorResponse'
       summary: Verify answer
       tags:
-      - roadmap
+      - utils
   /utils/compile:
     post:
       consumes:

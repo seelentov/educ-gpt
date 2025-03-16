@@ -38,7 +38,9 @@ func main() {
 		Handler: r,
 	}
 
-	dic.InitDaemons()
+	if os.Getenv("ENV") != "development" {
+		dic.InitDaemons()
+	}
 
 	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Fatalf("ERR: ListenAndServe: %s\n", err)

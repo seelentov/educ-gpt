@@ -1,0 +1,16 @@
+.mini-btn {
+    width: 10px !important;
+    height: 10px !important;
+    padding: 0% !important;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 6px;
+
+    * {
+        padding: 0% !important;
+        margin: 0% !important;
+    }
+}

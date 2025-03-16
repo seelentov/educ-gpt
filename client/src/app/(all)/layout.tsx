@@ -7,6 +7,7 @@ import React from "react";
 import { Footer } from "@/components/layout/footer/footer";
 import { Header } from "@/components/layout/header/header";
 import { AuthClient } from '@/components/layout/authClient/authClient';
+import { Chat } from '@/components/layout/chat/chat';
 
 
 const geistSans = Geist({
@@ -41,6 +42,7 @@ export default function RootLayout({
                     </main>
                 </div>
                 <Footer />
+                <Chat />
             </body>
         </html>
     );

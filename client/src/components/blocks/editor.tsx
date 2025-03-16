@@ -162,7 +162,7 @@ export function Editor() {
         }
 
         if (data?.result) {
-            setConsoleText(p => [...p, data.result])
+            setConsoleText(p => [...p, data.result.split("\n")])
         }
 
         setCompilationLoading(false)

@@ -17,6 +17,7 @@ func AuthController() *controllers.AuthController {
 			MailService(),
 			TokenService(),
 			FileService(),
+			DialogService(),
 		)
 		logger.Logger().Debug("AuthController initialized")
 	}
@@ -52,4 +53,18 @@ func UtilsController() *controllers.UtilsController {
 		logger.Logger().Debug("UtilsController initialized")
 	}
 	return utilsController
+}
+
+var dialogController *controllers.DialogController
+
+func DialogController() *controllers.DialogController {
+	if dialogController == nil {
+		dialogController = controllers.NewDialogController(
+			DialogService(),
+			UserService(),
+			GptService(),
+		)
+		logger.Logger().Debug("DialogController initialized")
+	}
+	return dialogController
 }

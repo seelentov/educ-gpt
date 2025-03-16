@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import React from "react";
 import { AuthClient } from '@/components/layout/authClient/authClient';
+import { Chat } from '@/components/layout/chat/chat';
 
 
 const geistSans = Geist({

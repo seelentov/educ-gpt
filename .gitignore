@@ -10,3 +10,6 @@ docker/
 
 /web/etc-letsencrypt/**/*
 !/web/etc-letsencrypt/.gitkeep
+
+dev/**/*
+dev

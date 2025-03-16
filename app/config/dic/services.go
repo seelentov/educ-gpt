@@ -177,3 +177,17 @@ func FileService() services.FileService {
 
 	return fileService
 }
+
+var dialogService services.DialogService
+
+func DialogService() services.DialogService {
+	if dialogService == nil {
+		dialogService = services.NewDialogService(
+			data.DB(),
+			logger.Logger(),
+		)
+		logger.Logger().Debug("DialogService initialized")
+	}
+
+	return dialogService
+}

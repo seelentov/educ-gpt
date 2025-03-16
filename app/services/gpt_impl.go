@@ -2,6 +2,7 @@ package services
 
 import (
 	"bytes"
+	"educ-gpt/models"
 	"encoding/json"
 	"fmt"
 	"go.uber.org/zap"
@@ -15,7 +16,7 @@ type GptServiceImpl struct {
 	logger *zap.Logger
 }
 
-func (g GptServiceImpl) GetAnswer(token string, model string, dialog []*DialogItem, target interface{}) error {
+func (g GptServiceImpl) GetAnswer(token string, model string, dialog []*models.DialogItem, target interface{}) error {
 	dialogStrings := make([]string, len(dialog))
 
 	for i := range dialog {
@@ -67,7 +68,7 @@ func (g GptServiceImpl) GetAnswer(token string, model string, dialog []*DialogIt
 	err = json.Unmarshal(bodyBytes, tempTarget)
 	if err != nil {
 		g.logger.Error("failed to send request", zap.Error(err))
-		return fmt.Errorf("%w:%w", ErrParseFailed, err)
+		return fmt.Errorf("%w:%w", ErrParseResFailed, err)
 	}
 
 	msg := tempTarget.Choices[len(tempTarget.Choices)-1].Message.Content

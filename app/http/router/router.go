@@ -60,6 +60,15 @@ func NewRouter() *gin.Engine {
 				utilsGroup.POST("/compile", dic.UtilsController().Compile)
 				utilsGroup.POST("/check_answer", dic.RoadmapController().VerifyAnswer)
 			}
+
+			dialogGroup := v1.Group("/dialogs")
+			{
+				dialogGroup.GET("/", dic.DialogController().GetDialogs)
+				dialogGroup.POST("/", dic.DialogController().CreateDialog)
+				dialogGroup.GET("/:dialog_id", dic.DialogController().GetDialog)
+				dialogGroup.POST("/:dialog_id", dic.DialogController().ThrowMessage)
+				dialogGroup.DELETE("/:dialog_id", dic.DialogController().RemoveDialog)
+			}
 		}
 	}
 

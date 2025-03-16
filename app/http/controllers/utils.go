@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"educ-gpt/http/dtos"
+	"educ-gpt/models"
 	"educ-gpt/services"
 	"educ-gpt/utils/httputils"
 	"educ-gpt/utils/httputils/valid"
@@ -70,7 +71,7 @@ func (u UtilsController) Compile(ctx *gin.Context) {
 
 	var res dtos.ResultResponse
 
-	err = u.aiSrv.GetAnswer(user.ChatGptToken, user.ChatGptModel, []*services.DialogItem{{Text: prompt, IsUser: true}}, &res)
+	err = u.aiSrv.GetAnswer(user.ChatGptToken, user.ChatGptModel, []*models.DialogItem{{Text: prompt, IsUser: true}}, &res)
 	if err != nil {
 		if errors.Is(err, services.ErrAIRequestFailed) {
 			ctx.JSON(http.StatusConflict, dtos.ErrorResponse{Error: err.Error()})
@@ -82,6 +83,66 @@ func (u UtilsController) Compile(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, res)
+}
+
+// VerifyAnswer and get verification status by AI
+// @Summary      Verify answer
+// @Description  VerifyAnswer and get verification status by AI
+// @Tags         utils
+// @Accept       json
+// @Produce      json
+// @Param Authorization header string true "Bearer <JWT token>"
+// @Param        request body dtos.VerifyAnswerRequest true "Answer details"
+// @Success      200 {object} services.PromptProblemResponse "Answer verification result"
+// @Failure      400 {object} dtos.ValidationErrorResponse "Invalid request body"
+// @Failure      401 {object} dtos.ErrorResponse "Unauthorized"
+// @Failure      409 {object} dtos.ErrorResponse "AI request error"
+// @Failure      500 {object} dtos.ErrorResponse "Internal server error"
+// @Router       /utils/check_answer [post]
+func (r RoadmapController) VerifyAnswer(ctx *gin.Context) {
+	var req dtos.VerifyAnswerRequest
+
+	userId, err := httputils.GetUserId(ctx)
+	if err != nil {
+
+		ctx.JSON(http.StatusUnauthorized, dtos.UnauthorizedResponse())
+		return
+	}
+
+	user, err := r.userSrv.GetById(userId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
+		return
+	}
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		var valErr validator.ValidationErrors
+		ok := errors.As(err, &valErr)
+
+		if ok {
+			ctx.JSON(http.StatusBadRequest, dtos.ValidationErrorResponse{Error: valid.ParseValidationErrors(err)})
+			return
+		}
+
+		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
+		return
+	}
+
+	prompt := r.promptSrv.VerifyAnswer(req.Problem, req.Answer, req.Language)
+	var target services.PromptProblemResponse
+
+	err = r.aiSrv.GetAnswer(user.ChatGptToken, user.ChatGptModel, []*models.DialogItem{{Text: prompt, IsUser: true}}, &target)
+	if err != nil {
+		if errors.Is(err, services.ErrAIRequestFailed) {
+			ctx.JSON(http.StatusConflict, dtos.ErrorResponse{Error: err.Error()})
+			return
+		}
+
+		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
+		return
+	}
+
+	ctx.JSON(http.StatusOK, target)
 }
 
 func NewUtilsController(

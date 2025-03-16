@@ -22,8 +22,9 @@ var ms = []interface{}{
 	&models.Theme{},
 	&models.Problem{},
 	&models.UserTheme{},
-	&models.UserTopic{},
 	&models.Token{},
+	&models.Dialog{},
+	&models.DialogItem{},
 }
 
 var db *gorm.DB

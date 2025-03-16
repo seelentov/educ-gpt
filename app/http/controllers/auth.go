@@ -24,6 +24,7 @@ type AuthController struct {
 	mailSrv     services.MailService
 	tokenSrv    services.TokenService
 	fileSrv     services.FileService
+	dialogSrv   services.DialogService
 }
 
 // Register a new user
@@ -46,7 +47,6 @@ func (c *AuthController) Register(ctx *gin.Context) {
 		ok := errors.As(err, &valErr)
 
 		if ok {
-
 			ctx.JSON(http.StatusBadRequest, dtos.ValidationErrorResponse{Error: valid.ParseValidationErrors(err)})
 			return
 		}
@@ -85,6 +85,17 @@ func (c *AuthController) Register(ctx *gin.Context) {
 		}
 
 		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
+		return
+	}
+
+	dialog := &models.Dialog{
+		UserID:      user.ID,
+		DialogItems: []*models.DialogItem{{Text: "Привет. Ты всегда можешь узнать у меня ответ на интересующий тебя вопрос."}},
+	}
+
+	_, err = c.dialogSrv.CreateDialog(dialog)
+	if err != nil {
+		ctx.JSON(http.StatusConflict, dtos.ErrorResponse{Error: "Пользователь с таким именем уже существует"})
 		return
 	}
 
@@ -629,6 +640,7 @@ func NewAuthController(
 	mailSrv services.MailService,
 	tokenSrv services.TokenService,
 	fileSrv services.FileService,
+	dialogSrv services.DialogService,
 ) *AuthController {
-	return &AuthController{userService, jwtService, roleService, senderSrv, mailSrv, tokenSrv, fileSrv}
+	return &AuthController{userService, jwtService, roleService, senderSrv, mailSrv, tokenSrv, fileSrv, dialogSrv}
 }
