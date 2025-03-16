@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useMemo, useState, useRef } from "react"
+import { usePathname } from 'next/navigation'
+
 import Image from "next/image";
 import { useLocalStorage } from "@/core/hooks/useLocalStorage";
 import { deleteDialog } from "@/core/api/dialogs/delete_dialog";
@@ -30,7 +32,9 @@ export function Chat() {
 
     const deleteDialogDisabled = useMemo(() => dialogs.length < 2, [dialogs])
 
-    const [token] = useLocalStorage("token", "")
+    const [token, setToken] = useLocalStorage("token", "")
+
+    const pathname = usePathname()
 
     const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -170,6 +174,22 @@ export function Chat() {
             fetchDialog()
         }
     }, [activeDialogIndex, token, dialogs])
+
+    useEffect(() => {
+        try {
+            const value = window.localStorage.getItem("token")
+
+            const v = value ? JSON.parse(value) : ""
+
+            if (v !== "") {
+                setToken(v)
+            }
+
+        } catch (error) {
+            console.error(error)
+        }
+
+    }, [pathname])
 
     return (
         <div className="position-fixed" style={{ bottom: 20, right: 20 }}>
