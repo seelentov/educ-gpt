@@ -27,13 +27,21 @@ export function Editor() {
     const [code, setCode] = useState<string>("")
     const [activeLanguage, setActiveLanguage] = useState<string>("")
     const [consoleText, setConsoleText] = useState<string[]>([])
-    const router = useRouter()
     const { topic, theme } = useParams()
-    const [token] = useLocalStorage("token", "")
     const [globalLoading, setGlobalLoading] = useState<boolean>(false)
     const [problemsLoading, setProblemsLoading] = useState<boolean>(false)
     const [checkLoading, setCheckLoading] = useState<boolean>(false)
     const [compilationLoading, setCompilationLoading] = useState<boolean>(false)
+
+    const [token] = useLocalStorage("token", "")
+
+    const router = useRouter()
+
+    useEffect(() => {
+        if (token === "") {
+            router.replace("/login")
+        }
+    })
 
     useEffect(() => {
         (async () => {

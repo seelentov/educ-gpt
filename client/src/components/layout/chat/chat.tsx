@@ -165,115 +165,133 @@ export function Chat() {
     }
 
     useEffect(() => {
+        if (!token) {
+            return
+        }
+
         fetchDialogs()
         setActiveDialogIndex(0)
     }, [token])
 
     useEffect(() => {
+        if (!token) {
+            return
+        }
+
         if (dialogs.length > 0) {
             fetchDialog()
         }
     }, [activeDialogIndex, token, dialogs])
 
     useEffect(() => {
-        try {
-            const value = window.localStorage.getItem("token")
+        const cb = async () => {
+            try {
 
-            const v = value ? JSON.parse(value) : ""
+                const value = window.localStorage.getItem("token")
 
-            if (v !== "") {
+                const v = value ? JSON.parse(value) : ""
+
                 setToken(v)
+            } catch (error) {
+                console.error(error)
             }
+        };
 
-        } catch (error) {
-            console.error(error)
-        }
+        const interval = setInterval(cb, 5000);
 
-    }, [pathname])
+        return () => {
+            if (interval) {
+                clearInterval(interval);
+            }
+        };
+
+    }, [])
 
     return (
-        <div className="position-fixed" style={{ bottom: 20, right: 20 }}>
-            {
-                !isOpen
-                    ? <button onClick={() => setIsOpen(true)} type="button" className="btn btn-primary" style={{ zIndex: 999 }}>
-                        <Image src="/icons/chat.svg" alt="" width={20} height={20} />
-                    </button>
-                    : <div className="container-fluid">
-                        <div className="row justify-content-center">
-                            <div className="col-6 p-0" style={{ width: '300px', height: '400px', border: '1px solid #ccc', borderRadius: '5px', overflow: 'hidden' }}>
-                                <div className="d-flex flex-column h-100">
-                                    <div className="p-2 d-flex gap-1 align-items-center" style={{ backgroundColor: '#e9ecef' }}>
-                                        <button onClick={() => setIsOpen(false)} className="btn btn-secondary btn-sm">
-                                            ×
-                                        </button>
-                                        {isDialogsLoading
-                                            ? <Loading min color="white" />
-                                            : <>
+        <>{token &&
+            <div className="position-fixed" style={{ bottom: 20, right: 20 }}>
+                {
+                    !isOpen
+                        ? <button onClick={() => setIsOpen(true)} type="button" className="btn btn-primary" style={{ zIndex: 999 }}>
+                            <Image src="/icons/chat.svg" alt="" width={20} height={20} />
+                        </button>
+                        : <div className="container-fluid">
+                            <div className="row justify-content-center">
+                                <div className="col-6 p-0" style={{ width: '300px', height: '400px', border: '1px solid #ccc', borderRadius: '5px', overflow: 'hidden' }}>
+                                    <div className="d-flex flex-column h-100">
+                                        <div className="p-2 d-flex gap-1 align-items-center" style={{ backgroundColor: '#e9ecef' }}>
+                                            <button onClick={() => setIsOpen(false)} className="btn btn-secondary btn-sm">
+                                                ×
+                                            </button>
+                                            {isDialogsLoading
+                                                ? <Loading min color="white" />
+                                                : <>
 
-                                                <div className="d-flex h-100 gap-1 w-100" style={{ overflowX: 'scroll', height: '30px !important' }}>
-                                                    {dialogs.map((d, i) =>
-                                                        <div
-                                                            className={`d-flex rounded-1 overflow-hidden`}
-                                                            key={d.id}
-                                                            style={{ padding: 0, minWidth: 90 }}
-                                                        >
-                                                            <button
-                                                                onClick={() => deleteDialogHandle(d.id)}
-                                                                className={`btn btn-danger btn-sm rounded-0`}
-                                                                disabled={deleteDialogDisabled}
+                                                    <div className="d-flex h-100 gap-1 w-100" style={{ overflowX: 'scroll', height: '30px !important' }}>
+                                                        {dialogs.map((d, i) =>
+                                                            <div
+                                                                className={`d-flex rounded-1 overflow-hidden`}
+                                                                key={d.id}
+                                                                style={{ padding: 0, minWidth: 90 }}
                                                             >
-                                                                ×
-                                                            </button>
-                                                            <button
-                                                                onClick={() => setDialog(i)}
-                                                                className={`btn btn-primary btn-sm rounded-0 border-0 w-100`}
-                                                                disabled={activeDialogIndex === i}
-                                                            >
-                                                                {d.dialog_items.length > 0 ? d.dialog_items[0].text.slice(0, 7) + "..." : ""}
-                                                            </button>
-                                                        </div>
-                                                    )}
-                                                    <button onClick={createDialogHandle} className="btn btn-success btn-sm">
-                                                        {createNewDialogLoading ? <Loading min color="white" /> : "+"}
-                                                    </button>
-                                                </div>
-                                            </>}
-                                    </div>
-                                    <div className="flex-grow-1 p-2" style={{ overflowY: 'auto', backgroundColor: 'white' }}>
-                                        {isMessagesLoading
-                                            ? <Loading min />
-                                            : messages.map(m =>
-                                                <div className="mb-2" key={m.id}>
-                                                    <div className="bg-light p-2 rounded">
-                                                        <strong>{m.is_user ? "User" : "AI"}:</strong> {m.text}
+                                                                <button
+                                                                    onClick={() => deleteDialogHandle(d.id)}
+                                                                    className={`btn btn-danger btn-sm rounded-0`}
+                                                                    disabled={deleteDialogDisabled}
+                                                                >
+                                                                    ×
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => setDialog(i)}
+                                                                    className={`btn btn-primary btn-sm rounded-0 border-0 w-100`}
+                                                                    disabled={activeDialogIndex === i}
+                                                                >
+                                                                    {d.dialog_items.length > 0 ? d.dialog_items[0].text.slice(0, 7) + "..." : ""}
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                        <button onClick={createDialogHandle} className="btn btn-success btn-sm">
+                                                            {createNewDialogLoading ? <Loading min color="white" /> : "+"}
+                                                        </button>
                                                     </div>
-                                                </div>
-                                            )}
-                                        {isThrowLoading
-                                            && <div className="mb-2">
-                                                <div className="bg-light p-2 rounded">
-                                                    <strong>AI:</strong> печатаю...
-                                                </div>
-                                            </div>}
-                                        <div ref={messagesEndRef} />
-                                    </div>
-                                    <div className="p-2" style={{ backgroundColor: '#e9ecef' }}>
-                                        <form onSubmit={throwMessageHandle}>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                placeholder="Введите сообщение..."
-                                                value={input}
-                                                onChange={(e) => setInput(e.target.value)}
-                                                disabled={isThrowLoading}
-                                            />
-                                        </form>
+                                                </>}
+                                        </div>
+                                        <div className="flex-grow-1 p-2" style={{ overflowY: 'auto', backgroundColor: 'white' }}>
+                                            {isMessagesLoading
+                                                ? <Loading min />
+                                                : messages.map(m =>
+                                                    <div className="mb-2" key={m.id}>
+                                                        <div className="bg-light p-2 rounded">
+                                                            <strong>{m.is_user ? "User" : "AI"}:</strong> {m.text}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            {isThrowLoading
+                                                && <div className="mb-2">
+                                                    <div className="bg-light p-2 rounded">
+                                                        <strong>AI:</strong> печатаю...
+                                                    </div>
+                                                </div>}
+                                            <div ref={messagesEndRef} />
+                                        </div>
+                                        <div className="p-2" style={{ backgroundColor: '#e9ecef' }}>
+                                            <form onSubmit={throwMessageHandle}>
+                                                <input
+                                                    type="text"
+                                                    className="form-control"
+                                                    placeholder="Введите сообщение..."
+                                                    value={input}
+                                                    onChange={(e) => setInput(e.target.value)}
+                                                    disabled={isThrowLoading}
+                                                />
+                                            </form>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-            }
-        </div >
+                }
+            </div >
+        }</>
     )
 }

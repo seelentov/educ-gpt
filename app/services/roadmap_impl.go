@@ -176,6 +176,21 @@ func (r RoadmapServiceImpl) ClearProblems() error {
 	return nil
 }
 
+func (r RoadmapServiceImpl) ClearThemes() error {
+	threshold := time.Now().Add(-24 * time.Hour)
+
+	result := r.db.
+		Joins("JOIN user_themes ON user_themes.theme_id = themes.id").
+		Where("themes.created_at < ? AND user_themes.score = 0", threshold).
+		Delete(&models.Theme{})
+
+	if result.Error != nil {
+		r.logger.Error("Cant remove themes", zap.Error(result.Error))
+		return fmt.Errorf("%w:%w", ErrDeleteEntities, result.Error)
+	}
+	return nil
+}
+
 func (r RoadmapServiceImpl) GetProblem(problemID uint) (*models.Problem, error) {
 	var problem models.Problem
 	result := r.db.Model(&models.Problem{}).Where("id = ?", problemID).First(&problem)

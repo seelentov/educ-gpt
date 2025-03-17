@@ -29,6 +29,18 @@ func clearProblems() {
 	ClearProblemsDaemon = &DaemonController{ctx, cancel}
 }
 
+var ClearThemesDaemon *DaemonController
+
+func clearThemes() {
+	daemon, ctx, cancel := daemons.NewClearThemesDaemon(
+		RoadmapService(),
+		logger.Logger(),
+		time.Hour*12,
+	)
+	daemonsSlice = append(daemonsSlice, daemon)
+	ClearThemesDaemon = &DaemonController{ctx, cancel}
+}
+
 var ClearTokensDaemon *DaemonController
 
 func clearTokens() {
@@ -84,6 +96,8 @@ func initServices() {
 	clearTokens()
 	clearNonActivatedUsers()
 	clearUnusedFiles()
+	clearThemes()
+
 	sendMail()
 }
 
@@ -95,11 +109,5 @@ func InitDaemons() {
 func startAllDaemons() {
 	for i := range daemonsSlice {
 		daemonsSlice[i].Start()
-	}
-}
-
-func StopAllDaemons() {
-	for i := range daemonsSlice {
-		daemonsSlice[i].Stop()
 	}
 }

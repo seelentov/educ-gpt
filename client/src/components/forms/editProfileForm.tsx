@@ -7,6 +7,7 @@ import { me } from "@/core/api/auth/me";
 import { updateUser } from "@/core/api/auth/update";
 import { Loading } from "../ui/loading";
 import { HOST_URL_PROD } from "@/core/api/api";
+import { useRouter } from "next/navigation";
 
 export default function EditProfileForm() {
     const [token] = useLocalStorage("token", "")
@@ -21,6 +22,14 @@ export default function EditProfileForm() {
     const [errors, setErrors] = useState<{ [key: string]: string } | null>(null);
     const [loading, setLoading] = useState(false);
     const [loadingMe, setLoadingMe] = useState(false);
+
+    const router = useRouter()
+
+    useEffect(() => {
+        if (token === "") {
+            router.replace("/login")
+        }
+    })
 
     const refetchUser = async () => {
         setLoadingMe(true)
