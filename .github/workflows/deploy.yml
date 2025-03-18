@@ -1,4 +1,4 @@
-name: Deploy to VPS
+name: Deploy to Server
 
 on:
   push:
@@ -11,8 +11,13 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - name: Deploy to VPS
+      - name: Add SSH key
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy to server
         run: |
-          ssh admin@educgpt.ru "cd ~/educ-gpt && git pull origin main"
+          ssh -o StrictHostKeyChecking=no admin@educ-gpt.ru "cd ~/educ-gpt && git pull origin main"
