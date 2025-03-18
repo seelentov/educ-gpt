@@ -95,7 +95,7 @@ func (c *AuthController) Register(ctx *gin.Context) {
 
 	_, err = c.dialogSrv.CreateDialog(dialog)
 	if err != nil {
-		ctx.JSON(http.StatusConflict, dtos.ErrorResponse{Error: "Пользователь с таким именем уже существует"})
+		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
 		return
 	}
 
