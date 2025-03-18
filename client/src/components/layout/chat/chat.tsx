@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useMemo, useState, useRef } from "react"
-import { usePathname } from 'next/navigation'
 
 import Image from "next/image";
 import { useLocalStorage } from "@/core/hooks/useLocalStorage";
@@ -34,8 +33,6 @@ export function Chat() {
     const deleteDialogDisabled = useMemo(() => dialogs.length < 2, [dialogs])
 
     const [token, setToken] = useLocalStorage("token", "")
-
-    const pathname = usePathname()
 
     const messagesEndRef = useRef<HTMLDivElement>(null)
 
