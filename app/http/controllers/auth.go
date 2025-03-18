@@ -90,7 +90,7 @@ func (c *AuthController) Register(ctx *gin.Context) {
 
 	dialog := &models.Dialog{
 		UserID:      user.ID,
-		DialogItems: []*models.DialogItem{{Text: "Привет. Ты всегда можешь узнать у меня ответ на свой вопрос."}},
+		DialogItems: []*models.DialogItem{{Text: "Привет. Ты всегда можешь узнать у меня ответ на интересующий тебя вопрос."}},
 	}
 
 	_, err = c.dialogSrv.CreateDialog(dialog)
