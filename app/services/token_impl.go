@@ -14,7 +14,7 @@ type TokenServiceImpl struct {
 	logger *zap.Logger
 }
 
-func (r TokenServiceImpl) VerifyAndGetData(userID uint, key string, t models.Type) (string, error) {
+func (r TokenServiceImpl) VerifyAndGetData(userID uint, key string, t models.TokenType) (string, error) {
 	var token *models.Token
 
 	if err := r.db.Where("user_id = ? AND key = ? AND type = ? AND created_at > ?", userID, key, t, time.Now().Add(-2*time.Hour)).First(&token).Error; err != nil {
@@ -32,7 +32,7 @@ func (r TokenServiceImpl) VerifyAndGetData(userID uint, key string, t models.Typ
 	return data, nil
 }
 
-func (r TokenServiceImpl) Create(userID uint, t models.Type, data string) (string, error) {
+func (r TokenServiceImpl) Create(userID uint, t models.TokenType, data string) (string, error) {
 	token := &models.Token{}
 
 	token.UserID = userID
@@ -51,7 +51,7 @@ func (r TokenServiceImpl) Create(userID uint, t models.Type, data string) (strin
 	return key, nil
 }
 
-func (r TokenServiceImpl) Verify(userID uint, key string, t models.Type) error {
+func (r TokenServiceImpl) Verify(userID uint, key string, t models.TokenType) error {
 	_, err := r.VerifyAndGetData(userID, key, t)
 
 	if err != nil {

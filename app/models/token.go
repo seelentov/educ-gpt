@@ -2,11 +2,11 @@ package models
 
 import "time"
 
-type Type string
+type TokenType int
 
 const (
-	TypeResetPassword Type = "reset_password"
-	TypeChangeEmail   Type = "change_email"
+	TypeResetPassword TokenType = iota
+	TypeChangeEmail
 )
 
 type Token struct {
@@ -15,6 +15,6 @@ type Token struct {
 	Key       string    `gorm:"not null"`
 	UserID    uint      `gorm:"not null"`
 	User      User      `gorm:"foreignkey:UserID"`
-	Type      Type      `gorm:"not null"`
+	Type      TokenType `gorm:"not null"`
 	Data      string
 }

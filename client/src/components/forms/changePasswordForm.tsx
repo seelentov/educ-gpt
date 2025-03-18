@@ -3,6 +3,7 @@
 import { changePassword } from '@/core/api/auth/change_password';
 import { useLocalStorage } from '@/core/hooks/useLocalStorage';
 import { useState } from 'react';
+import { showToast } from '../utils/toast';
 
 export function ChangePasswordForm() {
     const [oldPassword, setOldPassword] = useState('');
@@ -40,7 +41,7 @@ export function ChangePasswordForm() {
                 }
             }
             else {
-                alert("Пароль успешно изменен")
+                showToast("success", "Пароль успешно изменен")
             }
 
             console.log(data)

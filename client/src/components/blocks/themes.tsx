@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Cards } from "../ui/cards";
 import { getThemes } from "@/core/api/roadmap/themes";
+import { showToast } from "../utils/toast";
 
 interface IThemesProps {
     id: number
@@ -29,7 +30,7 @@ export function Themes({ id }: IThemesProps) {
             const res = await getThemes(id, token)
             if (res?.error) {
                 console.error(res.error)
-                alert(JSON.stringify(res.error))
+                showToast("error", res.error)
                 router.refresh()
             }
             else {

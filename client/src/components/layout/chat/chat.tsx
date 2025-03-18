@@ -11,6 +11,7 @@ import { getDialog } from "@/core/api/dialogs/get_dialog";
 import { Loading } from "@/components/ui/loading";
 import { createDialog } from "@/core/api/dialogs/create_dialog";
 import { sendMessage } from "@/core/api/dialogs/send_message";
+import { showToast } from "@/components/utils/toast";
 
 export function Chat() {
     const [isOpen, setIsOpen] = useState<boolean>(false)
@@ -53,7 +54,7 @@ export function Chat() {
         if (res?.error) {
             const err = res.error;
             console.error(err)
-            alert(err)
+            showToast("error", err)
         }
 
         setDialogs(res)
@@ -69,7 +70,7 @@ export function Chat() {
         if (res?.error) {
             const err = res.error;
             console.error(err)
-            alert(err)
+            showToast("error", err)
         }
 
         setMessages(res.dialog_items)
@@ -100,7 +101,7 @@ export function Chat() {
         if (res?.error) {
             const err = res.error;
             console.error(err)
-            alert(err)
+            showToast("error", err)
         }
 
         setMessages(p => ([...p, res]))
@@ -126,7 +127,7 @@ export function Chat() {
         if (res?.error) {
             const err = res.error;
             console.error(err)
-            alert(err)
+            showToast("error", err)
         }
     }
 
@@ -143,7 +144,7 @@ export function Chat() {
         if (res?.error) {
             const err = res.error;
             console.error(err)
-            alert(err)
+            showToast("error", err)
         }
 
         setDialogs(p => ([...p, res]))
@@ -227,7 +228,7 @@ export function Chat() {
                                                 ? <Loading min color="white" />
                                                 : <>
 
-                                                    <div className="d-flex h-100 gap-1 w-100" style={{ overflowX: 'scroll', height: '30px !important' }}>
+                                                    <div className="d-flex h-100 gap-1 w-100 hide-scrollbar" style={{ overflowX: 'scroll', height: '30px !important' }}>
                                                         {dialogs.map((d, i) =>
                                                             <div
                                                                 className={`d-flex rounded-1 overflow-hidden`}

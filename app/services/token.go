@@ -12,8 +12,8 @@ var (
 )
 
 type TokenService interface {
-	Create(userID uint, t models.Type, data string) (string, error)
-	Verify(userID uint, key string, t models.Type) error
-	VerifyAndGetData(userID uint, key string, t models.Type) (string, error)
+	Create(userID uint, t models.TokenType, data string) (string, error)
+	Verify(userID uint, key string, t models.TokenType) error
+	VerifyAndGetData(userID uint, key string, t models.TokenType) (string, error)
 	Clear() error
 }

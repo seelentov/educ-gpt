@@ -5,6 +5,7 @@ import { useLocalStorage } from "@/core/hooks/useLocalStorage";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Cards } from "../ui/cards";
+import { showToast } from "../utils/toast";
 
 export function Topics() {
 
@@ -21,7 +22,7 @@ export function Topics() {
             const res = await getTopics(token)
             if (res?.error) {
                 console.error(res.error)
-                alert(JSON.stringify(res.error))
+                showToast("error", res.error)
                 router.refresh()
             }
             else {

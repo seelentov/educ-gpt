@@ -8,6 +8,7 @@ import { updateUser } from "@/core/api/auth/update";
 import { Loading } from "../ui/loading";
 import { HOST_URL_PROD } from "@/core/api/api";
 import { useRouter } from "next/navigation";
+import { showToast } from "../utils/toast";
 
 export default function EditProfileForm() {
     const [token] = useLocalStorage("token", "")
@@ -104,7 +105,7 @@ export default function EditProfileForm() {
                 }
             }
             else {
-                alert("Данные успешно обновлены")
+                showToast("success", "Данные успешно обновлены")
                 await refetchUser()
             }
         } catch (error) {

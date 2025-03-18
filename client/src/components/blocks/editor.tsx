@@ -14,6 +14,7 @@ import { compile } from "@/core/api/utils/compile"
 import CodeMirror from "@uiw/react-codemirror";
 import { checkAnswerUtil } from "@/core/api/utils/check_answer"
 import Select from 'react-select'
+import { showToast } from "../utils/toast"
 
 interface Task {
     task: string, isDone: boolean, dialog: string[], id: number, isTheory: boolean, languages: string[]
@@ -53,7 +54,7 @@ export function Editor() {
 
             if (data?.error) {
                 console.error(data.error)
-                alert(data.error)
+                showToast("error", data.error)
                 router.refresh()
                 setGlobalLoading(false)
                 return
@@ -132,7 +133,7 @@ export function Editor() {
 
         if (data?.error) {
             console.error(data.error)
-            alert(JSON.stringify(data.error))
+            showToast("error", data.error)
             setCheckLoading(false)
             return
         }
@@ -163,7 +164,8 @@ export function Editor() {
 
         if (data?.error) {
             console.error(data.error)
-            alert(JSON.stringify(data.error))
+            showToast("error", data.error)
+
             setCompilationLoading(false)
 
             return
@@ -187,7 +189,7 @@ export function Editor() {
 
         if (data?.error) {
             console.error(data.error)
-            alert(JSON.stringify(data.error))
+            showToast("error", data.error)
             setProblemsLoading(false)
             return
         }

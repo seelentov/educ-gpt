@@ -6,6 +6,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import React from "react";
 import { AuthClient } from '@/components/layout/authClient/authClient';
 import { Chat } from '@/components/layout/chat/chat';
+import ToastProvider from '@/components/providers/toast';
 
 
 const geistSans = Geist({
@@ -32,11 +33,14 @@ export default function RootLayout({
     return (
         <html lang="ru">
             <body className={`${geistSans.variable} ${geistMono.variable}`}>
-                <AuthClient />
-                <main>
-                    {children}
-                </main>
-                <Chat />
+                <ToastProvider>
+                    <AuthClient />
+                    <main>
+
+                        {children}
+                    </main>
+                    <Chat />
+                </ToastProvider>
             </body>
         </html>
     );

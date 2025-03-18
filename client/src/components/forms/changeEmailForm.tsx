@@ -3,6 +3,7 @@
 import { changeEmail } from "@/core/api/auth/change_email";
 import { useLocalStorage } from "@/core/hooks/useLocalStorage";
 import { useState } from "react";
+import { showToast } from "../utils/toast";
 
 export function ChangeEmailForm() {
     const [email, setEmail] = useState<string>("")
@@ -27,7 +28,7 @@ export function ChangeEmailForm() {
                 setError(data?.error)
             }
             else {
-                alert(data?.message)
+                showToast("success", data?.message)
             }
         } catch (error) {
             console.error(error)
