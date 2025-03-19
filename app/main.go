@@ -17,8 +17,7 @@ import (
 // @host https://educgpt.ru
 // @BasePath /api/v1
 func main() {
-	err := godotenv.Load()
-	if err != nil {
+	if err := godotenv.Load(); err != nil {
 		log.Fatal("ERR: godotenv.Load(): Error loading .env file")
 	}
 

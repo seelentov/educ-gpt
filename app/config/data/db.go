@@ -1,10 +1,10 @@
 package data
 
 import (
-	"educ-gpt/config/logger"
 	"educ-gpt/models"
 	"errors"
 	"fmt"
+	"github.com/DATA-DOG/go-sqlmock"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
@@ -35,6 +35,28 @@ func SetDBConfig(config *DBconfig) {
 	dbConfig = config
 }
 
+func SwitchToMock() error {
+	mockDB, _, err := sqlmock.New()
+	if err != nil {
+		return err
+	}
+
+	dialector := postgres.New(postgres.Config{
+		Conn: mockDB,
+	})
+
+	mockGormDB, err := gorm.Open(dialector, &gorm.Config{})
+	if err != nil {
+		return err
+	}
+
+	db = mockGormDB
+
+	log.Print("DB switched to mock version")
+
+	return nil
+}
+
 func DB() *gorm.DB {
 	if db == nil {
 		database, err := gorm.Open(postgres.Open(dbConfig.String()), &gorm.Config{})
@@ -49,8 +71,8 @@ func DB() *gorm.DB {
 		}
 
 		db = database
-		logger.Logger().Debug("DB initialized")
 
+		log.Print("DB Initialized")
 		Seed()
 	}
 

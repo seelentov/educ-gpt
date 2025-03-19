@@ -18,7 +18,7 @@ func UserService() services.UserService {
 			logger.Logger(),
 			os.Getenv("AUTH_DEFAULT_ROLE"),
 		)
-		logger.Logger().Debug("UserService initialized")
+		log.Print("UserService initialized")
 	}
 
 	return userService
@@ -33,7 +33,7 @@ func RoleService() services.RoleService {
 			logger.Logger(),
 			os.Getenv("AUTH_DEFAULT_ROLE"),
 		)
-		logger.Logger().Debug("RoleService initialized")
+		log.Print("RoleService initialized")
 	}
 
 	return roleService
@@ -47,7 +47,7 @@ func RoadmapService() services.RoadmapService {
 			data.DB(),
 			logger.Logger(),
 		)
-		logger.Logger().Debug("RoadmapService initialized")
+		log.Print("RoadmapService initialized")
 	}
 
 	return roadmapService
@@ -58,7 +58,7 @@ var promptService services.PromptService
 func PromptService() services.PromptService {
 	if promptService == nil {
 		promptService = services.NewPromptServiceImpl()
-		logger.Logger().Debug("PromptService initialized")
+		log.Print("PromptService initialized")
 	}
 
 	return promptService
@@ -88,7 +88,7 @@ func JwtService() services.JwtService {
 			jwtRefreshExpiration,
 			logger.Logger(),
 		)
-		logger.Logger().Debug("JwtService initialized")
+		log.Print("JwtService initialized")
 	}
 
 	return jwtService
@@ -101,7 +101,7 @@ func GptService() services.GptService {
 		gptService = services.NewGptService(
 			logger.Logger(),
 		)
-		logger.Logger().Debug("GptService initialized")
+		log.Print("GptService initialized")
 	}
 
 	return gptService
@@ -126,7 +126,7 @@ func SenderService() services.SenderService {
 			logger.Logger(),
 			data.Redis(),
 		)
-		logger.Logger().Debug("SenderService initialized")
+		log.Print("SenderService initialized")
 	}
 
 	return senderService
@@ -144,7 +144,7 @@ func MailService() services.MailService {
 			"change_email",
 			logger.Logger(),
 		)
-		logger.Logger().Debug("MailService initialized")
+		log.Print("MailService initialized")
 	}
 
 	return mailService
@@ -158,7 +158,7 @@ func TokenService() services.TokenService {
 			data.DB(),
 			logger.Logger(),
 		)
-		logger.Logger().Debug("TokenService initialized")
+		log.Print("TokenService initialized")
 	}
 
 	return tokenService
@@ -172,7 +172,7 @@ func FileService() services.FileService {
 			logger.Logger(),
 			"/storage",
 		)
-		logger.Logger().Debug("FileService initialized")
+		log.Print("FileService initialized")
 	}
 
 	return fileService
@@ -186,7 +186,7 @@ func DialogService() services.DialogService {
 			data.DB(),
 			logger.Logger(),
 		)
-		logger.Logger().Debug("DialogService initialized")
+		log.Print("DialogService initialized")
 	}
 
 	return dialogService

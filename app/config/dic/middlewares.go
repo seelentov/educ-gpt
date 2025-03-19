@@ -19,7 +19,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			logger.Logger(),
 			os.Getenv("JWT_SECRET"),
 		)
-		logger.Logger().Debug("AuthMiddleware initialized")
+		log.Print("AuthMiddleware initialized")
 	}
 
 	return authMiddleware
@@ -30,7 +30,7 @@ var requiredAuthMiddleware gin.HandlerFunc
 func RequiredAuthMiddleware() gin.HandlerFunc {
 	if requiredAuthMiddleware == nil {
 		requiredAuthMiddleware = middlewares.RequiredAuthMiddleware()
-		logger.Logger().Debug("RequiredAuthMiddleware initialized")
+		log.Print("RequiredAuthMiddleware initialized")
 	}
 
 	return requiredAuthMiddleware

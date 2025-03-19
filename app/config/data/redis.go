@@ -1,6 +1,7 @@
 package data
 
 import (
+	"github.com/alicebob/miniredis/v2"
 	"github.com/redis/go-redis/v9"
 	"log"
 	"os"
@@ -8,6 +9,21 @@ import (
 )
 
 var redisClient *redis.Client
+
+func SwitchToMockRedis() error {
+	mockRedis, err := miniredis.Run()
+	if err != nil {
+		return err
+	}
+
+	redisClient = redis.NewClient(&redis.Options{
+		Addr: mockRedis.Addr(),
+	})
+
+	log.Print("Redis switched to mock version")
+
+	return nil
+}
 
 func Redis() *redis.Client {
 	if redisClient == nil {

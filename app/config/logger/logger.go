@@ -10,6 +10,12 @@ import (
 
 var logger *zap.Logger
 
+var need_file = true
+
+func TurnOffLogFile() {
+	need_file = false
+}
+
 func Logger() *zap.Logger {
 	if logger == nil {
 		config := zap.NewProductionConfig()
@@ -27,15 +33,19 @@ func Logger() *zap.Logger {
 		config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 		config.Encoding = "console"
 
+		ws := make([]zapcore.WriteSyncer, 0)
+		ws = append(ws, zapcore.AddSync(os.Stdout))
+
 		filePath := filepath.Join("logs", "app.log")
 		file, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			log.Fatalf("failed to open log file: %v", err)
+		if err == nil {
+			fileSyncer := zapcore.AddSync(file)
+			ws = append(ws, fileSyncer)
+		} else {
+			log.Printf("failed to open log file: %v", err)
 		}
 
-		fileSyncer := zapcore.AddSync(file)
-
-		multiSyncer := zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout), fileSyncer)
+		multiSyncer := zapcore.NewMultiWriteSyncer(ws...)
 
 		core := zapcore.NewCore(
 			zapcore.NewConsoleEncoder(config.EncoderConfig),

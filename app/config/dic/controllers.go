@@ -1,8 +1,8 @@
 package dic
 
 import (
-	"educ-gpt/config/logger"
 	"educ-gpt/http/controllers"
+	"log"
 )
 
 var authController *controllers.AuthController
@@ -19,7 +19,7 @@ func AuthController() *controllers.AuthController {
 			FileService(),
 			DialogService(),
 		)
-		logger.Logger().Debug("AuthController initialized")
+		log.Print("AuthController initialized")
 	}
 
 	return authController
@@ -35,7 +35,7 @@ func RoadmapController() *controllers.RoadmapController {
 			PromptService(),
 			RoadmapService(),
 		)
-		logger.Logger().Debug("RoadmapController initialized")
+		log.Print("RoadmapController initialized")
 	}
 
 	return roadmapController
@@ -50,7 +50,7 @@ func UtilsController() *controllers.UtilsController {
 			PromptService(),
 			UserService(),
 		)
-		logger.Logger().Debug("UtilsController initialized")
+		log.Print("UtilsController initialized")
 	}
 	return utilsController
 }
@@ -64,7 +64,7 @@ func DialogController() *controllers.DialogController {
 			UserService(),
 			GptService(),
 		)
-		logger.Logger().Debug("DialogController initialized")
+		log.Print("DialogController initialized")
 	}
 	return dialogController
 }

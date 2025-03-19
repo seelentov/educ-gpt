@@ -1,7 +1,6 @@
 package data
 
 import (
-	"educ-gpt/config/logger"
 	"educ-gpt/models"
 	"log"
 )
@@ -24,7 +23,7 @@ func rolesSeed() {
 		}
 	}
 
-	logger.Logger().Debug("Roles seed completed")
+	log.Print("Roles seed completed")
 }
 
 func topicsSeed() {
@@ -66,5 +65,5 @@ func topicsSeed() {
 		}
 	}
 
-	logger.Logger().Debug("Topics seed completed")
+	log.Print("Topics seed completed")
 }
