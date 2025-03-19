@@ -3,9 +3,9 @@ services:
     container_name: nginx
     image: nginx:stable-alpine
     restart: always
-#    depends_on:
-#      - app
-#      - client
+    depends_on:
+      - app
+      - client
     ports:
       - "80:80"
       - "443:443"

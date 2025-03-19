@@ -27,7 +27,6 @@ type UserService interface {
 	GetByName(string) (*models.User, error)
 	GetByEmail(string) (*models.User, error)
 	GetByCredential(string) (*models.User, error)
-	Verify(input string, credential string) error
 	VerifyPassword(input string, password string) error
 	Activate(key string) error
 	ChangePassword(userId uint, password string) error

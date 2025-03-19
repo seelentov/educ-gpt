@@ -146,20 +146,6 @@ func (u UserServiceImpl) GetByCredential(s string) (*models.User, error) {
 	return user, nil
 }
 
-func (u UserServiceImpl) Verify(input string, credential string) error {
-	user, err := u.GetByCredential(credential)
-	if err != nil {
-		return fmt.Errorf("%w: %w", ErrInvalidCredentials, err)
-	}
-
-	err = u.VerifyPassword(input, user.Password)
-	if err != nil {
-		return fmt.Errorf("%w: %w", ErrInvalidCredentials, err)
-	}
-
-	return nil
-}
-
 func (u UserServiceImpl) VerifyPassword(input string, password string) error {
 	err := bcrypt.CompareHashAndPassword([]byte(password), []byte(input))
 	if err != nil {

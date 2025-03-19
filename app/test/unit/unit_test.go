@@ -9,7 +9,6 @@ import (
 )
 
 func setup() error {
-
 	if err := godotenv.Load("../../.env"); err != nil {
 		log.Print(err)
 		return err

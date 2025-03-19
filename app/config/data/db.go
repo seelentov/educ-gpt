@@ -4,8 +4,8 @@ import (
 	"educ-gpt/models"
 	"errors"
 	"fmt"
-	"github.com/DATA-DOG/go-sqlmock"
 	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"log"
 )
@@ -36,23 +36,20 @@ func SetDBConfig(config *DBconfig) {
 }
 
 func SwitchToMock() error {
-	mockDB, _, err := sqlmock.New()
+	mockGormDB, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to open in-memory SQLite database: %w", err)
 	}
 
-	dialector := postgres.New(postgres.Config{
-		Conn: mockDB,
-	})
-
-	mockGormDB, err := gorm.Open(dialector, &gorm.Config{})
-	if err != nil {
-		return err
+	if err := mockGormDB.AutoMigrate(ms...); err != nil {
+		return fmt.Errorf("failed to auto-migrate in-memory SQLite database: %w", err)
 	}
 
 	db = mockGormDB
 
-	log.Print("DB switched to mock version")
+	log.Print("DB switched to in-memory SQLite version")
+
+	Seed()
 
 	return nil
 }
@@ -64,9 +61,7 @@ func DB() *gorm.DB {
 			log.Fatal(fmt.Errorf("%w: %w", ErrFailedLoadDB, err))
 		}
 
-		err = database.AutoMigrate(ms...)
-
-		if err != nil {
+		if err = database.AutoMigrate(ms...); err != nil {
 			log.Fatal(fmt.Errorf("%w: %w", ErrFailedLoadAutoMigrate, err))
 		}
 

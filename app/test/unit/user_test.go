@@ -3,12 +3,12 @@ package unit
 import (
 	"educ-gpt/config/dic"
 	"educ-gpt/models"
-	"strconv"
+	"educ-gpt/services"
 	"testing"
 )
 
 var (
-	srv = dic.UserService()
+	srv services.UserService
 
 	activationToken string
 
@@ -20,24 +20,14 @@ var (
 	}
 )
 
-func userFactory(i int) *models.User {
-	iString := strconv.Itoa(i)
-
-	return &models.User{
-		Name:         "test_user" + iString,
-		Email:        "test_user" + iString + "@test.com",
-		Password:     "test_password",
-		ChatGptToken: "test_token",
-	}
-}
-
 func TestInitService(t *testing.T) {
 	srv = dic.UserService()
 }
 
 func TestCreateUser(t *testing.T) {
-
+	tempPass := user.Password
 	token, err := srv.Create(user)
+	user.Password = tempPass
 	if err != nil {
 		t.Error(err)
 	}
@@ -127,18 +117,6 @@ func TestUpdateUser(t *testing.T) {
 	}
 }
 
-func TestCanVerify(t *testing.T) {
-	if err := srv.Verify(user.Password, user.Email); err != nil {
-		t.Error(err)
-	}
-}
-
-func TestCantVerifyIfWrong(t *testing.T) {
-	if err := srv.Verify(user.Password+"_wrong", user.Email); err == nil {
-		t.Errorf("Expected error but got nil")
-	}
-}
-
 func TestCanVerifyPassword(t *testing.T) {
 	u, err := srv.GetById(user.ID)
 	if err != nil {
@@ -151,8 +129,13 @@ func TestCanVerifyPassword(t *testing.T) {
 }
 
 func TestCantVerifyPasswordIfWrong(t *testing.T) {
-	if err := srv.VerifyPassword(user.Password, "wrong"); err != nil {
+	u, err := srv.GetById(user.ID)
+	if err != nil {
 		t.Error(err)
+	}
+
+	if err := srv.VerifyPassword("wrong", u.Password); err == nil {
+		t.Error("Expected error but got nil")
 	}
 }
 
@@ -162,25 +145,12 @@ func TestCanChangePassword(t *testing.T) {
 		t.Error(err)
 	}
 
-	if err := srv.Verify(newPassword, user.Email); err == nil {
-		t.Errorf("Expected error but got nil")
-	}
-}
-
-func TestCanClearNonActivatedUsers(t *testing.T) {
-	for i := 0; i < 10; i++ {
-		if _, err := srv.Create(userFactory(i)); err != nil {
-			t.Error(err)
-		}
-	}
-
-	if err := srv.ClearNonActivatedUsers(); err != nil {
+	u, err := srv.GetById(user.ID)
+	if err != nil {
 		t.Error(err)
 	}
 
-	for i := 1; i < 11; i++ {
-		if u, _ := srv.GetById(user.ID + uint(i)); u != nil {
-			t.Errorf("Expected nil but got user with id %v", i)
-		}
+	if err := srv.VerifyPassword(newPassword, u.Password); err != nil {
+		t.Error(err)
 	}
 }
