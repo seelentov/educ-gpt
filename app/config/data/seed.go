@@ -47,6 +47,10 @@ func adminSeed() {
 		if err := db.FirstOrCreate(&models.User{}, user).Error; err != nil {
 			log.Fatalf("Failed to create %s: %v", user.Name, err)
 		}
+	} else {
+		if err := db.Where("name = ? AND email = ?", user.Name, user.Email).First(user).Error; err != nil {
+			log.Fatalf("Failed to create %s: %v", user.Name, err)
+		}
 	}
 
 	if err := db.FirstOrCreate(&models.UserRoles{}, &models.UserRoles{UserID: user.ID, RoleID: 1}).Error; err != nil {
@@ -63,7 +67,7 @@ func usersSeed() {
 
 	for i := 0; i < 10; i++ {
 		iItoa := strconv.Itoa(i)
-		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(os.Getenv("user_user")), bcrypt.DefaultCost)
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte("user_user"), bcrypt.DefaultCost)
 
 		if err != nil {
 			log.Fatal(err)
@@ -86,6 +90,10 @@ func usersSeed() {
 
 		if !exists {
 			if err := db.FirstOrCreate(&models.User{}, user).Error; err != nil {
+				log.Fatalf("Failed to create %s: %v", user.Name, err)
+			}
+		} else {
+			if err := db.Where("name = ? AND email = ?", user.Name, user.Email).First(user).Error; err != nil {
 				log.Fatalf("Failed to create %s: %v", user.Name, err)
 			}
 		}
