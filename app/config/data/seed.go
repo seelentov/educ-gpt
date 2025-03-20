@@ -2,13 +2,12 @@ package data
 
 import (
 	"educ-gpt/models"
-	"errors"
-	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 	"log"
 	"os"
 	"strconv"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func Seed() {
@@ -23,7 +22,7 @@ func SeedMock() {
 }
 
 func adminSeed() {
-	now := time.Now()
+	activate_at := time.Time{}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(os.Getenv("ADMIN_PASSWORD")), bcrypt.DefaultCost)
 
@@ -35,32 +34,40 @@ func adminSeed() {
 		Name:       "admin",
 		Email:      os.Getenv("ADMIN_EMAIL"),
 		Password:   string(hashedPassword),
-		ActivateAt: &now,
-		CreatedAt:  now,
-		Roles: []*models.Role{
-			{
-				ID:   1,
-				Name: "ADMIN",
-			},
-		},
+		ActivateAt: &activate_at,
 	}
 
-	result := db.FirstOrCreate(&models.User{}, user)
-	if result.Error != nil && !errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		log.Fatalf("Failed to create %s: %v", user.Name, result.Error)
+	var exists bool
+
+	if err := db.Model(&models.User{}).Select("count(*) > 0").Where("name = ? OR email = ?", user.Name, user.Email).Find(&exists).Error; err != nil {
+		log.Fatalf("Failed to create %s: %v", user.Name, err)
 	}
 
-	log.Print("Users seed completed")
+	if !exists {
+		if err := db.FirstOrCreate(&models.User{}, user).Error; err != nil {
+			log.Fatalf("Failed to create %s: %v", user.Name, err)
+		}
+	} else {
+		if err := db.Where("name = ? AND email = ?", user.Name, user.Email).First(user).Error; err != nil {
+			log.Fatalf("Failed to create %s: %v", user.Name, err)
+		}
+	}
+
+	if err := db.FirstOrCreate(&models.UserRoles{}, &models.UserRoles{UserID: user.ID, RoleID: 1}).Error; err != nil {
+		log.Fatalf("Failed to create %s: %v", user.Name, err)
+	}
+
+	log.Print("Admin seed completed")
 }
 
 func usersSeed() {
-	now := time.Now()
+	activate_at := time.Time{}
 
 	users := make([]*models.User, 10)
 
 	for i := 0; i < 10; i++ {
 		iItoa := strconv.Itoa(i)
-		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(os.Getenv("user_user")), bcrypt.DefaultCost)
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte("user_user"), bcrypt.DefaultCost)
 
 		if err != nil {
 			log.Fatal(err)
@@ -70,21 +77,29 @@ func usersSeed() {
 			Name:       "user" + iItoa,
 			Email:      "user" + iItoa + "@educgpt.ru",
 			Password:   string(hashedPassword),
-			ActivateAt: &now,
-			CreatedAt:  now,
-			Roles: []*models.Role{
-				{
-					ID:   2,
-					Name: "USER",
-				},
-			},
+			ActivateAt: &activate_at,
 		}
 	}
 
 	for _, user := range users {
-		result := db.FirstOrCreate(&models.User{}, &user)
-		if result.Error != nil && !errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			log.Fatalf("Failed to create %s: %v", user.Name, result.Error)
+		var exists bool
+
+		if err := db.Model(&models.User{}).Select("count(*) > 0").Where("name = ? OR email = ?", user.Name, user.Email).Find(&exists).Error; err != nil {
+			log.Fatalf("Failed to create %s: %v", user.Name, err)
+		}
+
+		if !exists {
+			if err := db.FirstOrCreate(&models.User{}, user).Error; err != nil {
+				log.Fatalf("Failed to create %s: %v", user.Name, err)
+			}
+		} else {
+			if err := db.Where("name = ? AND email = ?", user.Name, user.Email).First(user).Error; err != nil {
+				log.Fatalf("Failed to create %s: %v", user.Name, err)
+			}
+		}
+
+		if err := db.FirstOrCreate(&models.UserRoles{}, &models.UserRoles{UserID: user.ID, RoleID: 1}).Error; err != nil {
+			log.Fatalf("Failed to create %s: %v", user.Name, err)
 		}
 	}
 
@@ -99,7 +114,7 @@ func rolesSeed() {
 
 	for _, roleName := range sRoleNames {
 		result := db.FirstOrCreate(&models.Role{}, &models.Role{Name: roleName})
-		if result.Error != nil && !errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		if result.Error != nil {
 			log.Fatalf("Failed to create role %s: %v", sRoleNames, result.Error)
 		}
 	}
@@ -141,7 +156,7 @@ func topicsSeed() {
 
 	for _, topicTheme := range sTopicThemes {
 		result := db.FirstOrCreate(&models.Topic{}, &models.Topic{Title: topicTheme})
-		if result.Error != nil && !errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		if result.Error != nil {
 			log.Fatalf("Failed to create theme %s: %v", topicTheme, result.Error)
 		}
 	}
