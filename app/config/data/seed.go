@@ -2,7 +2,9 @@ package data
 
 import (
 	"educ-gpt/models"
+	"errors"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 	"log"
 	"os"
 	"strconv"
@@ -44,7 +46,7 @@ func adminSeed() {
 	}
 
 	result := db.FirstOrCreate(&models.User{}, user)
-	if result.Error != nil {
+	if result.Error != nil && !errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		log.Fatalf("Failed to create %s: %v", user.Name, result.Error)
 	}
 
@@ -81,7 +83,7 @@ func usersSeed() {
 
 	for _, user := range users {
 		result := db.FirstOrCreate(&models.User{}, &user)
-		if result.Error != nil {
+		if result.Error != nil && !errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			log.Fatalf("Failed to create %s: %v", user.Name, result.Error)
 		}
 	}
@@ -97,7 +99,7 @@ func rolesSeed() {
 
 	for _, roleName := range sRoleNames {
 		result := db.FirstOrCreate(&models.Role{}, &models.Role{Name: roleName})
-		if result.Error != nil {
+		if result.Error != nil && !errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			log.Fatalf("Failed to create role %s: %v", sRoleNames, result.Error)
 		}
 	}
@@ -139,7 +141,7 @@ func topicsSeed() {
 
 	for _, topicTheme := range sTopicThemes {
 		result := db.FirstOrCreate(&models.Topic{}, &models.Topic{Title: topicTheme})
-		if result.Error != nil {
+		if result.Error != nil && !errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			log.Fatalf("Failed to create theme %s: %v", topicTheme, result.Error)
 		}
 	}
