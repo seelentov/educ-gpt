@@ -38,13 +38,11 @@ func adminSeed() {
 		CreatedAt:  activate_at,
 	}
 
-	result := db.FirstOrCreate(&models.User{}, user)
-	if result.Error != nil {
+	if db.FirstOrCreate(&models.User{}, user).Error != nil {
 		log.Fatalf("Failed to create %s: %v", user.Name, result.Error)
 	}
 
-	result := db.FirstOrCreate(&models.UserRoles{}, &models.UserRoles{UserID: user.ID, RoleID: 1})
-	if result.Error != nil {
+	if db.FirstOrCreate(&models.UserRoles{}, &models.UserRoles{UserID: user.ID, RoleID: 1}).Error != nil {
 		log.Fatalf("Failed to create %s: %v", user.Name, result.Error)
 	}
 
@@ -74,13 +72,11 @@ func usersSeed() {
 	}
 
 	for _, user := range users {
-		result := db.FirstOrCreate(&models.User{}, &user)
-		if result.Error != nil {
+		if db.FirstOrCreate(&models.User{}, user).Error != nil {
 			log.Fatalf("Failed to create %s: %v", user.Name, result.Error)
 		}
 
-		result := db.FirstOrCreate(&models.UserRoles{}, &models.UserRoles{UserID: user.ID, RoleID: 2})
-		if result.Error != nil {
+		if db.FirstOrCreate(&models.UserRoles{}, &models.UserRoles{UserID: user.ID, RoleID: 1}).Error != nil {
 			log.Fatalf("Failed to create %s: %v", user.Name, result.Error)
 		}
 	}
