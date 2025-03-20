@@ -8,6 +8,7 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"log"
+	"os"
 )
 
 var (
@@ -30,12 +31,6 @@ var ms = []interface{}{
 
 var db *gorm.DB
 
-var dbConfig *DBconfig
-
-func SetDBConfig(config *DBconfig) {
-	dbConfig = config
-}
-
 func SwitchToMock() error {
 	mockGormDB, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
 	if err != nil {
@@ -57,6 +52,15 @@ func SwitchToMock() error {
 
 func DB() *gorm.DB {
 	if db == nil {
+		dbConfig := &DBconfig{
+			Host:     os.Getenv("DB_HOST"),
+			Port:     os.Getenv("DB_PORT"),
+			User:     os.Getenv("DB_USER"),
+			Password: os.Getenv("DB_PASS"),
+			Name:     os.Getenv("DB_NAME"),
+			SSLmode:  os.Getenv("DB_SSL"),
+		}
+
 		database, err := gorm.Open(postgres.Open(dbConfig.String()), &gorm.Config{})
 		if err != nil {
 			log.Fatal(fmt.Errorf("%w: %w", ErrFailedLoadDB, err))

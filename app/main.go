@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"educ-gpt/config/data"
 	"educ-gpt/config/dic"
 	"educ-gpt/http/router"
@@ -21,14 +22,14 @@ func main() {
 		log.Fatal("ERR: godotenv.Load(): Error loading .env file")
 	}
 
-	data.SetDBConfig(&data.DBconfig{
-		Host:     os.Getenv("DB_HOST"),
-		Port:     os.Getenv("DB_PORT"),
-		User:     os.Getenv("DB_USER"),
-		Password: os.Getenv("DB_PASS"),
-		Name:     os.Getenv("DB_NAME"),
-		SSLmode:  os.Getenv("DB_SSL"),
-	})
+	db, _ := data.DB().DB()
+	if err := db.Ping(); err != nil {
+		log.Fatalf("ERR: DB: %s\n", err)
+	}
+
+	if err := data.Redis().Ping(context.Background()).Err(); err != nil {
+		log.Fatalf("ERR: Redis: %s\n", err)
+	}
 
 	r := router.NewRouter()
 
