@@ -48,7 +48,7 @@ func adminSeed() {
 		log.Fatalf("Failed to create %s: %v", user.Name, result.Error)
 	}
 
-	log.Print("Users seed completed")
+	log.Print("Admin seed completed")
 }
 
 func usersSeed() {
