@@ -35,7 +35,6 @@ func adminSeed() {
 		Email:      os.Getenv("ADMIN_EMAIL"),
 		Password:   string(hashedPassword),
 		ActivateAt: &activate_at,
-		CreatedAt:  activate_at,
 	}
 
 	if err := db.FirstOrCreate(&models.User{}, user).Error; err != nil {
@@ -67,7 +66,6 @@ func usersSeed() {
 			Email:      "user" + iItoa + "@educgpt.ru",
 			Password:   string(hashedPassword),
 			ActivateAt: &activate_at,
-			CreatedAt:  activate_at,
 		}
 	}
 
