@@ -35,7 +35,7 @@ func (s SenderServiceImpl) SendMessageByWorker(to, subject, body string) error {
 		return fmt.Errorf("%w:%w", services.ErrQueuedMail, err)
 	}
 
-	err = s.redisClient.RPush(ctx, "email_sender", taskJSON).Err()
+	err = s.redisClient.RPush(ctx, s.queueName, taskJSON).Err()
 	if err != nil {
 		s.logger.Error("failed to push task to redis", zap.Error(err))
 		return fmt.Errorf("%w:%w", services.ErrQueuedMail, err)

@@ -14,6 +14,6 @@ type User struct {
 	ActivateAt    *time.Time   `json:"-"`
 	CreatedAt     time.Time    `json:"-" sql:"DEFAULT:current_timestamp"`
 	Roles         []*Role      `gorm:"many2many:user_roles;constraint:OnDelete:CASCADE" json:"-"`
-	Themes        []*UserTheme `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;" json:"-"` // Уточнено
+	Themes        []*UserTheme `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;" json:"-"`
 	Dialogs       []*Dialog    `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;" json:"-"`
 }

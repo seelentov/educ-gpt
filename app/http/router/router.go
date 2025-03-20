@@ -32,7 +32,7 @@ func NewRouter() *gin.Engine {
 			authGroup := v1.Group("/auth")
 			{
 				authGroup.POST("/register", dic.AuthController().Register)
-				authGroup.POST("/me", dic.RequiredAuthMiddleware(), dic.AuthController().Me)
+				authGroup.POST("/me", dic.AuthController().Me)
 				authGroup.POST("/login", dic.AuthController().Login)
 				authGroup.POST("/refresh", dic.AuthController().Refresh)
 				authGroup.POST("/activate/:key", dic.AuthController().Activate)
