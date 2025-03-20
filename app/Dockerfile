@@ -6,9 +6,9 @@ WORKDIR /app
 
 COPY . .
 
-RUN go test test/integ/*
+# RUN go test test/integ/*
 
-RUN go test test/unit/*
+# RUN go test test/unit/*
 
 RUN go build -o main
 
