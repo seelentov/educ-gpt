@@ -38,12 +38,12 @@ func adminSeed() {
 		CreatedAt:  activate_at,
 	}
 
-	if db.FirstOrCreate(&models.User{}, user).Error != nil {
-		log.Fatalf("Failed to create %s: %v", user.Name, result.Error)
+	if err := db.FirstOrCreate(&models.User{}, user).Error; err != nil {
+		log.Fatalf("Failed to create %s: %v", user.Name, err)
 	}
 
-	if db.FirstOrCreate(&models.UserRoles{}, &models.UserRoles{UserID: user.ID, RoleID: 1}).Error != nil {
-		log.Fatalf("Failed to create %s: %v", user.Name, result.Error)
+	if err := db.FirstOrCreate(&models.UserRoles{}, &models.UserRoles{UserID: user.ID, RoleID: 1}).Error; err != nil {
+		log.Fatalf("Failed to create %s: %v", user.Name, err)
 	}
 
 	log.Print("Admin seed completed")
@@ -72,12 +72,12 @@ func usersSeed() {
 	}
 
 	for _, user := range users {
-		if db.FirstOrCreate(&models.User{}, user).Error != nil {
-			log.Fatalf("Failed to create %s: %v", user.Name, result.Error)
+		if err := db.FirstOrCreate(&models.User{}, user).Error; err != nil {
+			log.Fatalf("Failed to create %s: %v", user.Name, err)
 		}
 
-		if db.FirstOrCreate(&models.UserRoles{}, &models.UserRoles{UserID: user.ID, RoleID: 1}).Error != nil {
-			log.Fatalf("Failed to create %s: %v", user.Name, result.Error)
+		if err := db.FirstOrCreate(&models.UserRoles{}, &models.UserRoles{UserID: user.ID, RoleID: 1}).Error; err != nil {
+			log.Fatalf("Failed to create %s: %v", user.Name, err)
 		}
 	}
 
