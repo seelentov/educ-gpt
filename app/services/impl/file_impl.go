@@ -1,6 +1,7 @@
-package services
+package impl
 
 import (
+	"educ-gpt/services"
 	"educ-gpt/utils/securityutils"
 	"errors"
 	"fmt"
@@ -77,6 +78,6 @@ func (f FileServiceImpl) DeleteFile(filePath string) (bool, error) {
 	return true, nil
 }
 
-func NewFileServiceImpl(logger *zap.Logger, storagePrefix string) FileService {
+func NewFileServiceImpl(logger *zap.Logger, storagePrefix string) services.FileService {
 	return &FileServiceImpl{logger, storagePrefix}
 }

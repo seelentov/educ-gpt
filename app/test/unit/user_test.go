@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	srv services.UserService
+	userSrv services.UserService
 
 	activationToken string
 
@@ -21,12 +21,12 @@ var (
 )
 
 func TestInitService(t *testing.T) {
-	srv = dic.UserService()
+	userSrv = dic.UserService()
 }
 
 func TestCreateUser(t *testing.T) {
 	tempPass := user.Password
-	token, err := srv.Create(user)
+	token, err := userSrv.Create(user)
 	user.Password = tempPass
 	if err != nil {
 		t.Error(err)
@@ -36,14 +36,14 @@ func TestCreateUser(t *testing.T) {
 }
 
 func TestActivateUser(t *testing.T) {
-	err := srv.Activate(activationToken)
+	err := userSrv.Activate(activationToken)
 	if err != nil {
 		t.Error(err)
 	}
 }
 
 func TestGetUserById(t *testing.T) {
-	u, err := srv.GetById(user.ID)
+	u, err := userSrv.GetById(user.ID)
 	if err != nil {
 		t.Error(err)
 	}
@@ -54,7 +54,7 @@ func TestGetUserById(t *testing.T) {
 }
 
 func TestGetUserByName(t *testing.T) {
-	u, err := srv.GetByName(user.Name)
+	u, err := userSrv.GetByName(user.Name)
 	if err != nil {
 		t.Error(err)
 	}
@@ -65,7 +65,7 @@ func TestGetUserByName(t *testing.T) {
 }
 
 func TestGetUserByEmail(t *testing.T) {
-	u, err := srv.GetByEmail(user.Email)
+	u, err := userSrv.GetByEmail(user.Email)
 	if err != nil {
 		t.Error(err)
 	}
@@ -76,7 +76,7 @@ func TestGetUserByEmail(t *testing.T) {
 }
 
 func TestGetUserByCredential(t *testing.T) {
-	u, err := srv.GetByCredential(user.Name)
+	u, err := userSrv.GetByCredential(user.Name)
 	if err != nil {
 		t.Error(err)
 	}
@@ -85,7 +85,7 @@ func TestGetUserByCredential(t *testing.T) {
 		t.Errorf("Expected user but got nil")
 	}
 
-	u, err = srv.GetByCredential(user.Email)
+	u, err = userSrv.GetByCredential(user.Email)
 	if err != nil {
 		t.Error(err)
 	}
@@ -102,11 +102,11 @@ func TestUpdateUser(t *testing.T) {
 
 	updatesMap["name"] = newName
 
-	if err := srv.Update(user.ID, updatesMap); err != nil {
+	if err := userSrv.Update(user.ID, updatesMap); err != nil {
 		t.Error(err)
 	}
 
-	u, err := srv.GetById(user.ID)
+	u, err := userSrv.GetById(user.ID)
 
 	if err != nil {
 		t.Error(err)
@@ -118,39 +118,39 @@ func TestUpdateUser(t *testing.T) {
 }
 
 func TestCanVerifyPassword(t *testing.T) {
-	u, err := srv.GetById(user.ID)
+	u, err := userSrv.GetById(user.ID)
 	if err != nil {
 		t.Error(err)
 	}
 
-	if err := srv.VerifyPassword(user.Password, u.Password); err != nil {
+	if err := userSrv.VerifyPassword(user.Password, u.Password); err != nil {
 		t.Error(err)
 	}
 }
 
 func TestCantVerifyPasswordIfWrong(t *testing.T) {
-	u, err := srv.GetById(user.ID)
+	u, err := userSrv.GetById(user.ID)
 	if err != nil {
 		t.Error(err)
 	}
 
-	if err := srv.VerifyPassword("wrong", u.Password); err == nil {
+	if err := userSrv.VerifyPassword("wrong", u.Password); err == nil {
 		t.Error("Expected error but got nil")
 	}
 }
 
 func TestCanChangePassword(t *testing.T) {
 	newPassword := "test_new_password"
-	if err := srv.ChangePassword(user.ID, newPassword); err != nil {
+	if err := userSrv.ChangePassword(user.ID, newPassword); err != nil {
 		t.Error(err)
 	}
 
-	u, err := srv.GetById(user.ID)
+	u, err := userSrv.GetById(user.ID)
 	if err != nil {
 		t.Error(err)
 	}
 
-	if err := srv.VerifyPassword(newPassword, u.Password); err != nil {
+	if err := userSrv.VerifyPassword(newPassword, u.Password); err != nil {
 		t.Error(err)
 	}
 }

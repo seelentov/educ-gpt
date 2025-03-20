@@ -49,7 +49,7 @@ func SwitchToMock() error {
 
 	log.Print("DB switched to in-memory SQLite version")
 
-	Seed()
+	SeedMock()
 
 	return nil
 }

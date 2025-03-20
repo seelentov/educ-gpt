@@ -1,7 +1,8 @@
-package services
+package impl
 
 import (
 	"educ-gpt/models"
+	"educ-gpt/services"
 	"fmt"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -25,12 +26,12 @@ func (r RoleServiceImpl) GetRoleByName(name string) (*models.Role, error) {
 	roles, err := r.getBy("name", name)
 	if err != nil {
 		r.logger.Error("Error retrieving role by name", zap.Error(err))
-		return nil, fmt.Errorf("%w:%w", ErrRetrievingRole, err)
+		return nil, fmt.Errorf("%w:%w", services.ErrRetrievingRole, err)
 	}
 
 	if len(roles) == 0 {
 		r.logger.Error("Role by name not found", zap.Error(gorm.ErrRecordNotFound))
-		return nil, fmt.Errorf("%w:%w", gorm.ErrRecordNotFound, ErrRetrievingRole)
+		return nil, fmt.Errorf("%w:%w", gorm.ErrRecordNotFound, services.ErrRetrievingRole)
 	}
 
 	return roles[0], nil
@@ -40,7 +41,7 @@ func (r RoleServiceImpl) GetUsersByName(name string) ([]*models.User, error) {
 	role, err := r.GetRoleByName(name)
 	if err != nil {
 		r.logger.Error("Error retrieving role by name", zap.Error(err))
-		return nil, fmt.Errorf("%w:%w", ErrRetrievingRole, err)
+		return nil, fmt.Errorf("%w:%w", services.ErrRetrievingRole, err)
 	}
 
 	var users []*models.User
@@ -51,7 +52,7 @@ func (r RoleServiceImpl) GetUsersByName(name string) ([]*models.User, error) {
 
 	if result.Error != nil {
 		r.logger.Error("Error retrieving roles by user ID", zap.Error(result.Error))
-		return nil, fmt.Errorf("%w: %w", ErrRetrievingRole, result.Error)
+		return nil, fmt.Errorf("%w: %w", services.ErrRetrievingRole, result.Error)
 	}
 
 	return users, nil
@@ -66,7 +67,7 @@ func (r RoleServiceImpl) GetRolesByUserId(userId uint) ([]*models.Role, error) {
 
 	if result.Error != nil {
 		r.logger.Error("Error retrieving roles by user ID", zap.Error(result.Error))
-		return nil, fmt.Errorf("%w: %w", ErrRetrievingRole, result.Error)
+		return nil, fmt.Errorf("%w: %w", services.ErrRetrievingRole, result.Error)
 	}
 
 	return roles, nil
@@ -83,7 +84,7 @@ func (r RoleServiceImpl) getByWhere(query interface{}, args ...interface{}) ([]*
 
 	if result.Error != nil {
 		r.logger.Error("Error retrieving roles", zap.Error(result.Error))
-		return nil, fmt.Errorf("%w: %w", ErrRetrievingRole, result.Error)
+		return nil, fmt.Errorf("%w: %w", services.ErrRetrievingRole, result.Error)
 	}
 
 	return roles, nil

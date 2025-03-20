@@ -3,11 +3,77 @@ package data
 import (
 	"educ-gpt/models"
 	"log"
+	"os"
+	"strconv"
+	"time"
 )
 
 func Seed() {
 	rolesSeed()
 	topicsSeed()
+	adminSeed()
+}
+
+func SeedMock() {
+	Seed()
+	usersSeed()
+}
+
+func adminSeed() {
+	now := time.Now()
+
+	user := &models.User{
+		Name:       "admin",
+		Email:      os.Getenv("ADMIN_EMAIL"),
+		Password:   os.Getenv("ADMIN_PASSWORD"),
+		ActivateAt: &now,
+		CreatedAt:  now,
+		Roles: []*models.Role{
+			{
+				ID:   1,
+				Name: "ADMIN",
+			},
+		},
+	}
+
+	result := db.FirstOrCreate(&models.User{}, user)
+	if result.Error != nil {
+		log.Fatalf("Failed to create %s: %v", user.Name, result.Error)
+	}
+
+	log.Print("Users seed completed")
+}
+
+func usersSeed() {
+	now := time.Now()
+
+	users := make([]*models.User, 10)
+
+	for i := 0; i < 10; i++ {
+		iItoa := strconv.Itoa(i)
+		users[i] = &models.User{
+			Name:       "user" + iItoa,
+			Email:      "user" + iItoa + "@educgpt.ru",
+			Password:   "user_user",
+			ActivateAt: &now,
+			CreatedAt:  now,
+			Roles: []*models.Role{
+				{
+					ID:   2,
+					Name: "USER",
+				},
+			},
+		}
+	}
+
+	for _, user := range users {
+		result := db.FirstOrCreate(&models.User{}, &user)
+		if result.Error != nil {
+			log.Fatalf("Failed to create %s: %v", user.Name, result.Error)
+		}
+	}
+
+	log.Print("Users seed completed")
 }
 
 func rolesSeed() {

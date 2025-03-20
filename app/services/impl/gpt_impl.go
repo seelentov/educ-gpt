@@ -1,8 +1,9 @@
-package services
+package impl
 
 import (
 	"bytes"
 	"educ-gpt/models"
+	"educ-gpt/services"
 	"encoding/json"
 	"fmt"
 	"go.uber.org/zap"
@@ -34,7 +35,7 @@ func (g GptServiceImpl) GetAnswer(token string, model string, dialog []*models.D
 	req, err := http.NewRequest("POST", "https://api.openai.com/v1/chat/completions", bytes.NewBuffer([]byte(body)))
 	if err != nil {
 		g.logger.Error("failed to send request", zap.Error(err))
-		return fmt.Errorf("%w:%w", ErrRequestFailed, err)
+		return fmt.Errorf("%w:%w", services.ErrRequestFailed, err)
 	}
 
 	req.Header.Add("Content-Type", "application/json;charset=utf-8")
@@ -47,7 +48,7 @@ func (g GptServiceImpl) GetAnswer(token string, model string, dialog []*models.D
 
 	if err != nil {
 		g.logger.Error("failed to send request", zap.Error(err))
-		return fmt.Errorf("%w:%w", ErrRequestFailed, err)
+		return fmt.Errorf("%w:%w", services.ErrRequestFailed, err)
 	}
 
 	defer resp.Body.Close()
@@ -55,20 +56,20 @@ func (g GptServiceImpl) GetAnswer(token string, model string, dialog []*models.D
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		g.logger.Error("failed to send request", zap.Error(err))
-		return fmt.Errorf("%w:%w", ErrParseFailed, err)
+		return fmt.Errorf("%w:%w", services.ErrParseFailed, err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		g.logger.Error("failed to send request", zap.Error(err))
-		return fmt.Errorf("%w:%v:%s", ErrAIRequestFailed, resp.StatusCode, bodyBytes)
+		return fmt.Errorf("%w:%v:%s", services.ErrAIRequestFailed, resp.StatusCode, bodyBytes)
 	}
 
-	tempTarget := &GptResponse{}
+	tempTarget := &services.GptResponse{}
 
 	err = json.Unmarshal(bodyBytes, tempTarget)
 	if err != nil {
 		g.logger.Error("failed to send request", zap.Error(err))
-		return fmt.Errorf("%w:%w", ErrParseResFailed, err)
+		return fmt.Errorf("%w:%w", services.ErrParseResFailed, err)
 	}
 
 	msg := tempTarget.Choices[len(tempTarget.Choices)-1].Message.Content
@@ -86,12 +87,12 @@ func (g GptServiceImpl) GetAnswer(token string, model string, dialog []*models.D
 	err = json.Unmarshal([]byte(msg), &target)
 	if err != nil {
 		g.logger.Error("failed to send request", zap.Error(err))
-		return fmt.Errorf("%w:%w", ErrParseFailed, err)
+		return fmt.Errorf("%w:%w", services.ErrParseFailed, err)
 	}
 
 	return nil
 }
 
-func NewGptService(logger *zap.Logger) GptService {
+func NewGptService(logger *zap.Logger) services.GptService {
 	return &GptServiceImpl{logger}
 }

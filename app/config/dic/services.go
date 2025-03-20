@@ -4,6 +4,7 @@ import (
 	"educ-gpt/config/data"
 	"educ-gpt/config/logger"
 	"educ-gpt/services"
+	"educ-gpt/services/impl"
 	"log"
 	"os"
 	"strconv"
@@ -13,7 +14,7 @@ var userService services.UserService
 
 func UserService() services.UserService {
 	if userService == nil {
-		userService = services.NewUserServiceImpl(
+		userService = impl.NewUserServiceImpl(
 			data.DB(),
 			logger.Logger(),
 			os.Getenv("AUTH_DEFAULT_ROLE"),
@@ -28,7 +29,7 @@ var roleService services.RoleService
 
 func RoleService() services.RoleService {
 	if roleService == nil {
-		roleService = services.NewRoleServiceImpl(
+		roleService = impl.NewRoleServiceImpl(
 			data.DB(),
 			logger.Logger(),
 			os.Getenv("AUTH_DEFAULT_ROLE"),
@@ -43,7 +44,7 @@ var roadmapService services.RoadmapService
 
 func RoadmapService() services.RoadmapService {
 	if roadmapService == nil {
-		roadmapService = services.NewRoadmapServiceImpl(
+		roadmapService = impl.NewRoadmapServiceImpl(
 			data.DB(),
 			logger.Logger(),
 		)
@@ -57,7 +58,7 @@ var promptService services.PromptService
 
 func PromptService() services.PromptService {
 	if promptService == nil {
-		promptService = services.NewPromptServiceImpl()
+		promptService = impl.NewPromptServiceImpl()
 		log.Print("PromptService initialized")
 	}
 
@@ -81,7 +82,7 @@ func JwtService() services.JwtService {
 			log.Fatal(err)
 		}
 
-		jwtService = services.NewJwtServiceImpl(
+		jwtService = impl.NewJwtServiceImpl(
 			os.Getenv("JWT_SECRET"),
 			os.Getenv("JWT_REFRESH_SECRET"),
 			jwtExpiration,
@@ -98,7 +99,7 @@ var gptService services.GptService
 
 func GptService() services.GptService {
 	if gptService == nil {
-		gptService = services.NewGptService(
+		gptService = impl.NewGptService(
 			logger.Logger(),
 		)
 		log.Print("GptService initialized")
@@ -116,7 +117,7 @@ func SenderService() services.SenderService {
 	}
 
 	if senderService == nil {
-		senderService = services.NewSenderServiceImpl(
+		senderService = impl.NewSenderServiceImpl(
 			os.Getenv("SMTP_HOST"),
 			int(smtpPort),
 			os.Getenv("SMTP_USERNAME"),
@@ -136,7 +137,7 @@ var mailService services.MailService
 
 func MailService() services.MailService {
 	if mailService == nil {
-		mailService = services.NewMailServiceImpl(
+		mailService = impl.NewMailServiceImpl(
 			os.Getenv("PROTOCOL"),
 			os.Getenv("FULL_HOST"),
 			"activate",
@@ -154,7 +155,7 @@ var tokenService services.TokenService
 
 func TokenService() services.TokenService {
 	if tokenService == nil {
-		tokenService = services.NewTokenServiceImpl(
+		tokenService = impl.NewTokenServiceImpl(
 			data.DB(),
 			logger.Logger(),
 		)
@@ -168,7 +169,7 @@ var fileService services.FileService
 
 func FileService() services.FileService {
 	if fileService == nil {
-		fileService = services.NewFileServiceImpl(
+		fileService = impl.NewFileServiceImpl(
 			logger.Logger(),
 			"/storage",
 		)
@@ -182,7 +183,7 @@ var dialogService services.DialogService
 
 func DialogService() services.DialogService {
 	if dialogService == nil {
-		dialogService = services.NewDialogService(
+		dialogService = impl.NewDialogService(
 			data.DB(),
 			logger.Logger(),
 		)

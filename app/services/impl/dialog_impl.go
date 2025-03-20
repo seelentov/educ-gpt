@@ -1,7 +1,8 @@
-package services
+package impl
 
 import (
 	"educ-gpt/models"
+	"educ-gpt/services"
 	"fmt"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -15,7 +16,7 @@ type DialogServiceImpl struct {
 func (d DialogServiceImpl) RemoveDialog(dialogID uint) error {
 	if err := d.db.Model(&models.Dialog{}).Where("id = ?", dialogID).Delete(&models.Dialog{}).Error; err != nil {
 		d.logger.Error("RemoveDialog error", zap.Error(err))
-		return fmt.Errorf("%w:%w", ErrDeleteDialog, err)
+		return fmt.Errorf("%w:%w", services.ErrDeleteDialog, err)
 	}
 
 	return nil
@@ -30,7 +31,7 @@ func (d DialogServiceImpl) GetDialogsByUserID(userID uint) ([]*models.Dialog, er
 		}).
 		Find(&dialog).Error; err != nil {
 		d.logger.Error("GetDialogs error", zap.Error(err))
-		return nil, fmt.Errorf("%w:%w", ErrGetDialogs, err)
+		return nil, fmt.Errorf("%w:%w", services.ErrGetDialogs, err)
 	}
 
 	return dialog, nil
@@ -40,7 +41,7 @@ func (d DialogServiceImpl) GetDialog(dialogID uint) (*models.Dialog, error) {
 	var dialog models.Dialog
 	if err := d.db.Model(&models.Dialog{}).Where("id = ?", dialogID).Preload("DialogItems").First(&dialog).Error; err != nil {
 		d.logger.Error("GetDialog error", zap.Error(err))
-		return nil, fmt.Errorf("%w:%w", ErrDialogNotFound, err)
+		return nil, fmt.Errorf("%w:%w", services.ErrDialogNotFound, err)
 	}
 
 	return &dialog, nil
@@ -49,7 +50,7 @@ func (d DialogServiceImpl) GetDialog(dialogID uint) (*models.Dialog, error) {
 func (d DialogServiceImpl) AddDialogItem(dialogItem *models.DialogItem) error {
 	if err := d.db.Create(dialogItem).Error; err != nil {
 		d.logger.Error("AddDialogItem error", zap.Error(err))
-		return fmt.Errorf("%w:%w", ErrAddDialogItem, err)
+		return fmt.Errorf("%w:%w", services.ErrAddDialogItem, err)
 	}
 
 	return nil
@@ -58,12 +59,12 @@ func (d DialogServiceImpl) AddDialogItem(dialogItem *models.DialogItem) error {
 func (d DialogServiceImpl) CreateDialog(dialog *models.Dialog) (*models.Dialog, error) {
 	if err := d.db.Create(&dialog).Error; err != nil {
 		d.logger.Error("CreateDialog error", zap.Error(err))
-		return nil, fmt.Errorf("%w:%w", ErrCreateDialog, err)
+		return nil, fmt.Errorf("%w:%w", services.ErrCreateDialog, err)
 	}
 
 	return dialog, nil
 }
 
-func NewDialogService(db *gorm.DB, logger *zap.Logger) DialogService {
+func NewDialogService(db *gorm.DB, logger *zap.Logger) services.DialogService {
 	return &DialogServiceImpl{db, logger}
 }

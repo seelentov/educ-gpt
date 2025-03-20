@@ -1,7 +1,8 @@
-package services
+package impl
 
 import (
 	"educ-gpt/models"
+	"educ-gpt/services"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
@@ -110,6 +111,6 @@ func (p PromptServiceImpl) VerifyAnswer(problem string, answer string, language 
 	return fmt.Sprintf(prompt, problem, answer, language)
 }
 
-func NewPromptServiceImpl() PromptService {
+func NewPromptServiceImpl() services.PromptService {
 	return &PromptServiceImpl{}
 }
