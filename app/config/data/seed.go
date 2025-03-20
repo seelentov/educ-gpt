@@ -39,7 +39,7 @@ func adminSeed() {
 
 	var exists bool
 
-	if err := db.Model(model).Select("count(*) > 0").Where("name = ? OR email = ?", user.Name, user.Email).Find(&exists).Error; err != nil {
+	if err := db.Model(&models.User{}).Select("count(*) > 0").Where("name = ? OR email = ?", user.Name, user.Email).Find(&exists).Error; err != nil {
 		log.Fatalf("Failed to create %s: %v", user.Name, err)
 	}
 
@@ -80,7 +80,7 @@ func usersSeed() {
 	for _, user := range users {
 		var exists bool
 
-		if err := db.Model(model).Select("count(*) > 0").Where("name = ? OR email = ?", user.Name, user.Email).Find(&exists).Error; err != nil {
+		if err := db.Model(&models.User{}).Select("count(*) > 0").Where("name = ? OR email = ?", user.Name, user.Email).Find(&exists).Error; err != nil {
 			log.Fatalf("Failed to create %s: %v", user.Name, err)
 		}
 
