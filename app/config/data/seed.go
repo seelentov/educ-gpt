@@ -37,8 +37,16 @@ func adminSeed() {
 		ActivateAt: &activate_at,
 	}
 
-	if err := db.FirstOrCreate(&models.User{}, user).Error; err != nil {
+	var exists bool
+
+	if err := db.Model(model).Select("count(*) > 0").Where("name = ? OR email = ?", user.Name, user.Email).Find(&exists).Error; err != nil {
 		log.Fatalf("Failed to create %s: %v", user.Name, err)
+	}
+
+	if !exists {
+		if err := db.FirstOrCreate(&models.User{}, user).Error; err != nil {
+			log.Fatalf("Failed to create %s: %v", user.Name, err)
+		}
 	}
 
 	if err := db.FirstOrCreate(&models.UserRoles{}, &models.UserRoles{UserID: user.ID, RoleID: 1}).Error; err != nil {
@@ -70,8 +78,16 @@ func usersSeed() {
 	}
 
 	for _, user := range users {
-		if err := db.FirstOrCreate(&models.User{}, user).Error; err != nil {
+		var exists bool
+
+		if err := db.Model(model).Select("count(*) > 0").Where("name = ? OR email = ?", user.Name, user.Email).Find(&exists).Error; err != nil {
 			log.Fatalf("Failed to create %s: %v", user.Name, err)
+		}
+
+		if !exists {
+			if err := db.FirstOrCreate(&models.User{}, user).Error; err != nil {
+				log.Fatalf("Failed to create %s: %v", user.Name, err)
+			}
 		}
 
 		if err := db.FirstOrCreate(&models.UserRoles{}, &models.UserRoles{UserID: user.ID, RoleID: 1}).Error; err != nil {
