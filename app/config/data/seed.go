@@ -2,13 +2,12 @@ package data
 
 import (
 	"educ-gpt/models"
-	"errors"
-	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 	"log"
 	"os"
 	"strconv"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func Seed() {
@@ -23,7 +22,7 @@ func SeedMock() {
 }
 
 func adminSeed() {
-	now := time.Now()
+	activate_at := time.Time{}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(os.Getenv("ADMIN_PASSWORD")), bcrypt.DefaultCost)
 
@@ -35,18 +34,17 @@ func adminSeed() {
 		Name:       "admin",
 		Email:      os.Getenv("ADMIN_EMAIL"),
 		Password:   string(hashedPassword),
-		ActivateAt: &now,
-		CreatedAt:  now,
-		Roles: []*models.Role{
-			{
-				ID:   1,
-				Name: "ADMIN",
-			},
-		},
+		ActivateAt: &activate_at,
+		CreatedAt:  activate_at,
 	}
 
 	result := db.FirstOrCreate(&models.User{}, user)
-	if result.Error != nil && !errors.Is(result.Error, gorm.ErrRecordNotFound) {
+	if result.Error != nil {
+		log.Fatalf("Failed to create %s: %v", user.Name, result.Error)
+	}
+
+	result := db.FirstOrCreate(&models.UserRoles{}, &models.UserRoles{UserID: user.ID, RoleID: 1})
+	if result.Error != nil {
 		log.Fatalf("Failed to create %s: %v", user.Name, result.Error)
 	}
 
@@ -54,7 +52,7 @@ func adminSeed() {
 }
 
 func usersSeed() {
-	now := time.Now()
+	activate_at := time.Time{}
 
 	users := make([]*models.User, 10)
 
@@ -70,20 +68,19 @@ func usersSeed() {
 			Name:       "user" + iItoa,
 			Email:      "user" + iItoa + "@educgpt.ru",
 			Password:   string(hashedPassword),
-			ActivateAt: &now,
-			CreatedAt:  now,
-			Roles: []*models.Role{
-				{
-					ID:   2,
-					Name: "USER",
-				},
-			},
+			ActivateAt: &activate_at,
+			CreatedAt:  activate_at,
 		}
 	}
 
 	for _, user := range users {
 		result := db.FirstOrCreate(&models.User{}, &user)
-		if result.Error != nil && !errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		if result.Error != nil {
+			log.Fatalf("Failed to create %s: %v", user.Name, result.Error)
+		}
+
+		result := db.FirstOrCreate(&models.UserRoles{}, &models.UserRoles{UserID: user.ID, RoleID: 2})
+		if result.Error != nil {
 			log.Fatalf("Failed to create %s: %v", user.Name, result.Error)
 		}
 	}
@@ -99,7 +96,7 @@ func rolesSeed() {
 
 	for _, roleName := range sRoleNames {
 		result := db.FirstOrCreate(&models.Role{}, &models.Role{Name: roleName})
-		if result.Error != nil && !errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		if result.Error != nil {
 			log.Fatalf("Failed to create role %s: %v", sRoleNames, result.Error)
 		}
 	}
@@ -141,7 +138,7 @@ func topicsSeed() {
 
 	for _, topicTheme := range sTopicThemes {
 		result := db.FirstOrCreate(&models.Topic{}, &models.Topic{Title: topicTheme})
-		if result.Error != nil && !errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		if result.Error != nil {
 			log.Fatalf("Failed to create theme %s: %v", topicTheme, result.Error)
 		}
 	}
