@@ -2,6 +2,7 @@ package data
 
 import (
 	"educ-gpt/models"
+	"golang.org/x/crypto/bcrypt"
 	"log"
 	"os"
 	"strconv"
@@ -22,10 +23,16 @@ func SeedMock() {
 func adminSeed() {
 	now := time.Now()
 
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(os.Getenv("ADMIN_PASSWORD")), bcrypt.DefaultCost)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	user := &models.User{
 		Name:       "admin",
 		Email:      os.Getenv("ADMIN_EMAIL"),
-		Password:   os.Getenv("ADMIN_PASSWORD"),
+		Password:   string(hashedPassword),
 		ActivateAt: &now,
 		CreatedAt:  now,
 		Roles: []*models.Role{
@@ -51,10 +58,16 @@ func usersSeed() {
 
 	for i := 0; i < 10; i++ {
 		iItoa := strconv.Itoa(i)
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(os.Getenv("user_user")), bcrypt.DefaultCost)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		users[i] = &models.User{
 			Name:       "user" + iItoa,
 			Email:      "user" + iItoa + "@educgpt.ru",
-			Password:   "user_user",
+			Password:   string(hashedPassword),
 			ActivateAt: &now,
 			CreatedAt:  now,
 			Roles: []*models.Role{
