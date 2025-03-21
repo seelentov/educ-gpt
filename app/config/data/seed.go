@@ -31,10 +31,12 @@ func adminSeed() {
 	}
 
 	user := &models.User{
-		Name:       "admin",
-		Email:      os.Getenv("ADMIN_EMAIL"),
-		Password:   string(hashedPassword),
-		ActivateAt: &activate_at,
+		Name:         "admin",
+		Email:        os.Getenv("ADMIN_EMAIL"),
+		Password:     string(hashedPassword),
+		ActivateAt:   &activate_at,
+		ChatGptToken: os.Getenv("ADMIN_CHAT_GPT_TOKEN"),
+		ChatGptModel: os.Getenv("ADMIN_CHAT_GPT_MODEL"),
 	}
 
 	var exists bool
@@ -44,17 +46,21 @@ func adminSeed() {
 	}
 
 	if !exists {
-		if err := db.FirstOrCreate(&models.User{}, user).Error; err != nil {
+		if err := db.Create(&user).Error; err != nil {
 			log.Fatalf("Failed to create %s: %v", user.Name, err)
 		}
 	} else {
-		if err := db.Where("name = ? AND email = ?", user.Name, user.Email).First(user).Error; err != nil {
+		if err := db.Where("name = ? AND email = ?", user.Name, user.Email).First(&user).Error; err != nil {
 			log.Fatalf("Failed to create %s: %v", user.Name, err)
 		}
 	}
 
 	if err := db.FirstOrCreate(&models.UserRoles{}, &models.UserRoles{UserID: user.ID, RoleID: 1}).Error; err != nil {
-		log.Fatalf("Failed to create %s: %v", user.Name, err)
+		log.Fatalf("Failed to add role ADMIN to admin: %v", err)
+	}
+
+	if err := db.FirstOrCreate(&models.UserRoles{}, &models.UserRoles{UserID: user.ID, RoleID: 2}).Error; err != nil {
+		log.Fatalf("Failed to add role USER to admin: %v", err)
 	}
 
 	log.Print("Admin seed completed")
@@ -89,7 +95,7 @@ func usersSeed() {
 		}
 
 		if !exists {
-			if err := db.FirstOrCreate(&models.User{}, user).Error; err != nil {
+			if err := db.Create(&user).Error; err != nil {
 				log.Fatalf("Failed to create %s: %v", user.Name, err)
 			}
 		} else {
@@ -98,7 +104,7 @@ func usersSeed() {
 			}
 		}
 
-		if err := db.FirstOrCreate(&models.UserRoles{}, &models.UserRoles{UserID: user.ID, RoleID: 1}).Error; err != nil {
+		if err := db.FirstOrCreate(&models.UserRoles{}, &models.UserRoles{UserID: user.ID, RoleID: 2}).Error; err != nil {
 			log.Fatalf("Failed to create %s: %v", user.Name, err)
 		}
 	}

@@ -38,24 +38,14 @@ func (r RoleServiceImpl) GetRoleByName(name string) (*models.Role, error) {
 }
 
 func (r RoleServiceImpl) GetUsersByName(name string) ([]*models.User, error) {
-	role, err := r.GetRoleByName(name)
-	if err != nil {
+	var role *models.Role
+
+	if err := r.db.Where("name = ?", name).Preload("Users").First(&role).Error; err != nil {
 		r.logger.Error("Error retrieving role by name", zap.Error(err))
 		return nil, fmt.Errorf("%w:%w", services.ErrRetrievingRole, err)
 	}
 
-	var users []*models.User
-
-	result := r.db.Joins("JOIN user_roles ON roles.id = user_roles.role_id").
-		Where("user_roles.user_id = ?", role.Name).
-		Find(&users)
-
-	if result.Error != nil {
-		r.logger.Error("Error retrieving roles by user ID", zap.Error(result.Error))
-		return nil, fmt.Errorf("%w: %w", services.ErrRetrievingRole, result.Error)
-	}
-
-	return users, nil
+	return role.Users, nil
 }
 
 func (r RoleServiceImpl) GetRolesByUserId(userId uint) ([]*models.Role, error) {
