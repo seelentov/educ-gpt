@@ -4,11 +4,12 @@ import (
 	"educ-gpt/config/data"
 	"educ-gpt/config/logger"
 	"educ-gpt/http/middlewares"
-	"github.com/gin-gonic/gin"
 	"log"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 var authMiddleware gin.HandlerFunc

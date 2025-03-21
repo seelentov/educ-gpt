@@ -4,7 +4,7 @@ import (
 	"educ-gpt/models"
 	"educ-gpt/services"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -13,7 +13,7 @@ type PromptServiceImpl struct{}
 
 func readPromptFile(filename string) string {
 	path := filepath.Join("./resources/prompt", filename)
-	content, err := ioutil.ReadFile(path)
+	content, err := os.ReadFile(path)
 	if err != nil {
 		return fmt.Sprintf("Ошибка при чтении файла промпта: %v", err)
 	}
@@ -29,11 +29,9 @@ func (p PromptServiceImpl) GetThemes(topic string, existedThemes []*models.Theme
 	prompt := readPromptFile("get_themes_prompt.txt")
 
 	exist := make([]string, 0)
-	if existedThemes != nil {
-		for i := range existedThemes {
-			if existedThemes[i].Score > 0 {
-				exist = append(exist, existedThemes[i].Title)
-			}
+	for i := range existedThemes {
+		if existedThemes[i].Score > 0 {
+			exist = append(exist, existedThemes[i].Title)
 		}
 	}
 
@@ -52,11 +50,9 @@ func (p PromptServiceImpl) GetTheme(topic string, theme string, userStats *model
 	prompt := readPromptFile("get_theme_prompt.txt")
 
 	notEmptyUserAllStats := make([]*models.Theme, 0)
-	if userAllStats != nil {
-		for i := range userAllStats {
-			if userAllStats[i].Score > 0 {
-				notEmptyUserAllStats = append(notEmptyUserAllStats, userAllStats[i])
-			}
+	for i := range userAllStats {
+		if userAllStats[i].Score > 0 {
+			notEmptyUserAllStats = append(notEmptyUserAllStats, userAllStats[i])
 		}
 	}
 
@@ -81,11 +77,9 @@ func (p PromptServiceImpl) GetProblems(count int, topic string, theme string, us
 	prompt := readPromptFile("get_problems_prompt.txt")
 
 	notEmptyUserAllStats := make([]*models.Theme, 0)
-	if userAllStats != nil {
-		for i := range userAllStats {
-			if userAllStats[i].Score > 0 {
-				notEmptyUserAllStats = append(notEmptyUserAllStats, userAllStats[i])
-			}
+	for i := range userAllStats {
+		if userAllStats[i].Score > 0 {
+			notEmptyUserAllStats = append(notEmptyUserAllStats, userAllStats[i])
 		}
 	}
 

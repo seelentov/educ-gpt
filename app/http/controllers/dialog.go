@@ -7,12 +7,13 @@ import (
 	"educ-gpt/utils/httputils"
 	"educ-gpt/utils/httputils/valid"
 	"errors"
-	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
-	"gorm.io/gorm"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
+	"gorm.io/gorm"
 )
 
 type DialogController struct {

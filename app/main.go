@@ -7,10 +7,11 @@ import (
 	"educ-gpt/http/router"
 	"errors"
 	"fmt"
-	"github.com/joho/godotenv"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 // @title Educ-GPT API

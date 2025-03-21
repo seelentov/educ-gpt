@@ -7,11 +7,12 @@ import (
 	"educ-gpt/utils/httputils"
 	"educ-gpt/utils/httputils/valid"
 	"errors"
+	"net/http"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
-	"net/http"
-	"strconv"
 )
 
 type RoadmapController struct {
@@ -34,6 +35,10 @@ type RoadmapController struct {
 // @Router       /roadmap [get]
 func (r RoadmapController) GetTopics(ctx *gin.Context) {
 	userid, err := httputils.GetUserId(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
+		return
+	}
 
 	topics, err := r.roadmapSrv.GetTopics(userid, false)
 	if err != nil {

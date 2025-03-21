@@ -3,13 +3,14 @@ package integ
 import (
 	"context"
 	"educ-gpt/config/data"
-	"github.com/joho/godotenv"
-	"github.com/redis/go-redis/v9"
-	"gorm.io/gorm"
 	"log"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/joho/godotenv"
+	"github.com/redis/go-redis/v9"
+	"gorm.io/gorm"
 )
 
 var (
@@ -32,15 +33,6 @@ func setup() error {
 	}
 
 	rdb = data.Redis()
-
-	data.SetDBConfig(&data.DBconfig{
-		Host:     os.Getenv("DB_HOST"),
-		Port:     os.Getenv("DB_PORT"),
-		User:     os.Getenv("DB_USER"),
-		Password: os.Getenv("DB_PASS"),
-		Name:     os.Getenv("DB_NAME"),
-		SSLmode:  os.Getenv("DB_SSL"),
-	})
 
 	db = data.DB()
 
