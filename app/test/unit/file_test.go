@@ -8,7 +8,3 @@ import (
 var (
 	fileSrv services.FileService
 )
-
-func TestInitFileService() {
-	fileSrv = dic.FileService()
-}
