@@ -38,3 +38,8 @@ storage/*
 
 cmd/test/*
 cmd/test
+
+
+test/unit/storage/**/*
+test/unit/storage/*
+!test/unit/storage/.gitkeep

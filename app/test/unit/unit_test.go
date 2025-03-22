@@ -28,6 +28,11 @@ func setup() error {
 }
 
 func tearDown() error {
+	err := os.RemoveAll("storage/*")
+	if err != nil {
+		log.Print(err)
+		return err
+	}
 	return nil
 }
 

@@ -34,7 +34,6 @@ func (f FileServiceImpl) UploadImage(file *multipart.FileHeader) (string, error)
 		newFileName = fileName + fileExt
 		filePath = filepath.Join("storage", newFileName)
 
-		// Проверяем, существует ли файл
 		if _, err := os.Stat(filePath); os.IsNotExist(err) {
 			break
 		}
@@ -64,6 +63,7 @@ func (f FileServiceImpl) UploadImage(file *multipart.FileHeader) (string, error)
 
 func (f FileServiceImpl) DeleteFile(filePath string) (bool, error) {
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		f.logger.Error("file not exist", zap.String("path", filePath))
 		return false, nil
 	} else if err != nil {
 		f.logger.Error("get file error", zap.Error(err))
