@@ -56,16 +56,32 @@ func (j JwtServiceImpl) GenerateRefreshToken(userID uint) (string, error) {
 }
 
 func (j JwtServiceImpl) ValidateRefreshToken(tokenString string) (jwt.MapClaims, error) {
+	claims, err := j.validateToken(tokenString, j.jwtRefreshSecret)
+	if err != nil {
+		return nil, fmt.Errorf("%w:%w", services.ErrParseToken, err)
+	}
+
+	return claims, nil
+}
+
+func (j JwtServiceImpl) ValidateToken(tokenString string) (jwt.MapClaims, error) {
+	claims, err := j.validateToken(tokenString, j.jwtSecret)
+	if err != nil {
+		return nil, fmt.Errorf("%w:%w", services.ErrParseToken, err)
+	}
+
+	return claims, nil
+}
+
+func (j JwtServiceImpl) validateToken(tokenString, secret string) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			j.logger.Error("Unexpected signing method")
 			return nil, fmt.Errorf("%w: %v", services.ErrUnexpectedSigningMethod, token.Header["alg"])
 		}
-		return []byte(j.jwtRefreshSecret), nil
+		return []byte(secret), nil
 	})
 
 	if err != nil {
-		j.logger.Error("Error parsing token")
 		return nil, fmt.Errorf("%w:%w", services.ErrParseToken, err)
 	}
 

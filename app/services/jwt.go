@@ -15,5 +15,6 @@ var (
 type JwtService interface {
 	GenerateToken(userID uint) (string, error)
 	GenerateRefreshToken(userID uint) (string, error)
+	ValidateToken(tokenString string) (jwt.MapClaims, error)
 	ValidateRefreshToken(tokenString string) (jwt.MapClaims, error)
 }

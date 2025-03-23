@@ -18,7 +18,7 @@ func AuthMiddleware() gin.HandlerFunc {
 	if authMiddleware == nil {
 		authMiddleware = middlewares.AuthMiddleware(
 			logger.Logger(),
-			os.Getenv("JWT_SECRET"),
+			JwtService(),
 		)
 		log.Print("AuthMiddleware initialized")
 	}

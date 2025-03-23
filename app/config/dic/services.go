@@ -108,6 +108,10 @@ func GptService() services.GptService {
 	return gptService
 }
 
+func AIService() services.AIService {
+	return GptService()
+}
+
 var senderService services.SenderService
 
 func SenderService() services.SenderService {

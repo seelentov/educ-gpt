@@ -31,7 +31,7 @@ func RoadmapController() *controllers.RoadmapController {
 	if roadmapController == nil {
 		roadmapController = controllers.NewRoadmapController(
 			UserService(),
-			GptService(),
+			AIService(),
 			PromptService(),
 			RoadmapService(),
 		)
@@ -46,7 +46,7 @@ var utilsController *controllers.UtilsController
 func UtilsController() *controllers.UtilsController {
 	if utilsController == nil {
 		utilsController = controllers.NewUtilsController(
-			GptService(),
+			AIService(),
 			PromptService(),
 			UserService(),
 		)
@@ -62,7 +62,7 @@ func DialogController() *controllers.DialogController {
 		dialogController = controllers.NewDialogController(
 			DialogService(),
 			UserService(),
-			GptService(),
+			AIService(),
 		)
 		log.Print("DialogController initialized")
 	}
