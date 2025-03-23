@@ -5,6 +5,7 @@ import (
 	"educ-gpt/models"
 	"educ-gpt/services"
 	"testing"
+	"time"
 )
 
 var (
@@ -170,6 +171,51 @@ func TestCanChangePassword(t *testing.T) {
 
 	if err := userSrv.VerifyPassword(newPassword, u.Password); err != nil {
 		t.Error(err)
+		return
+	}
+}
+
+func TestCanClearNonActivatedUsers(t *testing.T) {
+
+	nonActivatedUser := &models.User{
+		Name:         "non_activated_user",
+		Email:        "non_activated_user@test.com",
+		Password:     "non_activated_password",
+		ChatGptToken: "non_activated_token",
+		CreatedAt:    time.Now().Add(-3 * time.Hour),
+	}
+
+	_, err := userSrv.Create(nonActivatedUser)
+	if err != nil {
+		t.Errorf("Expected no error, but got %v", err)
+		return
+	}
+
+	createdUser, err := userSrv.GetByEmail(nonActivatedUser.Email)
+	if err != nil {
+		t.Errorf("Expected no error, but got %v", err)
+		return
+	}
+
+	if createdUser == nil {
+		t.Error("Expected user to be created, but got nil")
+		return
+	}
+
+	err = userSrv.ClearNonActivatedUsers()
+	if err != nil {
+		t.Errorf("Expected no error, but got %v", err)
+		return
+	}
+
+	deletedUser, err := userSrv.GetByEmail(nonActivatedUser.Email)
+	if err == nil {
+		t.Error("Expected error when getting deleted user, but got nil")
+		return
+	}
+
+	if deletedUser != nil {
+		t.Error("Expected user to be deleted, but got a user")
 		return
 	}
 }

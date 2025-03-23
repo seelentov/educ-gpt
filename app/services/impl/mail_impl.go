@@ -3,8 +3,9 @@ package impl
 import (
 	"educ-gpt/services"
 	"fmt"
-	"go.uber.org/zap"
 	"strconv"
+
+	"go.uber.org/zap"
 )
 
 type MailServiceImpl struct {

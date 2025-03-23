@@ -4,9 +4,10 @@ import (
 	"educ-gpt/models"
 	"educ-gpt/services"
 	"fmt"
+	"time"
+
 	"go.uber.org/zap"
 	"gorm.io/gorm"
-	"time"
 )
 
 type RoadmapServiceImpl struct {
@@ -181,14 +182,14 @@ func (r RoadmapServiceImpl) ClearThemes() error {
 	threshold := time.Now().Add(-24 * time.Hour)
 
 	result := r.db.
-		Joins("JOIN user_themes ON user_themes.theme_id = themes.id").
-		Where("themes.created_at < ? AND user_themes.score = 0", threshold).
+		Where("created_at < ? AND id NOT IN (SELECT theme_id FROM user_themes WHERE score > 0)", threshold).
 		Delete(&models.Theme{})
 
 	if result.Error != nil {
 		r.logger.Error("Cant remove themes", zap.Error(result.Error))
 		return fmt.Errorf("%w:%w", services.ErrDeleteEntities, result.Error)
 	}
+
 	return nil
 }
 
