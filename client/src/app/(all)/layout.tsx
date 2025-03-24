@@ -4,9 +4,11 @@ import '@/styles/styles.scss'
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import React from "react";
+import { Footer } from "@/components/layout/footer/footer";
 import { AuthClient } from '@/components/layout/authClient/authClient';
 import { Chat } from '@/components/layout/chat/chat';
 import ToastProvider from '@/components/providers/toast';
+import { Header } from '@/components/layout/header/header';
 
 
 const geistSans = Geist({
@@ -56,10 +58,12 @@ export default function RootLayout({
             <body className={`${geistSans.variable} ${geistMono.variable}`}>
                 <ToastProvider>
                     <AuthClient />
+                    <Header />
                     <div className='wrapper'>
                         <main>
                             {children}
                         </main>
+                        <Footer />
                     </div>
                     <Chat />
                 </ToastProvider>
