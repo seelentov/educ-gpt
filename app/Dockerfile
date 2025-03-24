@@ -10,8 +10,8 @@ COPY . .
 ENV CGO_ENABLED=1
 RUN go build -o main
 
-RUN go test test/unit/*
+RUN go test test/unit/*.go
 
-# RUN go test test/integ/*
+# RUN go test test/integ/*.go
 
 CMD ["./main"]
