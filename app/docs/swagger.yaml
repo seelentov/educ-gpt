@@ -184,10 +184,6 @@ definitions:
         type: string
       question:
         type: string
-      theme:
-        $ref: '#/definitions/models.Theme'
-      theme_id:
-        type: integer
     type: object
   models.Theme:
     properties:
@@ -808,12 +804,6 @@ paths:
       consumes:
       - application/json
       description: Returns a list of topics for the current user
-      parameters:
-      - description: Bearer <JWT token>
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -823,10 +813,6 @@ paths:
             items:
               $ref: '#/definitions/models.Topic'
             type: array
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/dtos.ErrorResponse'
         "500":
           description: Internal server error
           schema:

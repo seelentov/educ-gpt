@@ -871,15 +871,6 @@ const docTemplate = `{
                     "roadmap"
                 ],
                 "summary": "Get topics",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Bearer \u003cJWT token\u003e",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "List of topics",
@@ -888,12 +879,6 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/models.Topic"
                             }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/dtos.ErrorResponse"
                         }
                     },
                     "500": {
@@ -1654,12 +1639,6 @@ const docTemplate = `{
                 },
                 "question": {
                     "type": "string"
-                },
-                "theme": {
-                    "$ref": "#/definitions/models.Theme"
-                },
-                "theme_id": {
-                    "type": "integer"
                 }
             }
         },

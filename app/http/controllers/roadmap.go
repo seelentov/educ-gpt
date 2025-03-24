@@ -28,17 +28,11 @@ type RoadmapController struct {
 // @Tags         roadmap
 // @Accept       json
 // @Produce      json
-// @Param Authorization header string true "Bearer <JWT token>"
 // @Success      200 {array} models.Topic "List of topics"
-// @Failure      401 {object} dtos.ErrorResponse "Unauthorized"
 // @Failure      500 {object} dtos.ErrorResponse "Internal server error"
 // @Router       /roadmap [get]
 func (r RoadmapController) GetTopics(ctx *gin.Context) {
 	userid, err := httputils.GetUserId(ctx)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
-		return
-	}
 
 	topics, err := r.roadmapSrv.GetTopics(userid, false)
 	if err != nil {
