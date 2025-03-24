@@ -31,12 +31,10 @@ func adminSeed() {
 	}
 
 	user := &models.User{
-		Name:         "admin",
-		Email:        os.Getenv("ADMIN_EMAIL"),
-		Password:     string(hashedPassword),
-		ActivateAt:   &activate_at,
-		ChatGptToken: os.Getenv("ADMIN_CHAT_GPT_TOKEN"),
-		ChatGptModel: os.Getenv("ADMIN_CHAT_GPT_MODEL"),
+		Name:       "admin",
+		Email:      os.Getenv("ADMIN_EMAIL"),
+		Password:   string(hashedPassword),
+		ActivateAt: &activate_at,
 	}
 
 	var exists bool

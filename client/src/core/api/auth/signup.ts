@@ -3,14 +3,13 @@
 import { baseFetch } from "../baseFetch";
 
 
-export async function signup(name: string, email: string, password: string, chat_gpt_token: string) {
+export async function signup(name: string, email: string, password: string) {
     const data = await baseFetch(
         "/auth/register",
         JSON.stringify({
             name,
             email,
-            password,
-            chat_gpt_token
+            password
         }),
         "POST"
     )

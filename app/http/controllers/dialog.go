@@ -20,6 +20,9 @@ type DialogController struct {
 	dialogSrv services.DialogService
 	userSrv   services.UserService
 	aiSrv     services.AIService
+
+	openRouterModel string
+	openRouterToken string
 }
 
 // GetDialogs returns the current user's dialogs
@@ -161,24 +164,13 @@ func (d DialogController) ThrowMessage(ctx *gin.Context) {
 		return
 	}
 
-	user, err := d.userSrv.GetById(userid)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			ctx.JSON(http.StatusUnauthorized, dtos.UnauthorizedResponse())
-			return
-		}
-
-		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
-		return
-	}
-
 	dialogItems := dialog.DialogItems[:]
 
 	dialogItems = append(dialogItems, &models.DialogItem{Text: req.Message, IsUser: true})
 
 	var target string
 
-	err = d.aiSrv.GetAnswer(user.ChatGptToken, user.ChatGptModel, dialogItems, &target)
+	err = d.aiSrv.GetAnswer(d.openRouterToken, d.openRouterModel, dialogItems, &target)
 	if err != nil {
 		if errors.Is(err, services.ErrAIRequestFailed) {
 			ctx.JSON(http.StatusConflict, dtos.ErrorResponse{Error: err.Error()})
@@ -293,6 +285,8 @@ func NewDialogController(
 	dialogSrv services.DialogService,
 	userSrv services.UserService,
 	aiSrv services.AIService,
+	openRouterModel string,
+	openRouterToken string,
 ) *DialogController {
-	return &DialogController{dialogSrv, userSrv, aiSrv}
+	return &DialogController{dialogSrv, userSrv, aiSrv, openRouterModel, openRouterToken}
 }

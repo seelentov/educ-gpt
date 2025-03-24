@@ -12,7 +12,6 @@ export function SignUpForm() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [passwordConf, setPasswordConf] = useState('');
-    const [chatGptToken, setChatGptToken] = useState('');
 
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState<{ [key: string]: string } | null>(null);
@@ -48,8 +47,7 @@ export function SignUpForm() {
             const data = await signup(
                 name,
                 email,
-                password,
-                chatGptToken
+                password
             );
             if (data?.error) {
                 if (typeof data?.error === "string") {
@@ -129,20 +127,6 @@ export function SignUpForm() {
                                 onChange={(e) => setPasswordConf(e.target.value)}
                             />
                             <p className="text-danger">{errors?.passwordConf}</p>
-                        </div>
-                        <div className="d-flex flex-column mb-2 gap-3">
-                            <label htmlFor="fgpttoken">Ключ Chat-GPT API</label>
-                            <input
-                                className={`input ${errors?.chat_gpt_token && 'err'}`}
-                                type="password"
-                                id="fgpttoken"
-                                name="gpttoken"
-                                placeholder="Ключ Chat-GPT API"
-                                value={chatGptToken}
-                                onChange={(e) => setChatGptToken(e.target.value)}
-                            />
-                            <p>Получить ключ на <a className="link-primary" href="https://platform.openai.com/api-keys" target="_blank">openai.com</a></p>
-                            <p className="text-danger">{errors?.chat_gpt_token}</p>
                         </div>
                     </div>
 

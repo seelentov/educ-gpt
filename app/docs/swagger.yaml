@@ -57,8 +57,6 @@ definitions:
     type: object
   dtos.RegisterRequest:
     properties:
-      chat_gpt_token:
-        type: string
       email:
         maxLength: 100
         type: string
@@ -69,7 +67,6 @@ definitions:
         minLength: 8
         type: string
     required:
-    - chat_gpt_token
     - email
     - name
     - password
@@ -214,10 +211,6 @@ definitions:
   models.User:
     properties:
       avatar_url:
-        type: string
-      chat_gpt_model:
-        type: string
-      chat_gpt_token:
         type: string
       email:
         type: string
@@ -1054,11 +1047,6 @@ paths:
       - application/json
       description: VerifyAnswer and get verification status by AI
       parameters:
-      - description: Bearer <JWT token>
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - description: Answer details
         in: body
         name: request
@@ -1097,11 +1085,6 @@ paths:
       - application/json
       description: Compile code by AI
       parameters:
-      - description: Bearer <JWT token>
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - description: Code for compiler
         in: body
         name: request

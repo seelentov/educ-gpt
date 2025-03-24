@@ -73,10 +73,6 @@ func (u UserServiceImpl) Create(user *models.User) (string, error) {
 
 	user.Password = string(hashedPassword)
 
-	if user.ChatGptModel == "" {
-		user.ChatGptModel = "gpt-4o-mini"
-	}
-
 	tx := u.db.Begin()
 
 	result := tx.Create(user)
@@ -186,7 +182,7 @@ func (u UserServiceImpl) getBy(key string, value interface{}) (*models.User, err
 
 func (u UserServiceImpl) getByWhere(query interface{}, args ...interface{}) (*models.User, error) {
 	user := &models.User{}
-	result := u.db.Where(query, args...).First(user)
+	result := u.db.Where(query, args...).Preload("Roles").First(user)
 	if result.Error != nil {
 		u.logger.Error("Error retrieving user", zap.Error(result.Error))
 		return nil, fmt.Errorf("%w: %w", services.ErrRetrievingUser, result.Error)

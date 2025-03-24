@@ -15,8 +15,6 @@ export default function EditProfileForm() {
 
     const [name, setName] = useState<string>("")
     const [avatarFile, setAvatarFile] = useState<File | null>(null)
-    const [chatGptModel, setChatGptModel] = useState<string>("")
-    const [chatGptToken, setChatGptToken] = useState<string>("")
 
     const [avatarUrl, setAvatarUrl] = useState<string>("")
 
@@ -51,8 +49,6 @@ export default function EditProfileForm() {
                 if (data.avatar_url) {
                     setAvatarUrl(HOST_URL_PROD + data.avatar_url)
                 }
-
-                setChatGptModel(data.chat_gpt_model)
             }
         } catch (error) {
             console.error(error)
@@ -81,12 +77,6 @@ export default function EditProfileForm() {
 
             if (name) {
                 formData.append("name", name)
-            }
-            if (chatGptToken) {
-                formData.append("chat_gpt_token", chatGptToken)
-            }
-            if (chatGptModel) {
-                formData.append("chat_gpt_model", chatGptModel)
             }
             if (name) {
                 formData.append("name", name)
@@ -174,35 +164,6 @@ export default function EditProfileForm() {
                                         onChange={(e) => handleChange(setName, e.target.value)}
                                     />
                                     <p className="text-danger">{errors?.name}</p>
-                                </div>
-
-                                <div className="d-flex flex-column mb-2 gap-3">
-                                    <label htmlFor="fgpttoken">Ключ Chat-GPT API</label>
-                                    <input
-                                        className={`input ${errors?.chat_gpt_token && 'err'}`}
-                                        type="password"
-                                        id="fgpttoken"
-                                        name="gpttoken"
-                                        placeholder="Ключ Chat-GPT API"
-                                        value={chatGptToken}
-                                        onChange={(e) => handleChange(setChatGptToken, e.target.value)}
-                                    />
-                                    <p>Получить ключ на <a className="link-primary" href="https://platform.openai.com/api-keys" target="_blank">openai.com</a></p>
-                                    <p className="text-danger">{errors?.chat_gpt_token}</p>
-                                </div>
-
-                                <div className="d-flex flex-column mb-2 gap-3">
-                                    <label htmlFor="fgptmodel">Модель Chat-GPT</label>
-                                    <input
-                                        className={`input ${errors?.chat_gpt_model && 'err'}`}
-                                        type="text"
-                                        id="fgptmodel"
-                                        name="gptmodel"
-                                        placeholder="Модель Chat-GPT"
-                                        value={chatGptModel}
-                                        onChange={(e) => handleChange(setChatGptModel, e.target.value)}
-                                    />
-                                    <p className="text-danger">{errors?.chat_gpt_model}</p>
                                 </div>
                             </div>
                         </div>

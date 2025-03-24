@@ -20,6 +20,9 @@ type RoadmapController struct {
 	aiSrv      services.AIService
 	promptSrv  services.PromptService
 	roadmapSrv services.RoadmapService
+
+	openRouterModel string
+	openRouterToken string
 }
 
 // GetTopics returns a list of topics for the current user
@@ -114,17 +117,6 @@ func (r RoadmapController) GetThemes(ctx *gin.Context) {
 		return
 	}
 
-	user, err := r.userSrv.GetById(userid)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			ctx.JSON(http.StatusUnauthorized, dtos.UnauthorizedResponse())
-			return
-		}
-
-		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
-		return
-	}
-
 	topicId, err := strconv.ParseUint(ctx.Param("topic_id"), 10, 32)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
@@ -153,7 +145,7 @@ func (r RoadmapController) GetThemes(ctx *gin.Context) {
 
 	var target []string
 
-	err = r.aiSrv.GetAnswer(user.ChatGptToken, user.ChatGptModel, []*models.DialogItem{{Text: prompt, IsUser: true}}, &target)
+	err = r.aiSrv.GetAnswer(r.openRouterToken, r.openRouterModel, []*models.DialogItem{{Text: prompt, IsUser: true}}, &target)
 	if err != nil {
 		if errors.Is(err, services.ErrAIRequestFailed) {
 			ctx.JSON(http.StatusConflict, dtos.ErrorResponse{Error: err.Error()})
@@ -228,17 +220,6 @@ func (r RoadmapController) GetTheme(ctx *gin.Context) {
 		return
 	}
 
-	user, err := r.userSrv.GetById(userId)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			ctx.JSON(http.StatusUnauthorized, dtos.UnauthorizedResponse())
-			return
-		}
-
-		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
-		return
-	}
-
 	topicId, err := strconv.ParseUint(ctx.Param("topic_id"), 10, 32)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
@@ -277,7 +258,7 @@ func (r RoadmapController) GetTheme(ctx *gin.Context) {
 
 	var target services.PromptThemeResponse
 
-	err = r.aiSrv.GetAnswer(user.ChatGptToken, user.ChatGptModel, []*models.DialogItem{{Text: prompt, IsUser: true}}, &target)
+	err = r.aiSrv.GetAnswer(r.openRouterToken, r.openRouterModel, []*models.DialogItem{{Text: prompt, IsUser: true}}, &target)
 	if err != nil {
 		if errors.Is(err, services.ErrAIRequestFailed) {
 			ctx.JSON(http.StatusConflict, dtos.ErrorResponse{Error: err.Error()})
@@ -328,17 +309,6 @@ func (r RoadmapController) GetProblems(ctx *gin.Context) {
 		return
 	}
 
-	user, err := r.userSrv.GetById(userId)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			ctx.JSON(http.StatusUnauthorized, dtos.UnauthorizedResponse())
-			return
-		}
-
-		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
-		return
-	}
-
 	topicId, err := strconv.ParseUint(ctx.Param("topic_id"), 10, 32)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
@@ -377,7 +347,7 @@ func (r RoadmapController) GetProblems(ctx *gin.Context) {
 
 	var target []*models.Problem
 
-	err = r.aiSrv.GetAnswer(user.ChatGptToken, user.ChatGptModel, []*models.DialogItem{{Text: prompt, IsUser: true}}, &target)
+	err = r.aiSrv.GetAnswer(r.openRouterToken, r.openRouterModel, []*models.DialogItem{{Text: prompt, IsUser: true}}, &target)
 	if err != nil {
 		if errors.Is(err, services.ErrAIRequestFailed) {
 			ctx.JSON(http.StatusConflict, dtos.ErrorResponse{Error: err.Error()})
@@ -431,12 +401,6 @@ func (r RoadmapController) VerifyAnswerAndIncrementUserScore(ctx *gin.Context) {
 		return
 	}
 
-	user, err := r.userSrv.GetById(userId)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
-		return
-	}
-
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		var valErr validator.ValidationErrors
 		ok := errors.As(err, &valErr)
@@ -464,7 +428,7 @@ func (r RoadmapController) VerifyAnswerAndIncrementUserScore(ctx *gin.Context) {
 	prompt := r.promptSrv.VerifyAnswer(problem.Question, req.Answer, req.Language)
 	var target services.PromptProblemResponse
 
-	err = r.aiSrv.GetAnswer(user.ChatGptToken, user.ChatGptModel, []*models.DialogItem{{Text: prompt, IsUser: true}}, &target)
+	err = r.aiSrv.GetAnswer(r.openRouterToken, r.openRouterModel, []*models.DialogItem{{Text: prompt, IsUser: true}}, &target)
 	if err != nil {
 		if errors.Is(err, services.ErrAIRequestFailed) {
 			ctx.JSON(http.StatusConflict, dtos.ErrorResponse{Error: err.Error()})
@@ -491,13 +455,13 @@ func (r RoadmapController) VerifyAnswerAndIncrementUserScore(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, target)
 }
 
-//
-
 func NewRoadmapController(
 	userSrv services.UserService,
-	nlSrv services.GptService,
+	nlSrv services.AIService,
 	promptSrv services.PromptService,
 	roadmapSrv services.RoadmapService,
+	openRouterModel string,
+	openRouterToken string,
 ) *RoadmapController {
-	return &RoadmapController{userSrv, nlSrv, promptSrv, roadmapSrv}
+	return &RoadmapController{userSrv, nlSrv, promptSrv, roadmapSrv, openRouterModel, openRouterToken}
 }

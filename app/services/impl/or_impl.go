@@ -13,11 +13,11 @@ import (
 	"strings"
 )
 
-type GptServiceImpl struct {
+type OpenRouterServiceImpl struct {
 	logger *zap.Logger
 }
 
-func (g GptServiceImpl) GetAnswer(token string, model string, dialog []*models.DialogItem, target interface{}) error {
+func (g OpenRouterServiceImpl) GetAnswer(token string, model string, dialog []*models.DialogItem, target interface{}) error {
 	dialogStrings := make([]string, len(dialog))
 
 	for i := range dialog {
@@ -32,7 +32,7 @@ func (g GptServiceImpl) GetAnswer(token string, model string, dialog []*models.D
 
 	body := fmt.Sprintf(`{"model": "%s","messages": [%s],"temperature": 0.1}`, model, strings.Join(dialogStrings, ","))
 
-	req, err := http.NewRequest("POST", "https://api.openai.com/v1/chat/completions", bytes.NewBuffer([]byte(body)))
+	req, err := http.NewRequest("POST", "https://openrouter.ai/api/v1/chat/completions", bytes.NewBuffer([]byte(body)))
 	if err != nil {
 		g.logger.Error("failed to send request", zap.Error(err))
 		return fmt.Errorf("%w:%w", services.ErrRequestFailed, err)
@@ -60,7 +60,7 @@ func (g GptServiceImpl) GetAnswer(token string, model string, dialog []*models.D
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		g.logger.Error("failed to send request", zap.Error(err))
+		g.logger.Error("failed to send request", zap.String("resp", string(bodyBytes)))
 		return fmt.Errorf("%w:%v:%s", services.ErrAIRequestFailed, resp.StatusCode, bodyBytes)
 	}
 
@@ -93,6 +93,6 @@ func (g GptServiceImpl) GetAnswer(token string, model string, dialog []*models.D
 	return nil
 }
 
-func NewGptService(logger *zap.Logger) services.AIService {
-	return &GptServiceImpl{logger}
+func NewOpenRouterServiceImpl(logger *zap.Logger) services.AIService {
+	return &OpenRouterServiceImpl{logger}
 }

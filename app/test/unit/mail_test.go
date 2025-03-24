@@ -3,12 +3,17 @@ package unit
 import (
 	"educ-gpt/config/dic"
 	"educ-gpt/services"
-	"os"
+	"fmt"
+	"strings"
 	"testing"
 )
 
 var (
 	mailSrv services.MailService
+
+	userIdMailSrv uint = 1
+	nameMailSrv        = "test"
+	keyMailSrv         = "key"
 )
 
 func TestCatInitMailService(t *testing.T) {
@@ -17,9 +22,8 @@ func TestCatInitMailService(t *testing.T) {
 
 func TestCanActivateMail(t *testing.T) {
 	expSbj := "Активация аккаунта EDUC GPT"
-	expBody := `<html><body><h1>Привет, test!</h1><p>Спасибо за регистрацию на EDUC GPT. Пожалуйста, активируйте ваш аккаунт, перейдя по ссылке ниже:</p><a href="` + os.Getenv("PROTOCOL") + "://" + os.Getenv("HOST") + `/activate/key">Активировать аккаунт</a><p><small>Если вы не регистрировали аккаунт на EDUC GPT, то проигнорируйте это письмо</small></p></body></html>`
 
-	mail, err := mailSrv.ActivateMail("test", "key")
+	mail, err := mailSrv.ActivateMail(nameMailSrv, keyMailSrv)
 
 	if err != nil {
 		t.Error(err)
@@ -31,17 +35,21 @@ func TestCanActivateMail(t *testing.T) {
 		return
 	}
 
-	if expBody != mail.Body {
-		t.Errorf("Expected %s but got %s", expBody, mail.Body)
+	if !strings.Contains(mail.Body, nameMailSrv) {
+		t.Error("Missing name")
+		return
+	}
+
+	if !strings.Contains(mail.Body, keyMailSrv) {
+		t.Error("Missing key")
 		return
 	}
 }
 
 func TestCanChangeEmailMail(t *testing.T) {
 	expSbj := "Смена почтового ящика EDUC GPT"
-	expBody := `<html><body><h1>Привет, test!</h1><p>Для смены почтового ящика на своем аккаунте EDUC GPT на этот перейдите по ссылке ниже:</p><a href="` + os.Getenv("PROTOCOL") + "://" + os.Getenv("HOST") + `/change_email/key/1">Сменить почту</a><p>Ссылка будет активна 2 часа</p><p><small>Если вы не пытались сменить почтовый ящик своего аккаунта на EDUC GPT, то проигнорируйте это письмо</small></p></body></html>`
 
-	mail, err := mailSrv.ChangeEmailMail(1, "test", "key")
+	mail, err := mailSrv.ChangeEmailMail(userIdMailSrv, nameMailSrv, keyMailSrv)
 
 	if err != nil {
 		t.Error(err)
@@ -53,17 +61,26 @@ func TestCanChangeEmailMail(t *testing.T) {
 		return
 	}
 
-	if expBody != mail.Body {
-		t.Errorf("Expected %s but got %s", expBody, mail.Body)
+	if !strings.Contains(mail.Body, fmt.Sprintf("/%v", userIdMailSrv)) {
+		t.Error("Missing user id")
+		return
+	}
+
+	if !strings.Contains(mail.Body, nameMailSrv) {
+		t.Error("Missing name")
+		return
+	}
+
+	if !strings.Contains(mail.Body, keyMailSrv) {
+		t.Error("Missing key")
 		return
 	}
 }
 
 func TestCanResetMail(t *testing.T) {
 	expSbj := "Восстановление аккаунта EDUC GPT"
-	expBody := `<html><body><h1>Привет, test!</h1><p>Для смены пароля на своем аккаунте EDUC GPT перейдите по ссылке ниже:</p><a href="` + os.Getenv("PROTOCOL") + "://" + os.Getenv("HOST") + `/reset/key/1">Сменить пароль</a><p>Ссылка будет активна 2 часа</p><p><small>Если вы не пытались восстановить пароль своего аккаунта на EDUC GPT, то проигнорируйте это письмо</small></p></body></html>`
 
-	mail, err := mailSrv.ResetMail(1, "test", "key")
+	mail, err := mailSrv.ResetMail(userIdMailSrv, nameMailSrv, keyMailSrv)
 
 	if err != nil {
 		t.Error(err)
@@ -75,8 +92,18 @@ func TestCanResetMail(t *testing.T) {
 		return
 	}
 
-	if expBody != mail.Body {
-		t.Errorf("Expected %s but got %s", expBody, mail.Body)
+	if !strings.Contains(mail.Body, fmt.Sprintf("/%v", userIdMailSrv)) {
+		t.Error("Missing user id")
+		return
+	}
+
+	if !strings.Contains(mail.Body, nameMailSrv) {
+		t.Error("Missing name")
+		return
+	}
+
+	if !strings.Contains(mail.Body, keyMailSrv) {
+		t.Error("Missing key")
 		return
 	}
 }

@@ -1243,13 +1243,6 @@ const docTemplate = `{
                 "summary": "Verify answer",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Bearer \u003cJWT token\u003e",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
                         "description": "Answer details",
                         "name": "request",
                         "in": "body",
@@ -1307,13 +1300,6 @@ const docTemplate = `{
                 ],
                 "summary": "Compile",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Bearer \u003cJWT token\u003e",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "description": "Code for compiler",
                         "name": "request",
@@ -1447,15 +1433,11 @@ const docTemplate = `{
         "dtos.RegisterRequest": {
             "type": "object",
             "required": [
-                "chat_gpt_token",
                 "email",
                 "name",
                 "password"
             ],
             "properties": {
-                "chat_gpt_token": {
-                    "type": "string"
-                },
                 "email": {
                     "type": "string",
                     "maxLength": 100
@@ -1686,12 +1668,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "avatar_url": {
-                    "type": "string"
-                },
-                "chat_gpt_model": {
-                    "type": "string"
-                },
-                "chat_gpt_token": {
                     "type": "string"
                 },
                 "email": {

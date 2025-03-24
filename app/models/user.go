@@ -8,12 +8,10 @@ type User struct {
 	Email         string       `gorm:"unique;not null" json:"email"`
 	Password      string       `gorm:"not null" json:"-"`
 	AvatarUrl     string       `json:"avatar_url"`
-	ChatGptModel  string       `gorm:"not null" json:"chat_gpt_model"`
-	ChatGptToken  string       `gorm:"not null" json:"chat_gpt_token,omitempty"`
 	ActivationKey string       `json:"-"`
 	ActivateAt    *time.Time   `json:"-"`
 	CreatedAt     time.Time    `json:"-" sql:"DEFAULT:current_timestamp"`
-	Roles         []*Role      `gorm:"many2many:user_roles;constraint:OnDelete:CASCADE" json:"-"`
+	Roles         []*Role      `gorm:"many2many:user_roles;constraint:OnDelete:CASCADE" json:"roles"`
 	Themes        []*UserTheme `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;" json:"-"`
 	Dialogs       []*Dialog    `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;" json:"-"`
 }

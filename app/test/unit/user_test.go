@@ -14,10 +14,9 @@ var (
 	activationToken string
 
 	user = &models.User{
-		Name:         "test_user",
-		Email:        "test_user@test.com",
-		Password:     "test_password",
-		ChatGptToken: "test_token",
+		Name:     "test_user",
+		Email:    "test_user@test.com",
+		Password: "test_password",
 	}
 )
 
@@ -178,11 +177,10 @@ func TestCanChangePassword(t *testing.T) {
 func TestCanClearNonActivatedUsers(t *testing.T) {
 
 	nonActivatedUser := &models.User{
-		Name:         "non_activated_user",
-		Email:        "non_activated_user@test.com",
-		Password:     "non_activated_password",
-		ChatGptToken: "non_activated_token",
-		CreatedAt:    time.Now().Add(-3 * time.Hour),
+		Name:      "non_activated_user",
+		Email:     "non_activated_user@test.com",
+		Password:  "non_activated_password",
+		CreatedAt: time.Now().Add(-3 * time.Hour),
 	}
 
 	_, err := userSrv.Create(nonActivatedUser)

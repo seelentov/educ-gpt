@@ -95,9 +95,9 @@ func JwtService() services.JwtService {
 	return jwtService
 }
 
-var gptService services.GptService
+var gptService services.AIService
 
-func GptService() services.GptService {
+func GptService() services.AIService {
 	if gptService == nil {
 		gptService = impl.NewGptService(
 			logger.Logger(),
@@ -108,8 +108,21 @@ func GptService() services.GptService {
 	return gptService
 }
 
+var openRouterService services.AIService
+
+func OpenRouterService() services.AIService {
+	if openRouterService == nil {
+		openRouterService = impl.NewOpenRouterServiceImpl(
+			logger.Logger(),
+		)
+		log.Print("OpenRouterService initialized")
+	}
+
+	return openRouterService
+}
+
 func AIService() services.AIService {
-	return GptService()
+	return OpenRouterService()
 }
 
 var senderService services.SenderService

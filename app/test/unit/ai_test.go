@@ -2,7 +2,6 @@ package unit
 
 import (
 	"educ-gpt/config/dic"
-	"educ-gpt/http/dtos"
 	"educ-gpt/models"
 	"educ-gpt/services"
 	"os"
@@ -18,12 +17,12 @@ func TestCanInitAIService(t *testing.T) {
 }
 
 func TestCanGetAnswer(t *testing.T) {
-	var res dtos.ResultResponse
+	var res string
 
 	answer := "Ответь одной цифрой на вопрос: Сколько будет 1+1?"
 
 	err := aiSrv.GetAnswer(
-		os.Getenv("ADMIN_CHAT_GPT_TOKEN"), os.Getenv("ADMIN_CHAT_GPT_MODEL"),
+		os.Getenv("OPENROUTER_TOKEN"), os.Getenv("OPENROUTER_MODEL"),
 		[]*models.DialogItem{{Text: answer, IsUser: true}},
 		&res,
 	)
@@ -33,7 +32,7 @@ func TestCanGetAnswer(t *testing.T) {
 		return
 	}
 
-	if res.Result != "2" {
+	if res != "2" {
 		t.Errorf("Expected 2, but got %s", res)
 	}
 }

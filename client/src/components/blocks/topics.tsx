@@ -14,8 +14,6 @@ export function Topics() {
     const [isLoading, setIsLoading] = useState(true)
     const router = useRouter()
 
-
-
     useEffect(() => {
         (async () => {
             setIsLoading(true)

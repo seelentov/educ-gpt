@@ -56,12 +56,10 @@ func (c *AuthController) Register(ctx *gin.Context) {
 	}
 
 	user := &models.User{
-		ID:           0,
-		Name:         req.Name,
-		Email:        req.Email,
-		Password:     req.Password,
-		ChatGptModel: "gpt-4o-mini",
-		ChatGptToken: req.ChatGptToken,
+		ID:       0,
+		Name:     req.Name,
+		Email:    req.Email,
+		Password: req.Password,
 	}
 
 	key, err := c.userService.Create(user)
@@ -164,7 +162,6 @@ func (c *AuthController) Me(ctx *gin.Context) {
 	}
 
 	user.Password = ""
-	user.ChatGptToken = ""
 
 	ctx.JSON(http.StatusOK, user)
 }
