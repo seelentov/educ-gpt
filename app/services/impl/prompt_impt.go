@@ -35,15 +35,13 @@ func (p PromptServiceImpl) GetThemes(topic string, existedThemes []*models.Theme
 		}
 	}
 
-	var stats []string
-	if userStats != nil {
-		stats = make([]string, len(userStats))
-		for i := range userStats {
-			stats[i] = fmt.Sprintf("[%s,%v]", userStats[i].Title, userStats[i].Score)
-		}
+	stats := "["
+	for i := range userStats {
+		stats += fmt.Sprintf("%s : %v задач, ", userStats[i].Title, userStats[i].Score)
 	}
+	stats += "]"
 
-	return fmt.Sprintf(prompt, topic, strings.Join(exist, ", "), strings.Join(stats, ", "))
+	return fmt.Sprintf(prompt, topic, strings.Join(exist, ", "), stats, strings.Join(exist, ", "))
 }
 
 func (p PromptServiceImpl) GetTheme(topic string, theme string, userStats *models.Theme, userAllStats []*models.Theme) string {
@@ -70,7 +68,7 @@ func (p PromptServiceImpl) GetTheme(topic string, theme string, userStats *model
 		resolvedProblems = "[" + userStats.ResolvedProblems + "]"
 	}
 
-	return fmt.Sprintf(prompt, topic, stats, resolvedProblems)
+	return fmt.Sprintf(prompt, topic+" "+theme, stats, resolvedProblems, resolvedProblems)
 }
 
 func (p PromptServiceImpl) GetProblems(count int, topic string, theme string, userThemeStats *models.Theme, userAllStats []*models.Theme) string {
@@ -97,7 +95,7 @@ func (p PromptServiceImpl) GetProblems(count int, topic string, theme string, us
 		resolvedProblems = "[" + userThemeStats.ResolvedProblems + "]"
 	}
 
-	return fmt.Sprintf(prompt, count, topic, theme, stats, resolvedProblems)
+	return fmt.Sprintf(prompt, count, topic+" "+theme, stats, resolvedProblems, resolvedProblems)
 }
 
 func (p PromptServiceImpl) VerifyAnswer(problem string, answer string, language string) string {
