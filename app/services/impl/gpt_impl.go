@@ -6,11 +6,12 @@ import (
 	"educ-gpt/services"
 	"encoding/json"
 	"fmt"
-	"go.uber.org/zap"
 	"io"
 	"net/http"
 	"reflect"
 	"strings"
+
+	"go.uber.org/zap"
 )
 
 type GptServiceImpl struct {
@@ -27,7 +28,7 @@ func (g GptServiceImpl) GetAnswer(token string, model string, dialog []*models.D
 			role = "user"
 		}
 
-		dialogStrings[i] = fmt.Sprintf(`{"role": "%s", "content": "%s"}`, role, dialog[i].Text)
+		dialogStrings[i] = fmt.Sprintf(`{"role": "%s", "content": "%s"}`, role, strings.ReplaceAll(dialog[i].Text, `\n`, `\\n`))
 	}
 
 	body := fmt.Sprintf(`{"model": "%s","messages": [%s],"temperature": 0.1}`, model, strings.Join(dialogStrings, ","))
