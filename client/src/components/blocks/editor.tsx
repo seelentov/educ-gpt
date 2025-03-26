@@ -340,7 +340,7 @@ export function Editor() {
                                 </div>
                             </>
                             : <>
-                                {contents.map(c => <div className="text" dangerouslySetInnerHTML={{ __html: c }} />)}
+                                {contents.map((c, i) => <div key={i} className="text" dangerouslySetInnerHTML={{ __html: c }} />)}
                                 <div className="d-flex justify-content-center">
                                     {moreLoading ? <Loading min /> : <button type="button" className="btn btn-link" onClick={() => loadMoreInfo()}>Загрузить еще...</button>}
                                 </div>
