@@ -11,6 +11,9 @@ import { Loading } from "@/components/ui/loading";
 import { createDialog } from "@/core/api/dialogs/create_dialog";
 import { sendMessage } from "@/core/api/dialogs/send_message";
 import { showToast } from "@/components/utils/toast";
+import { remark } from 'remark';
+import html from 'remark-html';
+import rehypeHihglight from 'rehype-highlight'
 
 export function Chat() {
     const [isOpen, setIsOpen] = useState<boolean>(false)
@@ -44,6 +47,21 @@ export function Chat() {
         scrollMessagesToEnd()
     }, [messages])
 
+    const setMessagesFunc = async (dialog_items: DialogItem[]) => {
+
+        for (let i = 0; i < dialog_items.length; i++) {
+            const processed = await remark()
+                .use(html)
+                .use(rehypeHihglight)
+                .process(dialog_items[i].text);
+
+            dialog_items[i].text = processed.toString()
+        }
+
+
+        setMessages(dialog_items)
+    }
+
     const fetchDialogs = async () => {
         setIsDialogsLoading(true)
 
@@ -55,7 +73,7 @@ export function Chat() {
         }
 
         setDialogs(res)
-        setMessages(res.dialog_items)
+        setMessagesFunc(res.dialog_items)
 
         setIsDialogsLoading(false)
     }
@@ -70,7 +88,7 @@ export function Chat() {
             showToast("error", err)
         }
 
-        setMessages(res.dialog_items)
+        setMessagesFunc(res.dialog_items)
         scrollMessagesToEnd()
 
         setIsMessagesLoading(false)
@@ -85,10 +103,15 @@ export function Chat() {
 
         setInput("")
 
+        const processed = await remark()
+            .use(html)
+            .use(rehypeHihglight)
+            .process(input);
+
         setMessages(p => ([...p,
         {
             id: 9999999 + p.length,
-            text: input,
+            text: processed.toString(),
             is_user: true
         }]))
 
@@ -100,6 +123,13 @@ export function Chat() {
             console.error(err)
             showToast("error", err)
         }
+
+        const processedRes = await remark()
+            .use(html)
+            .use(rehypeHihglight)
+            .process(res.text);
+
+        res.text = processedRes
 
         setMessages(p => ([...p, res]))
 
@@ -215,7 +245,7 @@ export function Chat() {
                         </button>
                         : <div className="container-fluid">
                             <div className="row justify-content-center">
-                                <div className="col-6 p-0" style={{ width: '300px', height: '400px', border: '1px solid #ccc', borderRadius: '5px', overflow: 'hidden' }}>
+                                <div className="col-6 p-0" style={{ width: '320px', height: '80vh', border: '1px solid #ccc', borderRadius: '5px', overflow: 'hidden' }}>
                                     <div className="d-flex flex-column h-100">
                                         <div className="p-2 d-flex gap-1 align-items-center" style={{ backgroundColor: '#e9ecef' }}>
                                             <button onClick={() => setIsOpen(false)} className="btn btn-secondary btn-sm">
@@ -260,7 +290,8 @@ export function Chat() {
                                                 : messages.map(m =>
                                                     <div className="mb-2" key={m.id}>
                                                         <div className="bg-light p-2 rounded">
-                                                            <strong>{m.is_user ? "User" : "AI"}:</strong> {m.text}
+                                                            <strong>{m.is_user ? "User" : "AI"}:</strong>
+                                                            <div dangerouslySetInnerHTML={{ __html: m.text }} />
                                                         </div>
                                                     </div>
                                                 )}
