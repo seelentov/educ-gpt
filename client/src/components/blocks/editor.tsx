@@ -15,6 +15,7 @@ import CodeMirror from "@uiw/react-codemirror";
 import { checkAnswerUtil } from "@/core/api/utils/check_answer"
 import Select from 'react-select'
 import { showToast } from "../utils/toast"
+import { getMoreInfo } from "@/core/api/roadmap/get_more"
 
 interface Task {
     task: string, isDone: boolean, dialog: string[], id: number, isTheory: boolean, languages: string[]
@@ -22,7 +23,7 @@ interface Task {
 
 export function Editor() {
     const [part, setPath] = useState<"theory" | "tasks">("theory")
-    const [content, setContent] = useState<string>("")
+    const [contents, setContents] = useState<string[]>([])
     const [tasks, setTasks] = useState<Task[]>([])
     const [activeTask, setActiveTask] = useState<number>(0)
     const [code, setCode] = useState<string>("")
@@ -33,6 +34,7 @@ export function Editor() {
     const [problemsLoading, setProblemsLoading] = useState<boolean>(false)
     const [checkLoading, setCheckLoading] = useState<boolean>(false)
     const [compilationLoading, setCompilationLoading] = useState<boolean>(false)
+    const [moreLoading, setMoreLoading] = useState<boolean>(false)
 
     const [token] = useLocalStorage("token", "")
 
@@ -64,7 +66,7 @@ export function Editor() {
                 .use(html)
                 .use(rehypeHihglight)
                 .process(data.text);
-            setContent(processedContent.toString())
+            setContents([processedContent.toString()])
 
             for (let i = 0; i < data.problems.length; i++) {
                 const processedProblem = await remark()
@@ -88,6 +90,28 @@ export function Editor() {
             setGlobalLoading(false)
         })()
     }, [topic, theme, token, router])
+
+    const loadMoreInfo = async () => {
+        setMoreLoading(true)
+
+        const data = await getMoreInfo(topic as string, theme as string, contents)
+
+        if (data?.error) {
+            console.error(data.error)
+            showToast("error", data.error)
+            setMoreLoading(false)
+            return
+        }
+
+        const processedData = await remark()
+            .use(html)
+            .use(rehypeHihglight)
+            .process(data);
+
+        setContents(p => [...p, processedData.toString()])
+
+        setMoreLoading(false)
+    }
 
     const languageOptions = useMemo(() => {
         if (part == 'theory') {
@@ -286,7 +310,6 @@ export function Editor() {
                                     : <CodeMirror
                                         onChange={setCode}
                                         value={code}
-                                        height="1000px"
                                     />
                             }
                         </div>
@@ -317,7 +340,10 @@ export function Editor() {
                                 </div>
                             </>
                             : <>
-                                <div className="text" dangerouslySetInnerHTML={{ __html: content }} />
+                                {contents.map(c => <div className="text" dangerouslySetInnerHTML={{ __html: c }} />)}
+                                <div className="d-flex justify-content-center">
+                                    {moreLoading ? <Loading min /> : <button type="button" className="btn btn-link" onClick={() => loadMoreInfo()}>Загрузить еще...</button>}
+                                </div>
                             </>}
 
                     </div>

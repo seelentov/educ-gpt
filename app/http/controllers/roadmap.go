@@ -467,7 +467,7 @@ func (r RoadmapController) VerifyAnswerAndIncrementUserScore(ctx *gin.Context) {
 // @Failure      404 {object} dtos.ErrorResponse "Theme or topic not found"
 // @Failure      409 {object} dtos.ErrorResponse "AI request error"
 // @Failure      500 {object} dtos.ErrorResponse "Internal server error"
-// @Router       /roadmap/more/{topic_id}/{theme_id} [get]
+// @Router       /roadmap/more/{topic_id}/{theme_id} [post]
 func (r RoadmapController) GetMore(ctx *gin.Context) {
 	var req dtos.GetMoreRequest
 
