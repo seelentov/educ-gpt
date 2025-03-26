@@ -33,7 +33,7 @@ export function Chat() {
 
     const activeDialog: Dialog = useMemo(() => dialogs[activeDialogIndex], [dialogs, activeDialogIndex])
 
-    const deleteDialogDisabled = useMemo(() => dialogs.length < 2, [dialogs])
+    const deleteDialogDisabled = useMemo(() => dialogs.length < 2 || isThrowLoading, [dialogs, isThrowLoading])
 
     const [token, setToken] = useLocalStorage("token", "")
 
@@ -272,14 +272,14 @@ export function Chat() {
                                                                 <button
                                                                     onClick={() => setDialog(i)}
                                                                     className={`btn btn-primary btn-sm rounded-0 border-0 w-100`}
-                                                                    disabled={activeDialogIndex === i}
+                                                                    disabled={activeDialogIndex === i || isThrowLoading}
                                                                 >
                                                                     {d.dialog_items.length > 0 ? d.dialog_items[0].text.slice(0, 7) + "..." : ""}
                                                                 </button>
                                                             </div>
                                                         )}
                                                         <button onClick={createDialogHandle} className="btn btn-success btn-sm">
-                                                            {createNewDialogLoading ? <Loading min color="white" /> : "+"}
+                                                            {createNewDialogLoading || isThrowLoading ? <Loading min color="white" /> : "+"}
                                                         </button>
                                                     </div>
                                                 </>}
