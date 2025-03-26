@@ -16,24 +16,48 @@ import (
 
 type OpenRouterServiceImpl struct {
 	logger *zap.Logger
+
+	model string
+	token string
 }
 
 func (g OpenRouterServiceImpl) GetAnswer(token string, model string, dialog []*models.DialogItem, target interface{}) error {
-	dialogStrings := make([]string, len(dialog))
+	if token == "" {
+		token = g.token
+	}
 
-	for i := range dialog {
+	if model == "" {
+		model = g.model
+	}
+
+	request := struct {
+		Model       string        `json:"model"`
+		Messages    []interface{} `json:"messages"`
+		Temperature float64       `json:"temperature"`
+	}{
+		Model:       model,
+		Temperature: 0.1,
+	}
+
+	for _, item := range dialog {
 		role := "assistant"
-
-		if dialog[i].IsUser {
+		if item.IsUser {
 			role = "user"
 		}
 
-		dialogStrings[i] = fmt.Sprintf(`{"role": "%s", "content": "%s"}`, role, strings.ReplaceAll(dialog[i].Text, `\n`, `\\n`))
+		request.Messages = append(request.Messages, map[string]string{
+			"role":    role,
+			"content": item.Text,
+		})
 	}
 
-	body := fmt.Sprintf(`{"model": "%s","messages": [%s],"temperature": 0.1}`, model, strings.Join(dialogStrings, ","))
+	bodyBytes, err := json.Marshal(request)
+	if err != nil {
+		g.logger.Error("failed to marshal request", zap.Error(err))
+		return fmt.Errorf("%w:%w", services.ErrRequestFailed, err)
+	}
 
-	req, err := http.NewRequest("POST", "https://openrouter.ai/api/v1/chat/completions", bytes.NewBuffer([]byte(body)))
+	req, err := http.NewRequest("POST", "https://openrouter.ai/api/v1/chat/completions", bytes.NewBuffer(bodyBytes))
 	if err != nil {
 		g.logger.Error("failed to send request", zap.Error(err))
 		return fmt.Errorf("%w:%w", services.ErrRequestFailed, err)
@@ -42,21 +66,19 @@ func (g OpenRouterServiceImpl) GetAnswer(token string, model string, dialog []*m
 	req.Header.Add("Content-Type", "application/json;charset=utf-8")
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
 
-	g.logger.Debug("request body", zap.String("body", body))
+	g.logger.Debug("request body", zap.String("body", string(bodyBytes)))
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
-
 	if err != nil {
 		g.logger.Error("failed to send request", zap.Error(err))
 		return fmt.Errorf("%w:%w", services.ErrRequestFailed, err)
 	}
-
 	defer resp.Body.Close()
 
-	bodyBytes, err := io.ReadAll(resp.Body)
+	bodyBytes, err = io.ReadAll(resp.Body)
 	if err != nil {
-		g.logger.Error("failed to send request", zap.Error(err))
+		g.logger.Error("failed to read response", zap.Error(err))
 		return fmt.Errorf("%w:%w", services.ErrParseFailed, err)
 	}
 
@@ -66,15 +88,13 @@ func (g OpenRouterServiceImpl) GetAnswer(token string, model string, dialog []*m
 	}
 
 	tempTarget := &services.AIResponse{}
-
 	err = json.Unmarshal(bodyBytes, tempTarget)
 	if err != nil {
-		g.logger.Error("failed to send request", zap.Error(err))
+		g.logger.Error("failed to unmarshal response", zap.Error(err))
 		return fmt.Errorf("%w:%w", services.ErrParseResFailed, err)
 	}
 
 	msg := tempTarget.Choices[len(tempTarget.Choices)-1].Message.Content
-
 	msg = strings.TrimPrefix(msg, "```json")
 	msg = strings.TrimSuffix(msg, "```")
 
@@ -87,13 +107,13 @@ func (g OpenRouterServiceImpl) GetAnswer(token string, model string, dialog []*m
 
 	err = json.Unmarshal([]byte(msg), &target)
 	if err != nil {
-		g.logger.Error("failed to send request", zap.Error(err))
+		g.logger.Error("failed to parse response message", zap.Error(err))
 		return fmt.Errorf("%w:%w", services.ErrParseFailed, err)
 	}
 
 	return nil
 }
 
-func NewOpenRouterServiceImpl(logger *zap.Logger) services.AIService {
-	return &OpenRouterServiceImpl{logger}
+func NewOpenRouterServiceImpl(logger *zap.Logger, model, token string) services.AIService {
+	return &OpenRouterServiceImpl{logger, model, token}
 }

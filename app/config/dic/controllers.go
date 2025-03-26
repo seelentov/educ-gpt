@@ -3,7 +3,6 @@ package dic
 import (
 	"educ-gpt/http/controllers"
 	"log"
-	"os"
 )
 
 var authController *controllers.AuthController
@@ -35,8 +34,6 @@ func RoadmapController() *controllers.RoadmapController {
 			AIService(),
 			PromptService(),
 			RoadmapService(),
-			os.Getenv("OPENROUTER_MODEL"),
-			os.Getenv("OPENROUTER_TOKEN"),
 		)
 		log.Print("RoadmapController initialized")
 	}
@@ -52,8 +49,6 @@ func UtilsController() *controllers.UtilsController {
 			AIService(),
 			PromptService(),
 			UserService(),
-			os.Getenv("OPENROUTER_MODEL"),
-			os.Getenv("OPENROUTER_TOKEN"),
 		)
 		log.Print("UtilsController initialized")
 	}
@@ -68,8 +63,6 @@ func DialogController() *controllers.DialogController {
 			DialogService(),
 			UserService(),
 			AIService(),
-			os.Getenv("OPENROUTER_MODEL"),
-			os.Getenv("OPENROUTER_TOKEN"),
 		)
 		log.Print("DialogController initialized")
 	}

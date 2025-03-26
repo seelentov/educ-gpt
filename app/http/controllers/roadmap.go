@@ -7,6 +7,7 @@ import (
 	"educ-gpt/utils/httputils"
 	"educ-gpt/utils/httputils/valid"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -20,9 +21,6 @@ type RoadmapController struct {
 	aiSrv      services.AIService
 	promptSrv  services.PromptService
 	roadmapSrv services.RoadmapService
-
-	openRouterModel string
-	openRouterToken string
 }
 
 // GetTopics returns a list of topics for the current user
@@ -35,7 +33,7 @@ type RoadmapController struct {
 // @Failure      500 {object} dtos.ErrorResponse "Internal server error"
 // @Router       /roadmap [get]
 func (r RoadmapController) GetTopics(ctx *gin.Context) {
-	userid, err := httputils.GetUserId(ctx)
+	userid, _ := httputils.GetUserId(ctx)
 
 	topics, err := r.roadmapSrv.GetTopics(userid, false)
 	if err != nil {
@@ -145,7 +143,7 @@ func (r RoadmapController) GetThemes(ctx *gin.Context) {
 
 	var target []string
 
-	err = r.aiSrv.GetAnswer(r.openRouterToken, r.openRouterModel, []*models.DialogItem{{Text: prompt, IsUser: true}}, &target)
+	err = r.aiSrv.GetAnswer("", "", []*models.DialogItem{{Text: prompt, IsUser: true}}, &target)
 	if err != nil {
 		if errors.Is(err, services.ErrAIRequestFailed) {
 			ctx.JSON(http.StatusConflict, dtos.ErrorResponse{Error: err.Error()})
@@ -258,7 +256,7 @@ func (r RoadmapController) GetTheme(ctx *gin.Context) {
 
 	var target services.PromptThemeResponse
 
-	err = r.aiSrv.GetAnswer(r.openRouterToken, r.openRouterModel, []*models.DialogItem{{Text: prompt, IsUser: true}}, &target)
+	err = r.aiSrv.GetAnswer("", "", []*models.DialogItem{{Text: prompt, IsUser: true}}, &target)
 	if err != nil {
 		if errors.Is(err, services.ErrAIRequestFailed) {
 			ctx.JSON(http.StatusConflict, dtos.ErrorResponse{Error: err.Error()})
@@ -347,7 +345,7 @@ func (r RoadmapController) GetProblems(ctx *gin.Context) {
 
 	var target []*models.Problem
 
-	err = r.aiSrv.GetAnswer(r.openRouterToken, r.openRouterModel, []*models.DialogItem{{Text: prompt, IsUser: true}}, &target)
+	err = r.aiSrv.GetAnswer("", "", []*models.DialogItem{{Text: prompt, IsUser: true}}, &target)
 	if err != nil {
 		if errors.Is(err, services.ErrAIRequestFailed) {
 			ctx.JSON(http.StatusConflict, dtos.ErrorResponse{Error: err.Error()})
@@ -428,7 +426,7 @@ func (r RoadmapController) VerifyAnswerAndIncrementUserScore(ctx *gin.Context) {
 	prompt := r.promptSrv.VerifyAnswer(problem.Question, req.Answer, req.Language)
 	var target services.PromptProblemResponse
 
-	err = r.aiSrv.GetAnswer(r.openRouterToken, r.openRouterModel, []*models.DialogItem{{Text: prompt, IsUser: true}}, &target)
+	err = r.aiSrv.GetAnswer("", "", []*models.DialogItem{{Text: prompt, IsUser: true}}, &target)
 	if err != nil {
 		if errors.Is(err, services.ErrAIRequestFailed) {
 			ctx.JSON(http.StatusConflict, dtos.ErrorResponse{Error: err.Error()})
@@ -455,13 +453,115 @@ func (r RoadmapController) VerifyAnswerAndIncrementUserScore(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, target)
 }
 
+// GetMore returns a more info by theme
+// @Summary      Get more info
+// @Description  Returns a more info by topic, theme and existed info
+// @Tags         roadmap
+// @Accept       json
+// @Produce      json
+// @Param        topic_id path int true "Topic ID"
+// @Param        theme_id path int true "Theme ID"
+// @Param        request body dtos.GetMoreRequest true "List of messages"
+// @Success      200 {array} string "More info"
+// @Failure      400 {object} dtos.ValidationErrorResponse "Wrong body format"
+// @Failure      404 {object} dtos.ErrorResponse "Theme or topic not found"
+// @Failure      409 {object} dtos.ErrorResponse "AI request error"
+// @Failure      500 {object} dtos.ErrorResponse "Internal server error"
+// @Router       /roadmap/more/{topic_id}/{theme_id} [get]
+func (r RoadmapController) GetMore(ctx *gin.Context) {
+	var req dtos.GetMoreRequest
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		var valErr validator.ValidationErrors
+		ok := errors.As(err, &valErr)
+
+		if ok {
+			ctx.JSON(http.StatusBadRequest, dtos.ValidationErrorResponse{Error: valid.ParseValidationErrors(err)})
+			return
+		}
+
+		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
+		return
+	}
+
+	topicId, err := strconv.ParseUint(ctx.Param("topic_id"), 10, 32)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
+		return
+	}
+
+	topic, err := r.roadmapSrv.GetTopic(0, uint(topicId), true)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			ctx.JSON(http.StatusNotFound, dtos.NotFoundResponse())
+			return
+		}
+
+		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
+		return
+	}
+
+	themeId, err := strconv.ParseUint(ctx.Param("theme_id"), 10, 32)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
+		return
+	}
+
+	theme, err := r.roadmapSrv.GetTheme(0, uint(themeId), false)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			ctx.JSON(http.StatusNotFound, dtos.NotFoundResponse())
+			return
+		}
+
+		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
+		return
+	}
+
+	messages := make([]*models.DialogItem, 0)
+
+	messages = append(messages, &models.DialogItem{
+		IsUser: true,
+		Text:   fmt.Sprintf("Расскажи мне про %s.%s", topic.Title, theme.Title),
+	})
+
+	for i := range req.Messages {
+		messages = append(messages, &models.DialogItem{
+			IsUser: false,
+			Text:   req.Messages[i],
+		})
+
+		messages = append(messages, &models.DialogItem{
+			IsUser: true,
+			Text:   "Мне нужно больше информации, дополни свой ответ по этой же теме",
+		})
+	}
+
+	var target string
+
+	if err := r.aiSrv.GetAnswer("", "", messages, &target); err != nil {
+		if errors.Is(err, services.ErrAIRequestFailed) {
+			ctx.JSON(http.StatusConflict, dtos.ErrorResponse{Error: err.Error()})
+			return
+		}
+
+		if errors.Is(err, services.ErrParseResFailed) {
+			ctx.JSON(http.StatusConflict, dtos.ErrorResponse{Error: "Неверный формат ответа AI. Попробуйте еще раз."})
+			return
+		}
+
+		ctx.JSON(http.StatusInternalServerError, dtos.InternalServerErrorResponse())
+		return
+	}
+
+	ctx.JSON(http.StatusOK, target)
+}
+
 func NewRoadmapController(
 	userSrv services.UserService,
 	nlSrv services.AIService,
 	promptSrv services.PromptService,
 	roadmapSrv services.RoadmapService,
-	openRouterModel string,
-	openRouterToken string,
 ) *RoadmapController {
-	return &RoadmapController{userSrv, nlSrv, promptSrv, roadmapSrv, openRouterModel, openRouterToken}
+	return &RoadmapController{userSrv, nlSrv, promptSrv, roadmapSrv}
 }

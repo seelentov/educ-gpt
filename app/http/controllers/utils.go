@@ -6,18 +6,16 @@ import (
 	"educ-gpt/services"
 	"educ-gpt/utils/httputils/valid"
 	"errors"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"net/http"
 )
 
 type UtilsController struct {
 	aiSrv     services.AIService
 	promptSrv services.PromptService
 	userSrv   services.UserService
-
-	openRouterModel string
-	openRouterToken string
 }
 
 // Compile code by AI
@@ -54,7 +52,7 @@ func (u UtilsController) Compile(ctx *gin.Context) {
 
 	var res dtos.ResultResponse
 
-	if err := u.aiSrv.GetAnswer(u.openRouterToken, u.openRouterModel, []*models.DialogItem{{Text: prompt, IsUser: true}}, &res); err != nil {
+	if err := u.aiSrv.GetAnswer("", "", []*models.DialogItem{{Text: prompt, IsUser: true}}, &res); err != nil {
 		if errors.Is(err, services.ErrAIRequestFailed) {
 			ctx.JSON(http.StatusConflict, dtos.ErrorResponse{Error: err.Error()})
 			return
@@ -80,7 +78,7 @@ func (u UtilsController) Compile(ctx *gin.Context) {
 // @Failure      409 {object} dtos.ErrorResponse "AI request error"
 // @Failure      500 {object} dtos.ErrorResponse "Internal server error"
 // @Router       /utils/check_answer [post]
-func (r RoadmapController) VerifyAnswer(ctx *gin.Context) {
+func (r UtilsController) VerifyAnswer(ctx *gin.Context) {
 	var req dtos.VerifyAnswerRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -99,7 +97,7 @@ func (r RoadmapController) VerifyAnswer(ctx *gin.Context) {
 	prompt := r.promptSrv.VerifyAnswer(req.Problem, req.Answer, req.Language)
 	var target services.PromptProblemResponse
 
-	if err := r.aiSrv.GetAnswer(r.openRouterToken, r.openRouterModel, []*models.DialogItem{{Text: prompt, IsUser: true}}, &target); err != nil {
+	if err := r.aiSrv.GetAnswer("", "", []*models.DialogItem{{Text: prompt, IsUser: true}}, &target); err != nil {
 		if errors.Is(err, services.ErrAIRequestFailed) {
 			ctx.JSON(http.StatusConflict, dtos.ErrorResponse{Error: err.Error()})
 			return
@@ -116,8 +114,6 @@ func NewUtilsController(
 	aiSrv services.AIService,
 	promptSrv services.PromptService,
 	userSrv services.UserService,
-	openRouterModel string,
-	openRouterToken string,
 ) *UtilsController {
-	return &UtilsController{aiSrv, promptSrv, userSrv, openRouterModel, openRouterToken}
+	return &UtilsController{aiSrv, promptSrv, userSrv}
 }

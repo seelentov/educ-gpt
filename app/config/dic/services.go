@@ -99,7 +99,7 @@ var gptService services.AIService
 
 func GptService() services.AIService {
 	if gptService == nil {
-		gptService = impl.NewGptService(
+		gptService = impl.NewGptServiceImpl(
 			logger.Logger(),
 		)
 		log.Print("GptService initialized")
@@ -114,6 +114,8 @@ func OpenRouterService() services.AIService {
 	if openRouterService == nil {
 		openRouterService = impl.NewOpenRouterServiceImpl(
 			logger.Logger(),
+			os.Getenv("OPENROUTER_MODEL"),
+			os.Getenv("OPENROUTER_TOKEN"),
 		)
 		log.Print("OpenRouterService initialized")
 	}

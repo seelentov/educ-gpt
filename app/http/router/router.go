@@ -53,12 +53,13 @@ func NewRouter() *gin.Engine {
 				roadmapGroup.GET("/:topic_id/:theme_id", dic.RoadmapController().GetTheme)
 				roadmapGroup.GET("/problems/:topic_id/:theme_id", dic.RoadmapController().GetProblems)
 				roadmapGroup.POST("/resolve", dic.RoadmapController().VerifyAnswerAndIncrementUserScore)
+				roadmapGroup.GET("/more/:topic_id/:theme_id", dic.RoadmapController().GetMore)
 			}
 
 			utilsGroup := v1.Group("/utils")
 			{
 				utilsGroup.POST("/compile", dic.UtilsController().Compile)
-				utilsGroup.POST("/check_answer", dic.RoadmapController().VerifyAnswer)
+				utilsGroup.POST("/check_answer", dic.UtilsController().VerifyAnswer)
 			}
 
 			dialogGroup := v1.Group("/dialogs")

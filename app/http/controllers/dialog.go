@@ -20,9 +20,6 @@ type DialogController struct {
 	dialogSrv services.DialogService
 	userSrv   services.UserService
 	aiSrv     services.AIService
-
-	openRouterModel string
-	openRouterToken string
 }
 
 // GetDialogs returns the current user's dialogs
@@ -105,6 +102,7 @@ func (d DialogController) GetDialog(ctx *gin.Context) {
 // @Param 		 Authorization header string true "Bearer <JWT token>"
 // @Param        request body dtos.ThrowMessageRequest true "Message"
 // @Success      200 {array} models.DialogItem "AI response"
+// @Failure      400 {object} dtos.ValidationErrorResponse "Wrong body format"
 // @Failure      401 {object} dtos.ErrorResponse "Unauthorized"
 // @Failure      403 {object} dtos.ErrorResponse "Forbidden"
 // @Failure      404 {object} dtos.ErrorResponse "Not found"
@@ -170,7 +168,7 @@ func (d DialogController) ThrowMessage(ctx *gin.Context) {
 
 	var target string
 
-	err = d.aiSrv.GetAnswer(d.openRouterToken, d.openRouterModel, dialogItems, &target)
+	err = d.aiSrv.GetAnswer("", "", dialogItems, &target)
 	if err != nil {
 		if errors.Is(err, services.ErrAIRequestFailed) {
 			ctx.JSON(http.StatusConflict, dtos.ErrorResponse{Error: err.Error()})
@@ -285,8 +283,6 @@ func NewDialogController(
 	dialogSrv services.DialogService,
 	userSrv services.UserService,
 	aiSrv services.AIService,
-	openRouterModel string,
-	openRouterToken string,
 ) *DialogController {
-	return &DialogController{dialogSrv, userSrv, aiSrv, openRouterModel, openRouterToken}
+	return &DialogController{dialogSrv, userSrv, aiSrv}
 }

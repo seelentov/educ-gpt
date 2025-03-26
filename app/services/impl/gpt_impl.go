@@ -19,21 +19,34 @@ type GptServiceImpl struct {
 }
 
 func (g GptServiceImpl) GetAnswer(token string, model string, dialog []*models.DialogItem, target interface{}) error {
-	dialogStrings := make([]string, len(dialog))
+	request := struct {
+		Model       string        `json:"model"`
+		Messages    []interface{} `json:"messages"`
+		Temperature float64       `json:"temperature"`
+	}{
+		Model:       model,
+		Temperature: 0.1,
+	}
 
-	for i := range dialog {
+	for _, item := range dialog {
 		role := "assistant"
-
-		if dialog[i].IsUser {
+		if item.IsUser {
 			role = "user"
 		}
 
-		dialogStrings[i] = fmt.Sprintf(`{"role": "%s", "content": "%s"}`, role, strings.ReplaceAll(dialog[i].Text, `\n`, `\\n`))
+		request.Messages = append(request.Messages, map[string]string{
+			"role":    role,
+			"content": item.Text,
+		})
 	}
 
-	body := fmt.Sprintf(`{"model": "%s","messages": [%s],"temperature": 0.1}`, model, strings.Join(dialogStrings, ","))
+	bodyBytes, err := json.Marshal(request)
+	if err != nil {
+		g.logger.Error("failed to marshal request", zap.Error(err))
+		return fmt.Errorf("%w:%w", services.ErrRequestFailed, err)
+	}
 
-	req, err := http.NewRequest("POST", "https://api.openai.com/v1/chat/completions", bytes.NewBuffer([]byte(body)))
+	req, err := http.NewRequest("POST", "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(bodyBytes))
 	if err != nil {
 		g.logger.Error("failed to send request", zap.Error(err))
 		return fmt.Errorf("%w:%w", services.ErrRequestFailed, err)
@@ -42,39 +55,35 @@ func (g GptServiceImpl) GetAnswer(token string, model string, dialog []*models.D
 	req.Header.Add("Content-Type", "application/json;charset=utf-8")
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
 
-	g.logger.Debug("request body", zap.String("body", body))
+	g.logger.Debug("request body", zap.String("body", string(bodyBytes)))
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
-
 	if err != nil {
 		g.logger.Error("failed to send request", zap.Error(err))
 		return fmt.Errorf("%w:%w", services.ErrRequestFailed, err)
 	}
-
 	defer resp.Body.Close()
 
-	bodyBytes, err := io.ReadAll(resp.Body)
+	bodyBytes, err = io.ReadAll(resp.Body)
 	if err != nil {
-		g.logger.Error("failed to send request", zap.Error(err))
+		g.logger.Error("failed to read response", zap.Error(err))
 		return fmt.Errorf("%w:%w", services.ErrParseFailed, err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		g.logger.Error("failed to send request", zap.Error(err))
+		g.logger.Error("failed to send request", zap.String("resp", string(bodyBytes)))
 		return fmt.Errorf("%w:%v:%s", services.ErrAIRequestFailed, resp.StatusCode, bodyBytes)
 	}
 
 	tempTarget := &services.AIResponse{}
-
 	err = json.Unmarshal(bodyBytes, tempTarget)
 	if err != nil {
-		g.logger.Error("failed to send request", zap.Error(err))
+		g.logger.Error("failed to unmarshal response", zap.Error(err))
 		return fmt.Errorf("%w:%w", services.ErrParseResFailed, err)
 	}
 
 	msg := tempTarget.Choices[len(tempTarget.Choices)-1].Message.Content
-
 	msg = strings.TrimPrefix(msg, "```json")
 	msg = strings.TrimSuffix(msg, "```")
 
@@ -87,13 +96,13 @@ func (g GptServiceImpl) GetAnswer(token string, model string, dialog []*models.D
 
 	err = json.Unmarshal([]byte(msg), &target)
 	if err != nil {
-		g.logger.Error("failed to send request", zap.Error(err))
+		g.logger.Error("failed to parse response message", zap.Error(err))
 		return fmt.Errorf("%w:%w", services.ErrParseFailed, err)
 	}
 
 	return nil
 }
 
-func NewGptService(logger *zap.Logger) services.AIService {
+func NewGptServiceImpl(logger *zap.Logger) services.AIService {
 	return &GptServiceImpl{logger}
 }
