@@ -73,7 +73,7 @@ func sendMail() {
 		data.Redis(),
 		logger.Logger(),
 		0,
-		"email_sender",
+		os.Getenv("EMAIL_QUEUE"),
 	)
 	daemonsSlice = append(daemonsSlice, daemon)
 	ClearNonActivatedUsersDaemon = &DaemonController{ctx, cancel}

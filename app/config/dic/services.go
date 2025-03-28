@@ -142,7 +142,7 @@ func SenderService() services.SenderService {
 			os.Getenv("SMTP_USERNAME"),
 			os.Getenv("SMTP_PASSWORD"),
 			os.Getenv("SMTP_FROM"),
-			"email_queue",
+			os.Getenv("EMAIL_QUEUE"),
 			logger.Logger(),
 			data.Redis(),
 		)
